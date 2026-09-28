@@ -433,11 +433,30 @@ export function getOpenRestaurants():
  * Una sede cerrada permanentemente puede permanecer
  * en registros históricos sin aparecer públicamente.
  */
+function isPublicRestaurantStatus(
+  status:
+    RestaurantStatus,
+): boolean {
+  return (
+    status !==
+    "closed"
+  );
+}
+
+
+/**
+ * Sedes visibles públicamente.
+ *
+ * Una sede cerrada permanentemente puede permanecer
+ * en registros históricos sin aparecer públicamente.
+ */
 export function getPublicRestaurants():
   readonly Restaurant[] {
   return restaurants.filter(
     (restaurant) =>
-      restaurant.status !== "closed",
+      isPublicRestaurantStatus(
+        restaurant.status,
+      ),
   );
 }
 
