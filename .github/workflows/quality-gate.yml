@@ -1,0 +1,50 @@
+name: Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck, lint and build
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    env:
+      CI: true
+      NEXT_PUBLIC_SITE_URL: https://rinconcolombiano.pl
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
