@@ -95,8 +95,9 @@ function normalizeOrigin(
 
 export const SEO_ORIGIN =
   normalizeOrigin(
-    process.env
-      .NEXT_PUBLIC_SITE_URL ??
+    process.env[
+      "NEXT_PUBLIC_SITE_URL"
+    ] ??
       SEO_PRODUCTION_ORIGIN,
   );
 
@@ -107,8 +108,10 @@ export const SEO_ORIGIN =
 
 export function isSeoProductionEnvironment():
   boolean {
-  const vercelEnvironment =
-    process.env.VERCEL_ENV;
+const vercelEnvironment =
+  process.env[
+    "VERCEL_ENV"
+  ];
 
   if (
     vercelEnvironment
@@ -440,7 +443,7 @@ export function buildCanonicalUrl(
 function getAlternateOpenGraphLocales(
   locale:
     SupportedLocale,
-): readonly string[] {
+): string[] {
   return (
     Object.entries(
       seoLocaleConfig,
@@ -536,20 +539,19 @@ export function buildRobotsMetadata(
   return {
     index,
     follow,
+googleBot: {
+  index,
+  follow,
 
-    googleBot: {
-      index,
-      follow,
+  "max-image-preview":
+    "large",
 
-      maxImagePreview:
-        "large",
+  "max-snippet":
+    -1,
 
-      maxSnippet:
-        -1,
-
-      maxVideoPreview:
-        -1,
-    },
+  "max-video-preview":
+    -1,
+},
   };
 }
 
