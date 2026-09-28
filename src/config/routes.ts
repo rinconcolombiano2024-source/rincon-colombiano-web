@@ -2540,14 +2540,12 @@ export function buildRoutePath(
   }
 
   if (
-    interpolated === ""
-  ) {
-    return (
-      `${getLocalePrefix(
-        locale,
-      )}/`
-    );
-  }
+  interpolated === ""
+) {
+  return getLocalePrefix(
+    locale,
+  );
+}
 
   return normalizePath(
     `${getLocalePrefix(
