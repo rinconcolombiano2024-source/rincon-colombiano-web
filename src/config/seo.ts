@@ -607,28 +607,30 @@ export function resolveRouteIndexability(
 /* ============================================================
    IMAGE NORMALIZATION
    ============================================================ */
+interface NormalizedSeoImage {
+  url:
+    string;
+
+  width?:
+    number;
+
+  height?:
+    number;
+
+  alt?:
+    string;
+
+  type?:
+    string;
+}
+
 
 function normalizeSeoImages(
   images:
     readonly SeoImage[],
-): readonly {
-  readonly url:
-    string;
-
-  readonly width?:
-    number;
-
-  readonly height?:
-    number;
-
-  readonly alt?:
-    string;
-
-  readonly type?:
-    string;
-}[] {
+): NormalizedSeoImage[] {
   return images.map(
-    (image) => ({
+    (image): NormalizedSeoImage => ({
       url:
         buildAbsoluteUrl(
           image.url,
@@ -676,7 +678,6 @@ function normalizeSeoImages(
     }),
   );
 }
-
 
 /* ============================================================
    GENERIC PAGE METADATA
@@ -852,8 +853,10 @@ export function buildPageMetadata(
         input.authors.length >
           0
           ? {
-              authors:
-                input.authors,
+authors:
+  [
+    ...input.authors,
+  ],
             }
           : {}
       ),
