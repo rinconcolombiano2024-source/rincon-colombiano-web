@@ -273,147 +273,216 @@ export const supportedLocales =
 /* ============================================================
    PUBLIC SITE CONFIG
    ============================================================ */
-
 const environment =
   parseEnvironment(
-    process.env.NEXT_PUBLIC_APP_ENV,
+    process.env[
+      "NEXT_PUBLIC_APP_ENV"
+    ],
   );
+
 
 const siteUrl =
   normalizeUrl(
-    process.env.NEXT_PUBLIC_SITE_URL,
-    environment === "production"
+    process.env[
+      "NEXT_PUBLIC_SITE_URL"
+    ],
+
+    environment ===
+      "production"
       ? PRODUCTION_SITE_URL
       : DEFAULT_SITE_URL,
   );
 
 
-export const siteConfig: SiteConfig = {
-  name: "Rincón Colombiano",
+export const siteConfig:
+  SiteConfig = {
 
-  shortName: "Rincón",
+  name:
+    "Rincón Colombiano",
 
-  legalCountry: "Poland",
+  shortName:
+    "Rincón",
+
+  legalCountry:
+    "Poland",
 
   description:
     "Autentyczna kuchnia kolumbijska w Warszawie. Menu, zamówienia online, dostawa, odbiór osobisty, catering i lokale Rincón Colombiano.",
 
-  url: siteUrl,
+  url:
+    siteUrl,
 
   environment,
 
   defaultLocale:
     parseDefaultLocale(
-      process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
+      process.env[
+        "NEXT_PUBLIC_DEFAULT_LOCALE"
+      ],
     ),
 
-  locales: supportedLocales,
+  locales:
+    supportedLocales,
+
+
+  /* ========================================================
+     CONTACT
+     ======================================================== */
 
   contact: {
     phone:
       optionalString(
-        process.env.NEXT_PUBLIC_CONTACT_PHONE,
+        process.env[
+          "NEXT_PUBLIC_CONTACT_PHONE"
+        ],
       ),
 
     whatsapp:
       optionalString(
-        process.env.NEXT_PUBLIC_WHATSAPP_PHONE,
+        process.env[
+          "NEXT_PUBLIC_WHATSAPP_PHONE"
+        ],
       ),
 
     email:
       optionalString(
-        process.env.NEXT_PUBLIC_CONTACT_EMAIL,
+        process.env[
+          "NEXT_PUBLIC_CONTACT_EMAIL"
+        ],
       ),
   },
+
+
+  /* ========================================================
+     SOCIAL
+     ======================================================== */
 
   social: {
     instagram:
       optionalString(
-        process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+        process.env[
+          "NEXT_PUBLIC_INSTAGRAM_URL"
+        ],
       ),
 
     facebook:
       optionalString(
-        process.env.NEXT_PUBLIC_FACEBOOK_URL,
+        process.env[
+          "NEXT_PUBLIC_FACEBOOK_URL"
+        ],
       ),
 
     tiktok:
       optionalString(
-        process.env.NEXT_PUBLIC_TIKTOK_URL,
+        process.env[
+          "NEXT_PUBLIC_TIKTOK_URL"
+        ],
       ),
   },
+
+
+  /* ========================================================
+     FEATURE FLAGS
+     ======================================================== */
 
   features: {
     menu:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_MENU,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_MENU"
+        ],
         true,
       ),
 
     onlineOrdering:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_ONLINE_ORDERING,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_ONLINE_ORDERING"
+        ],
         true,
       ),
 
     delivery:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_DELIVERY,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_DELIVERY"
+        ],
         true,
       ),
 
     pickup:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_PICKUP,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_PICKUP"
+        ],
         true,
       ),
 
     reservations:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_RESERVATIONS,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_RESERVATIONS"
+        ],
         true,
       ),
 
     catering:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_CATERING,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_CATERING"
+        ],
         true,
       ),
 
     reviews:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_REVIEWS,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_REVIEWS"
+        ],
         true,
       ),
 
     locations:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_LOCATIONS,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_LOCATIONS"
+        ],
         true,
       ),
 
     promotions:
       parsePublicBoolean(
-        process.env.NEXT_PUBLIC_FEATURE_PROMOTIONS,
+        process.env[
+          "NEXT_PUBLIC_FEATURE_PROMOTIONS"
+        ],
         true,
       ),
   },
 
+
+  /* ========================================================
+     EXTERNAL PUBLIC SERVICES
+     ======================================================== */
+
   orderAppUrl:
     optionalString(
-      process.env.NEXT_PUBLIC_ORDER_APP_URL,
+      process.env[
+        "NEXT_PUBLIC_ORDER_APP_URL"
+      ],
     ),
 
   googleBusinessProfileUrl:
     optionalString(
-      process.env
-        .NEXT_PUBLIC_GOOGLE_BUSINESS_PROFILE_URL,
+      process.env[
+        "NEXT_PUBLIC_GOOGLE_BUSINESS_PROFILE_URL"
+      ],
     ),
 
   googleSiteVerification:
     optionalString(
-      process.env
-        .NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      process.env[
+        "NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION"
+      ],
     ),
 };
 
