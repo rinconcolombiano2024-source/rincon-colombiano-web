@@ -46,15 +46,26 @@ export interface LocaleConfig {
 }
 
 export interface SocialConfig {
-  readonly instagram?: string;
-  readonly facebook?: string;
-  readonly tiktok?: string;
+  readonly instagram:
+    string | undefined;
+
+  readonly facebook:
+    string | undefined;
+
+  readonly tiktok:
+    string | undefined;
 }
 
+
 export interface ContactConfig {
-  readonly phone?: string;
-  readonly whatsapp?: string;
-  readonly email?: string;
+  readonly phone:
+    string | undefined;
+
+  readonly whatsapp:
+    string | undefined;
+
+  readonly email:
+    string | undefined;
 }
 
 export interface FeatureFlags {
@@ -90,11 +101,14 @@ export interface SiteConfig {
 
   readonly features: FeatureFlags;
 
-  readonly orderAppUrl?: string;
+readonly orderAppUrl:
+  string | undefined;
 
-  readonly googleBusinessProfileUrl?: string;
+readonly googleBusinessProfileUrl:
+  string | undefined;
 
-  readonly googleSiteVerification?: string;
+readonly googleSiteVerification:
+  string | undefined;
 }
 
 
