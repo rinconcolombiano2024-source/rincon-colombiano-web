@@ -583,11 +583,11 @@ export function addLocalePrefix(
       pathname,
     );
 
-  if (
-    pathWithoutLocale === "/"
-  ) {
-    return `/${locale}/`;
-  }
+if (
+  pathWithoutLocale === "/"
+) {
+  return `/${locale}`;
+}
 
   return (
     `/${locale}${pathWithoutLocale}`
