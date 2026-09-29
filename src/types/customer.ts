@@ -37,7 +37,6 @@ import type {
   CurrencyCode,
   IsoDate,
   IsoDateTime,
-  LocalizedText,
   Money,
   PostalAddress,
   RequestId,
