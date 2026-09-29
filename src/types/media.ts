@@ -73,10 +73,6 @@ import type {
 } from "@/types/common";
 
 import type {
-  SupportedLocale,
-} from "@/config/site";
-
-import type {
   RestaurantId,
 } from "@/types/restaurant";
 
