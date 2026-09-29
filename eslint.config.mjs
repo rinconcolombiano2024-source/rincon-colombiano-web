@@ -146,8 +146,12 @@ const eslintConfig = defineConfig([
        * ======================================================
        */
 
-      "dot-notation": "error",
-
+     "dot-notation": [
+  "error",
+  {
+    allowPattern: "^[A-Z][A-Z0-9_]*$",
+  },
+],
       "no-multi-assign": "error",
 
       "no-sequences": "error",
