@@ -2444,13 +2444,10 @@ function normalizePath(
     return "/";
   }
 
-  return (
-    "/" +
-    path
-      .split("/")
-      .filter(Boolean)
-      .join("/")
-  );
+return `/${path
+  .split("/")
+  .filter(Boolean)
+  .join("/")}`;
 }
 
 
