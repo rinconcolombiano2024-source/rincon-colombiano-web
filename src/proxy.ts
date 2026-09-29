@@ -2,6 +2,11 @@ import {
   NextResponse,
   type NextRequest,
 } from "next/server";
+
+import {
+  updateSupabaseSession,
+} from "@/lib/supabase/proxy";
+
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE_NAME,
@@ -39,8 +44,10 @@ function shouldBypassLocaleRouting(
     string,
 ): boolean {
   if (
+    pathname ===
+      "/api" ||
     pathname.startsWith(
-      "/api",
+      "/api/",
     )
   ) {
     return true;
@@ -55,7 +62,8 @@ function shouldBypassLocaleRouting(
   }
 
   if (
-    pathname === "/admin" ||
+    pathname ===
+      "/admin" ||
     pathname.startsWith(
       "/admin/",
     )
@@ -70,7 +78,8 @@ function shouldBypassLocaleRouting(
    * /r/CODE
    */
   if (
-    pathname === "/r" ||
+    pathname ===
+      "/r" ||
     pathname.startsWith(
       "/r/",
     )
@@ -128,13 +137,30 @@ function setLocaleCookie(
    PROXY
    ============================================================ */
 
-export function proxy(
+export async function proxy(
   request:
     NextRequest,
-): NextResponse {
+): Promise<NextResponse> {
   const pathname =
     request.nextUrl
       .pathname;
+
+  /**
+   * The administration area keeps its own
+   * authentication/session lifecycle and must
+   * never enter the public locale routing.
+   */
+  if (
+    pathname ===
+      "/admin" ||
+    pathname.startsWith(
+      "/admin/",
+    )
+  ) {
+    return updateSupabaseSession(
+      request,
+    );
+  }
 
   if (
     shouldBypassLocaleRouting(
@@ -159,7 +185,8 @@ export function proxy(
    * El usuario puede cambiar después a ES/EN.
    */
   if (
-    pathname === "/"
+    pathname ===
+      "/"
   ) {
     const url =
       request.nextUrl.clone();
