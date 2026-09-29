@@ -252,7 +252,16 @@ function isJsonObject(
 /* ============================================================
    VALUE READERS
    ============================================================ */
-
+function readValue(
+  object:
+    JsonObject,
+  key:
+    string,
+): JsonValue | undefined {
+  return object[
+    key
+  ];
+}
 function readString(
   object:
     JsonObject,
@@ -1038,7 +1047,6 @@ async function fetchCatalogFallback(
 /* ============================================================
    BUILD DOMAIN CATALOG
    ============================================================ */
-
 function buildCatalog(
   location:
     RcOrderaLocationKey,
@@ -1051,9 +1059,10 @@ function buildCatalog(
 ): RcOrderaPublicCatalog {
   const categories =
     normalizeMenu(
-      row[
-        "menu"
-      ],
+      readValue(
+        row,
+        "menu",
+      ),
     );
 
   return {
@@ -1067,9 +1076,10 @@ function buildCatalog(
 
     settings:
       normalizeSettings(
-        row[
-          "settings"
-        ],
+        readValue(
+          row,
+          "settings",
+        ),
       ),
 
     productCount:
@@ -1078,7 +1088,6 @@ function buildCatalog(
       ),
   };
 }
-
 
 /* ============================================================
    LOAD PUBLIC CATALOG
