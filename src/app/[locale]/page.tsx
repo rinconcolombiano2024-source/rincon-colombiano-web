@@ -26,6 +26,13 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 
+import {
+  buildRcOrderaOrderUrl,
+} from "@/integrations/rc-ordera/config";
+
+import {
+  getRcOrderaPublicCatalog,
+} from "@/integrations/rc-ordera/public-catalog";
 
 /* ============================================================
    TYPES
@@ -2199,15 +2206,127 @@ export default async function HomePage({
     AppLocale =
     rawLocale;
 
-  const copy =
-    homeContent[
-      locale
-    ];
+const copy =
+  homeContent[
+    locale
+  ];
 
-  const orderHref =
-    siteConfig
-      .orderAppUrl ??
-    "#order";
+const rcOrderaCatalog =
+  await getRcOrderaPublicCatalog(
+    "czapelska",
+  );
+
+const orderHref =
+  buildRcOrderaOrderUrl(
+    "czapelska",
+  );
+
+const numberLocale =
+  locale ===
+  "pl"
+    ? "pl-PL"
+    : locale ===
+        "es"
+      ? "es-CO"
+      : "en-GB";
+
+const liveMenuItems =
+  rcOrderaCatalog
+    ? rcOrderaCatalog
+        .categories
+        .flatMap(
+          (
+            category,
+          ) =>
+            category
+              .products
+              .filter(
+                (
+                  product,
+                ) =>
+                  product
+                    .available,
+              )
+              .map(
+                (
+                  product,
+                ) => {
+                  const formattedPrice =
+                    new Intl.NumberFormat(
+                      numberLocale,
+                      {
+                        maximumFractionDigits:
+                          2,
+                      },
+                    ).format(
+                      product
+                        .price,
+                    );
+
+                  const price =
+                    rcOrderaCatalog
+                      .settings
+                      .currencyPosition ===
+                    "before"
+                      ? `${rcOrderaCatalog.settings.currencySymbol}${formattedPrice}`
+                      : `${formattedPrice} ${rcOrderaCatalog.settings.currencySymbol}`;
+
+                  return {
+                    key:
+                      product
+                        .id ??
+                      `${category.name}:${product.name}`,
+
+                    title:
+                      product
+                        .name,
+
+                    description:
+                      product
+                        .description,
+
+                    category:
+                      category
+                        .name,
+
+                    price,
+                  };
+                },
+              ),
+        )
+        .slice(
+          0,
+          6,
+        )
+    : [];
+
+const menuItems =
+  liveMenuItems.length >
+  0
+    ? liveMenuItems
+    : copy
+        .menu
+        .items
+        .map(
+          (
+            item,
+          ) => ({
+            key:
+              `fallback:${item.title}`,
+
+            title:
+              item.title,
+
+            description:
+              item.description,
+
+            category:
+              null,
+
+            price:
+              null,
+          }),
+        );
 
   const whatsappHref =
     getWhatsappHref(
@@ -3462,93 +3581,110 @@ export default async function HomePage({
                 xl:grid-cols-3
               "
             >
-              {copy
-                .menu
-                .items
-                .map(
-                  (
-                    item,
-                    index,
-                  ) => (
-                    <article
-                      key={
-                        item.title
-                      }
+              {menuItems.map(
+                (
+                  item,
+                  index,
+                ) => (
+                  <article
+                    key={
+                      item.key
+                    }
+                    className="
+                      relative
+                      min-h-60
+                      overflow-hidden
+                      rounded-[2rem]
+                      border
+                      border-[#e7e1d7]
+                      bg-white
+                      p-7
+                    "
+                  >
+                    <div
+                      className={`
+                        absolute
+                        right-5
+                        top-5
+                        size-20
+                        rounded-full
+                        ${
+                          index %
+                            3 ===
+                          0
+                            ? "bg-[#f7c600]/20"
+                            : index %
+                                  3 ===
+                                1
+                              ? "bg-[#123d73]/10"
+                              : "bg-[#c92d39]/10"
+                        }
+                      `}
+                      aria-hidden="true"
+                    />
+
+                    <span
                       className="
                         relative
-                        min-h-60
-                        overflow-hidden
-                        rounded-[2rem]
-                        border
-                        border-[#e7e1d7]
-                        bg-white
-                        p-7
+                        text-xs
+                        font-black
+                        text-[#a99e90]
                       "
                     >
-                      <div
-                        className={`
-                          absolute
-                          right-5
-                          top-5
-                          size-20
-                          rounded-full
-                          ${
-                            index %
-                              3 ===
-                            0
-                              ? "bg-[#f7c600]/20"
-                              : index %
-                                    3 ===
-                                  1
-                                ? "bg-[#123d73]/10"
-                                : "bg-[#c92d39]/10"
-                          }
-                        `}
-                        aria-hidden="true"
-                      />
-
-                      <span
-                        className="
-                          text-xs
-                          font-black
-                          text-[#a99e90]
-                        "
-                      >
-                        RC/
-                        {String(
+                      {item.category ??
+                        `RC/${String(
                           index +
                             1,
                         ).padStart(
                           2,
                           "0",
-                        )}
-                      </span>
+                        )}`}
+                    </span>
 
-                      <h3
+                    <h3
+                      className="
+                        relative
+                        mt-16
+                        text-2xl
+                      "
+                    >
+                      {item.title}
+                    </h3>
+
+                    <p
+                      className="
+                        relative
+                        mt-3
+                        leading-7
+                      "
+                    >
+                      {
+                        item
+                          .description
+                      }
+                    </p>
+
+                    {item.price ? (
+                      <div
                         className="
                           relative
-                          mt-16
-                          text-2xl
+                          mt-6
+                          inline-flex
+                          rounded-full
+                          bg-[#12100e]
+                          px-4
+                          py-2
+                          text-sm
+                          font-black
+                          text-white
                         "
                       >
-                        {item.title}
-                      </h3>
-
-                      <p
-                        className="
-                          relative
-                          mt-3
-                          leading-7
-                        "
-                      >
-                        {
-                          item
-                            .description
-                        }
-                      </p>
-                    </article>
-                  ),
-                )}
+                        {item.price}
+                      </div>
+                    ) : null}
+                  </article>
+                ),
+              )}
             </div>
 
             <div
