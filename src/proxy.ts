@@ -1,11 +1,7 @@
-import type {
-  NextRequest,
-} from "next/server";
-
 import {
   NextResponse,
+  type NextRequest,
 } from "next/server";
-
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE_NAME,
