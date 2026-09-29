@@ -1029,12 +1029,9 @@ export function buildWhatsAppUrl(
     return baseUrl;
   }
 
-  return (
-    `${baseUrl}?text=` +
-    encodeURIComponent(
-      message,
-    )
-  );
+return `${baseUrl}?text=${encodeURIComponent(
+  message,
+)}`;
 }
 
 
