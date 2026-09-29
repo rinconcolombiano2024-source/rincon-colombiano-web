@@ -46,13 +46,11 @@
 
 import type {
   AuditTimestamps,
-  EntityId,
   IsoDateTime,
   LocalizedText,
   RequestId,
   UserId,
 } from "@/types/common";
-
 import type {
   SupportedLocale,
 } from "@/config/site";
