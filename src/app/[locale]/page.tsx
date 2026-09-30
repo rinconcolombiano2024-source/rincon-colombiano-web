@@ -1,3 +1,6 @@
+import {
+  RinconAiWidget,
+} from "@/components/rincon-ai/RinconAiWidget";
 import type {
   Metadata,
 } from "next";
@@ -5682,6 +5685,11 @@ const menuItems =
           </div>
         </div>
       </footer>
+      <RinconAiWidget
+  locale={locale}
+  orderHref={orderHref}
+  contactHref={primaryContactHref}
+/>
     </>
   );
 }
