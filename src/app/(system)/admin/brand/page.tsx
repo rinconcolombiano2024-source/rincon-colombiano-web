@@ -956,17 +956,16 @@ export default async function BrandAdminPage({
 
 const successKey =
   getFirstSearchParam(
-    resolvedSearchParams[
-      "success"
-    ],
+    resolvedSearchParams
+      .success,
   );
 
 const errorKey =
   getFirstSearchParam(
-    resolvedSearchParams[
-      "error"
-    ],
+    resolvedSearchParams
+      .error,
   );
+  
 
   const successMessage =
     successKey
