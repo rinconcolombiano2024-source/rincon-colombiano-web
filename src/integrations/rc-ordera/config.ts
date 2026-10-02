@@ -350,6 +350,23 @@ export function buildRcOrderaOrderUrl(
       getRcOrderaPublicAppUrl(),
     );
 
+  /*
+   * El cliente debe aterrizar directamente
+   * en la interfaz pública de menú de RC ORDERA.
+   *
+   * Nunca enviamos al usuario a la portada
+   * genérica de la aplicación.
+   */
+  url.pathname =
+    "/cliente.html";
+
+  /*
+   * Eliminamos parámetros anteriores para evitar
+   * enlaces duplicados o inconsistentes.
+   */
+  url.search =
+    "";
+
   const restaurantId =
     getRcOrderaRestaurantId(
       location,
@@ -362,9 +379,19 @@ export function buildRcOrderaOrderUrl(
     );
   }
 
+  /*
+   * Versión actual del cliente RC ORDERA.
+   *
+   * Mantiene coherencia con la versión pública
+   * actualmente desplegada.
+   */
+  url.searchParams.set(
+    "app",
+    "v91.0.4",
+  );
+
   return url.toString();
 }
-
 
 /* ============================================================
    READINESS
