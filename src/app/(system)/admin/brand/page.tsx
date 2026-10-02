@@ -131,16 +131,28 @@ interface BrandAdminData {
 }
 
 
+interface BrandPageSearchParams {
+  readonly success?:
+    string |
+    readonly string[];
+
+  readonly error?:
+    string |
+    readonly string[];
+
+  readonly [key:
+    string]:
+    string |
+    readonly string[] |
+    undefined;
+}
+
+
 interface BrandPageProps {
   readonly searchParams:
     Promise<
       Readonly<
-        Record<
-          string,
-          string |
-          readonly string[] |
-          undefined
-        >
+        BrandPageSearchParams
       >
     >;
 }
