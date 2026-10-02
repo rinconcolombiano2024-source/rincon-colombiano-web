@@ -1,7 +1,7 @@
 import {
   redirect,
 } from "next/navigation";
-
+import Link from "next/link";
 import {
   getAdminAccess,
 } from "@/lib/admin/auth";
@@ -612,29 +612,29 @@ export default async function AdminLoginPage({
                 pt-5
               "
             >
-              <a
-                href="/pl"
-                className="
-                  inline-flex
-                  items-center
-                  text-sm
-                  font-bold
-                  text-[#123d73]
-                  transition
-                  hover:underline
-                "
-              >
-                <span
-                  className="
-                    mr-2
-                  "
-                  aria-hidden="true"
-                >
-                  ←
-                </span>
+            <Link
+  href="/pl"
+  className="
+    inline-flex
+    items-center
+    text-sm
+    font-bold
+    text-[#123d73]
+    transition
+    hover:underline
+  "
+>
+  <span
+    className="
+      mr-2
+    "
+    aria-hidden="true"
+  >
+    ←
+  </span>
 
-                Volver a la web pública
-              </a>
+  Volver a la web pública
+</Link>
             </div>
           </div>
         </section>
