@@ -21,11 +21,9 @@ import {
 
 import {
   getPublicRestaurants,
-  getRestaurantBySlug,
   type DayOfWeek,
   type Restaurant,
 } from "@/config/restaurants";
-
 import {
   isSupportedLocale,
   SUPPORTED_LOCALES,
