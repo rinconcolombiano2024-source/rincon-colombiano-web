@@ -26,7 +26,7 @@ export const revalidate =
    ============================================================ */
 
 type AdminModuleStatus =
-  | "next"
+  | "active"
   | "planned";
 
 
@@ -45,6 +45,9 @@ interface AdminModule {
 
   readonly status:
     AdminModuleStatus;
+
+  readonly href?:
+    `/admin${string}`;
 }
 
 
@@ -52,229 +55,388 @@ interface AdminModule {
    ADMIN MODULES
    ============================================================ */
 
-const ADMIN_MODULES:
-  readonly AdminModule[] = [
-    {
-      key:
-        "brand",
+const ADMIN_MODULES = [
+  {
+    key:
+      "brand",
 
-      eyebrow:
-        "MARCA",
+    eyebrow:
+      "MARCA",
 
-      title:
-        "Logo e identidad",
+    title:
+      "Logo e identidad",
 
-      description:
-        "Logo oficial, favicon, imágenes sociales, colores y recursos visuales de Rincón Colombiano.",
+    description:
+      "Logo oficial, favicon, imágenes sociales, colores y recursos visuales de Rincón Colombiano.",
 
-      status:
-        "next",
-    },
+    status:
+      "active",
 
-    {
-      key:
-        "content",
+    href:
+      "/admin/brand",
+  },
 
-      eyebrow:
-        "CONTENIDO",
+  {
+    key:
+      "content",
 
-      title:
-        "Página principal",
+    eyebrow:
+      "CONTENIDO",
 
-      description:
-        "Textos, secciones, historias, promociones y contenido publicado del sitio web.",
+    title:
+      "Página principal",
 
-      status:
-        "planned",
-    },
+    description:
+      "Textos, secciones, historias, promociones y contenido publicado del sitio web.",
 
-    {
-      key:
-        "media",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "MULTIMEDIA",
+  {
+    key:
+      "media",
 
-      title:
-        "Fotos y videos",
+    eyebrow:
+      "MULTIMEDIA",
 
-      description:
-        "Biblioteca central para fotografías, videos, platos, eventos, campañas e historias.",
+    title:
+      "Fotos y videos",
 
-      status:
-        "planned",
-    },
+    description:
+      "Biblioteca central para fotografías, videos, platos, eventos, campañas e historias.",
 
-    {
-      key:
-        "restaurants",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "RESTAURANTES",
+  {
+    key:
+      "restaurants",
 
-      title:
-        "Sedes",
+    eyebrow:
+      "RESTAURANTES",
 
-      description:
-        "Administración de Czapelska, Brzeska y futuras ubicaciones de Rincón Colombiano.",
+    title:
+      "Sedes",
 
-      status:
-        "planned",
-    },
+    description:
+      "Administración de Czapelska, Brzeska y futuras ubicaciones de Rincón Colombiano.",
 
-    {
-      key:
-        "menu",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "RC ORDERA",
+  {
+    key:
+      "menu",
 
-      title:
-        "Menú y pedidos",
+    eyebrow:
+      "RC ORDERA",
 
-      description:
-        "Integración del catálogo, disponibilidad y pedidos directamente con RC ORDERA.",
+    title:
+      "Menú y pedidos",
 
-      status:
-        "planned",
-    },
+    description:
+      "Integración del catálogo, disponibilidad y pedidos directamente con RC ORDERA.",
 
-    {
-      key:
-        "seo",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "SEO",
+  {
+    key:
+      "seo",
 
-      title:
-        "Posicionamiento",
+    eyebrow:
+      "SEO",
 
-      description:
-        "Páginas locales, metadatos, indexación, contenido gastronómico y crecimiento orgánico.",
+    title:
+      "Posicionamiento",
 
-      status:
-        "planned",
-    },
+    description:
+      "Páginas locales, metadatos, indexación, contenido gastronómico y crecimiento orgánico.",
 
-    {
-      key:
-        "events",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "VENTAS",
+  {
+    key:
+      "events",
 
-      title:
-        "Eventos y catering",
+    eyebrow:
+      "VENTAS",
 
-      description:
-        "Empresas, familias, cumpleaños, desayunos, sorpresas, decoración y eventos especiales.",
+    title:
+      "Eventos y catering",
 
-      status:
-        "planned",
-    },
+    description:
+      "Empresas, familias, cumpleaños, desayunos, sorpresas, decoración y eventos especiales.",
 
-    {
-      key:
-        "customers",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "CLIENTES",
+  {
+    key:
+      "customers",
 
-      title:
-        "CRM y atención",
+    eyebrow:
+      "CLIENTES",
 
-      description:
-        "Consultas, solicitudes, seguimiento, soporte y relación directa con los clientes.",
+    title:
+      "CRM y atención",
 
-      status:
-        "planned",
-    },
+    description:
+      "Consultas, solicitudes, seguimiento, soporte y relación directa con los clientes.",
 
-    {
-      key:
-        "rewards",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "FIDELIZACIÓN",
+  {
+    key:
+      "rewards",
 
-      title:
-        "Recompensas y referidos",
+    eyebrow:
+      "FIDELIZACIÓN",
 
-      description:
-        "Puntos, beneficios, referidos, códigos QR, validaciones y recompensas.",
+    title:
+      "Recompensas y referidos",
 
-      status:
-        "planned",
-    },
+    description:
+      "Puntos, beneficios, referidos, códigos QR, validaciones y recompensas.",
 
-    {
-      key:
-        "community",
+    status:
+      "planned",
+  },
 
-      eyebrow:
-        "COMUNIDAD",
+  {
+    key:
+      "community",
 
-      title:
-        "Red social",
+    eyebrow:
+      "COMUNIDAD",
 
-      description:
-        "Perfiles, publicaciones, historias, comentarios, reacciones y moderación.",
+    title:
+      "Red social",
 
-      status:
-        "planned",
-    },
+    description:
+      "Perfiles, publicaciones, historias, comentarios, reacciones y moderación.",
 
-    {
-      key:
-        "ai",
-
-      eyebrow:
-        "RINCÓN AI",
-
-      title:
-        "Asistente inteligente",
-
-      description:
-        "Atención, conocimiento del restaurante, soporte y futura automatización inteligente.",
-
-      status:
-        "planned",
-    },
-
-    {
-      key:
-        "analytics",
-
-      eyebrow:
-        "DATOS",
-
-      title:
-        "Analítica",
-
-      description:
-        "Tráfico, conversiones, campañas, SEO, pedidos y comportamiento de los usuarios.",
-
-      status:
-        "planned",
-    },
-
-    {
-      key:
-        "security",
-
-      eyebrow:
-        "SEGURIDAD",
-
-      title:
-        "Administradores",
-
-      description:
-        "Usuarios, roles, permisos, sesiones, auditoría y futura autenticación multifactor.",
-
-      status:
-        "planned",
-    },
-  ];
+    status:
+      "planned",
+  },
+
+  {
+    key:
+      "ai",
+
+    eyebrow:
+      "RINCÓN AI",
+
+    title:
+      "Asistente inteligente",
+
+    description:
+      "Atención, conocimiento del restaurante, soporte y futura automatización inteligente.",
+
+    status:
+      "planned",
+  },
+
+  {
+    key:
+      "analytics",
+
+    eyebrow:
+      "DATOS",
+
+    title:
+      "Analítica",
+
+    description:
+      "Tráfico, conversiones, campañas, SEO, pedidos y comportamiento de los usuarios.",
+
+    status:
+      "planned",
+  },
+
+  {
+    key:
+      "security",
+
+    eyebrow:
+      "SEGURIDAD",
+
+    title:
+      "Administradores",
+
+    description:
+      "Usuarios, roles, permisos, sesiones, auditoría y futura autenticación multifactor.",
+
+    status:
+      "planned",
+  },
+] as const satisfies readonly AdminModule[];
+
+
+/* ============================================================
+   SECURITY CONTROLS
+   ============================================================ */
+
+const SECURITY_CONTROLS = [
+  "Supabase Auth",
+  "Autorización servidor",
+  "Noindex / nofollow",
+  "Deny by default",
+] as const;
+
+
+/* ============================================================
+   ADMIN MODULE CARD
+   ============================================================ */
+
+function AdminModuleCard({
+  module,
+}: {
+  readonly module:
+    AdminModule;
+}) {
+  const isActive =
+    module.status ===
+      "active";
+
+  return (
+    <article
+      className={`
+        flex
+        min-h-full
+        flex-col
+        rounded-[1.5rem]
+        border
+        bg-white
+        p-5
+        shadow-sm
+        transition
+        ${
+          isActive
+            ? "border-[#f7c600] ring-2 ring-[#f7c600]/15"
+            : "border-black/5"
+        }
+      `}
+    >
+      <div
+        className="
+          flex
+          items-start
+          justify-between
+          gap-4
+        "
+      >
+        <span
+          className="
+            text-[0.65rem]
+            font-black
+            tracking-[0.13em]
+            text-[#123d73]
+            uppercase
+          "
+        >
+          {module.eyebrow}
+        </span>
+
+        <span
+          className={`
+            rounded-full
+            px-2.5
+            py-1
+            text-[0.6rem]
+            font-black
+            tracking-[0.08em]
+            uppercase
+            ${
+              isActive
+                ? "bg-[#f7c600] text-[#12100e]"
+                : "bg-[#f4f1eb] text-[#756b61]"
+            }
+          `}
+        >
+          {
+            isActive
+              ? "Activo"
+              : "Planificado"
+          }
+        </span>
+      </div>
+
+      <h3
+        className="
+          mt-4
+          font-serif
+          text-xl
+          font-bold
+        "
+      >
+        {module.title}
+      </h3>
+
+      <p
+        className="
+          mt-2
+          flex-1
+          text-sm
+          leading-6
+          text-[#62594f]
+        "
+      >
+        {module.description}
+      </p>
+
+      {
+        module.href
+          ? (
+              <Link
+                href={
+                  module.href
+                }
+                className="
+                  mt-5
+                  inline-flex
+                  min-h-10
+                  items-center
+                  justify-center
+                  self-start
+                  rounded-full
+                  bg-[#123d73]
+                  px-4
+                  text-xs
+                  font-black
+                  text-white
+                  transition
+                  hover:-translate-y-0.5
+                  hover:bg-[#0e315d]
+                  focus-visible:outline-2
+                  focus-visible:outline-offset-2
+                  focus-visible:outline-[#123d73]
+                "
+              >
+                Abrir módulo
+
+                <span
+                  className="ml-2"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </Link>
+            )
+          : null
+      }
+    </article>
+  );
+}
 
 
 /* ============================================================
@@ -282,7 +444,7 @@ const ADMIN_MODULES:
    ============================================================ */
 
 export default async function AdminDashboardPage() {
-  /*
+  /**
    * Barrera real de autorización.
    *
    * Si no existe una sesión administrativa válida,
@@ -301,7 +463,7 @@ export default async function AdminDashboardPage() {
       "
     >
       {/* ====================================================
-          COLOMBIAN BRAND STRIPE
+          BRAND STRIPE
           ==================================================== */}
 
       <div
@@ -335,9 +497,11 @@ export default async function AdminDashboardPage() {
             site-container
             flex
             min-h-20
+            flex-wrap
             items-center
             justify-between
-            gap-5
+            gap-4
+            py-4
           "
         >
           <div
@@ -351,6 +515,7 @@ export default async function AdminDashboardPage() {
               className="
                 grid
                 size-11
+                shrink-0
                 place-items-center
                 rounded-2xl
                 bg-[#f7c600]
@@ -518,8 +683,8 @@ export default async function AdminDashboardPage() {
                   sm:text-lg
                 "
               >
-                Desde aquí construiremos y administraremos la
-                marca, el contenido, las sedes, el menú,
+                La administración central para gestionar
+                identidad, contenido, restaurantes, menú,
                 multimedia, posicionamiento, clientes,
                 comunidad, recompensas y tecnología de
                 Rincón Colombiano.
@@ -572,7 +737,7 @@ export default async function AdminDashboardPage() {
 
 
         {/* ==================================================
-            CURRENT PRIORITY
+            ACTIVE MODULE
             ================================================== */}
 
         <section
@@ -585,6 +750,7 @@ export default async function AdminDashboardPage() {
             bg-white
             shadow-sm
           "
+          aria-labelledby="active-brand-module"
         >
           <div
             className="
@@ -607,10 +773,11 @@ export default async function AdminDashboardPage() {
                   uppercase
                 "
               >
-                Siguiente módulo
+                Módulo activo
               </p>
 
               <h2
+                id="active-brand-module"
                 className="
                   mt-4
                   font-serif
@@ -631,9 +798,10 @@ export default async function AdminDashboardPage() {
                   text-[#4b4238]
                 "
               >
-                Aquí construiremos la administración del logo
-                oficial, favicon, identidad visual e imágenes
-                sociales de Rincón Colombiano.
+                Administra el logo oficial, favicon,
+                variantes, imágenes sociales y recursos
+                visuales de Rincón Colombiano desde una
+                zona privada.
               </p>
             </div>
 
@@ -668,29 +836,45 @@ export default async function AdminDashboardPage() {
                     text-[#62594f]
                   "
                 >
-                  El próximo paso será crear
-                  <strong>
-                    {" /admin/brand "}
-                  </strong>
-                  y conectar la gestión de los recursos
-                  visuales de la marca.
+                  El módulo de identidad visual ya está
+                  construido. Desde aquí podrás administrar
+                  el logo principal, variantes, favicon e
+                  imágenes sociales sin editar el código
+                  fuente.
                 </p>
 
-                <span
+                <Link
+                  href="/admin/brand"
                   className="
                     mt-5
                     inline-flex
+                    min-h-11
+                    items-center
+                    justify-center
                     rounded-full
-                    bg-[#123d73]/10
-                    px-4
-                    py-2
+                    bg-[#123d73]
+                    px-5
                     text-xs
                     font-black
-                    text-[#123d73]
+                    text-white
+                    shadow-sm
+                    transition
+                    hover:-translate-y-0.5
+                    hover:bg-[#0e315d]
+                    focus-visible:outline-2
+                    focus-visible:outline-offset-2
+                    focus-visible:outline-[#123d73]
                   "
                 >
-                  Próximo en desarrollo
-                </span>
+                  Abrir Marca e identidad
+
+                  <span
+                    className="ml-2"
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
@@ -702,9 +886,7 @@ export default async function AdminDashboardPage() {
             ================================================== */}
 
         <section
-          className="
-            mt-10
-          "
+          className="mt-10"
           aria-labelledby="admin-modules-title"
         >
           <div
@@ -768,98 +950,16 @@ export default async function AdminDashboardPage() {
               ADMIN_MODULES.map(
                 (
                   module,
-                ) => {
-                  const isNext =
-                    module.status ===
-                      "next";
-
-                  return (
-                    <article
-                      key={
-                        module.key
-                      }
-                      className={`
-                        rounded-[1.5rem]
-                        border
-                        bg-white
-                        p-5
-                        shadow-sm
-                        transition
-                        ${
-                          isNext
-                            ? "border-[#f7c600] ring-2 ring-[#f7c600]/15"
-                            : "border-black/5"
-                        }
-                      `}
-                    >
-                      <div
-                        className="
-                          flex
-                          items-start
-                          justify-between
-                          gap-4
-                        "
-                      >
-                        <span
-                          className="
-                            text-[0.65rem]
-                            font-black
-                            tracking-[0.13em]
-                            text-[#123d73]
-                            uppercase
-                          "
-                        >
-                          {module.eyebrow}
-                        </span>
-
-                        <span
-                          className={`
-                            rounded-full
-                            px-2.5
-                            py-1
-                            text-[0.6rem]
-                            font-black
-                            tracking-[0.08em]
-                            uppercase
-                            ${
-                              isNext
-                                ? "bg-[#f7c600] text-[#12100e]"
-                                : "bg-[#f4f1eb] text-[#756b61]"
-                            }
-                          `}
-                        >
-                          {
-                            isNext
-                              ? "Siguiente"
-                              : "Preparado"
-                          }
-                        </span>
-                      </div>
-
-                      <h3
-                        className="
-                          mt-4
-                          font-serif
-                          text-xl
-                          font-bold
-                        "
-                      >
-                        {module.title}
-                      </h3>
-
-                      <p
-                        className="
-                          mt-2
-                          text-sm
-                          leading-6
-                          text-[#62594f]
-                        "
-                      >
-                        {module.description}
-                      </p>
-                    </article>
-                  );
-                },
+                ) => (
+                  <AdminModuleCard
+                    key={
+                      module.key
+                    }
+                    module={
+                      module
+                    }
+                  />
+                ),
               )
             }
           </div>
@@ -879,6 +979,7 @@ export default async function AdminDashboardPage() {
             text-white
             sm:p-8
           "
+          aria-labelledby="admin-security-title"
         >
           <p
             className="
@@ -893,6 +994,7 @@ export default async function AdminDashboardPage() {
           </p>
 
           <h2
+            id="admin-security-title"
             className="
               mt-3
               font-serif
@@ -902,6 +1004,21 @@ export default async function AdminDashboardPage() {
           >
             Base administrativa protegida
           </h2>
+
+          <p
+            className="
+              mt-3
+              max-w-3xl
+              text-sm
+              leading-6
+              text-white/60
+            "
+          >
+            El panel utiliza autenticación y autorización
+            del lado del servidor. La metadata de robots
+            evita indexación, pero no se utiliza como
+            mecanismo de seguridad.
+          </p>
 
           <div
             className="
@@ -913,12 +1030,7 @@ export default async function AdminDashboardPage() {
             "
           >
             {
-              [
-                "Supabase Auth",
-                "Autorización servidor",
-                "Noindex / nofollow",
-                "Deny by default",
-              ].map(
+              SECURITY_CONTROLS.map(
                 (
                   item,
                 ) => (
@@ -987,16 +1099,35 @@ export default async function AdminDashboardPage() {
             Rincón Colombiano • Administración privada
           </span>
 
-          <Link
-            href="/pl"
+          <div
             className="
-              font-bold
-              text-[#123d73]
-              hover:underline
+              flex
+              flex-wrap
+              gap-4
             "
           >
-            Ver sitio público →
-          </Link>
+            <Link
+              href="/admin/brand"
+              className="
+                font-bold
+                text-[#123d73]
+                hover:underline
+              "
+            >
+              Marca e identidad
+            </Link>
+
+            <Link
+              href="/pl"
+              className="
+                font-bold
+                text-[#123d73]
+                hover:underline
+              "
+            >
+              Ver sitio público →
+            </Link>
+          </div>
         </footer>
       </div>
     </main>
