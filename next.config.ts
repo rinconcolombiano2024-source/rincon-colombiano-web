@@ -68,6 +68,25 @@ if (isProduction) {
 }
 
 const nextConfig: NextConfig = {
+    /**
+   * Server Actions
+   *
+   * Las imágenes administrativas de marca pueden pesar
+   * varios MB. Next.js limita por defecto las Server Actions
+   * a 1 MB, lo cual impediría que nuestro propio límite de
+   * 4 MB llegue siquiera a ejecutarse.
+   *
+   * Vercel mantiene un límite de payload de 4.5 MB.
+   * Dejamos margen de seguridad para multipart/form-data.
+   *
+   * Archivos multimedia grandes y videos utilizarán después
+   * carga directa a Storage y no atravesarán la Function.
+   */
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "4.25mb",
+    },
+  },
   /**
    * React
    */
