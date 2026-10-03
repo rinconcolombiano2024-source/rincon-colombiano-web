@@ -66,6 +66,8 @@ export type RcOrderaEnvironmentRequirement =
 const RC_ORDERA_DEFAULT_APP_URL =
   "https://rincon-colombiano-pedidosapp.vercel.app";
 
+const RC_ORDERA_CZAPELSKA_DEFAULT_RESTAURANT_ID =
+  "9702bf42-2f50-46b2-8f8a-d5f80ba576d5";
 
 const RC_ORDERA_DEFAULT_TIMEOUT_MS =
   8_000;
@@ -250,27 +252,44 @@ export function getRcOrderaRestaurantId(
       ? "CZAPELSKA_LOCATION_ID"
       : "BRZESKA_LOCATION_ID";
 
-  const value =
+  const configuredValue =
     readEnvironmentVariable(
       environmentVariable,
     );
 
-  if (!value) {
-    return null;
-  }
-
   if (
-    !UUID_PATTERN.test(
-      value,
+    configuredValue &&
+    UUID_PATTERN.test(
+      configuredValue,
     )
   ) {
-    return null;
+    return configuredValue;
   }
 
-  return value;
+  /*
+   * Czapelska 33 es actualmente la sede pública
+   * principal de Rincón Colombiano.
+   *
+   * Su UUID no es un secreto y constituye parte
+   * de la URL pública de RC ORDERA.
+   *
+   * Mantener este fallback evita que una variable
+   * de entorno ausente provoque que los clientes
+   * lleguen a RC ORDERA sin restaurante seleccionado.
+   */
+  if (
+    location ===
+    "czapelska"
+  ) {
+    return RC_ORDERA_CZAPELSKA_DEFAULT_RESTAURANT_ID;
+  }
+
+  /*
+   * Brzeska permanece sin fallback mientras no
+   * esté abierta y configurada oficialmente.
+   */
+  return null;
 }
-
-
 /* ============================================================
    SERVER CONNECTION
    ============================================================ */
@@ -332,14 +351,19 @@ export function getRcOrderaServerConfig():
    ============================================================ */
 
 /**
- * Construye el enlace directo hacia una sede concreta.
+ * Construye el enlace directo al menú público de RC ORDERA
+ * para una sede concreta.
  *
  * Ejemplo:
  *
- * https://...vercel.app/?store=<restaurant_user_id>
+ * https://...vercel.app/cliente.html?store=<restaurant_user_id>&app=v91.0.4
  *
- * Si la sede todavía no dispone de restaurant_user_id,
- * devuelve simplemente la página principal de RC ORDERA.
+ * Czapelska dispone de un UUID público de respaldo para evitar
+ * que una configuración de entorno incompleta envíe al cliente
+ * a RC ORDERA sin restaurante seleccionado.
+ *
+ * Las sedes que todavía no tengan un restaurant_user_id
+ * configurado no reciben un identificador inventado.
  */
 export function buildRcOrderaOrderUrl(
   location:
