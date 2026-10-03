@@ -24,6 +24,10 @@ import {
 } from "@/config/site";
 
 import {
+  getPrimaryBrandLogo,
+} from "@/lib/brand/public-brand";
+
+import {
   SUPPORTED_LOCALES,
   isSupportedLocale,
   type AppLocale,
@@ -2214,11 +2218,17 @@ const copy =
     locale
   ];
 
-const rcOrderaCatalog =
-  await getRcOrderaPublicCatalog(
-    "czapelska",
-  );
+const [
+  rcOrderaCatalog,
+  primaryBrandLogo,
+] =
+  await Promise.all([
+    getRcOrderaPublicCatalog(
+      "czapelska",
+    ),
 
+    getPrimaryBrandLogo(),
+  ]);
 const orderHref =
   buildRcOrderaOrderUrl(
     "czapelska",
@@ -2427,23 +2437,47 @@ const menuItems =
             "
             aria-label="Rincón Colombiano"
           >
-            <span
-              className="
-                grid
-                size-11
-                place-items-center
-                rounded-full
-                bg-[#f7c600]
-                text-sm
-                font-black
-                text-[#12100e]
-                shadow-sm
-              "
-              aria-hidden="true"
-            >
-              RC
-            </span>
-
+{
+  primaryBrandLogo
+    ? (
+        <span
+          className="
+            block
+            h-14
+            w-20
+            shrink-0
+            bg-contain
+            bg-center
+            bg-no-repeat
+            sm:w-24
+          "
+          style={{
+            backgroundImage:
+              `url("${primaryBrandLogo.publicUrl}")`,
+          }}
+          aria-hidden="true"
+        />
+      )
+    : (
+        <span
+          className="
+            grid
+            size-11
+            shrink-0
+            place-items-center
+            rounded-full
+            bg-[#f7c600]
+            text-sm
+            font-black
+            text-[#12100e]
+            shadow-sm
+          "
+          aria-hidden="true"
+        >
+          RC
+        </span>
+      )
+}
             <span
               className="
                 leading-none
@@ -5494,20 +5528,45 @@ const menuItems =
                 gap-3
               "
             >
-              <span
-                className="
-                  grid
-                  size-12
-                  place-items-center
-                  rounded-full
-                  bg-[#f7c600]
-                  text-sm
-                  font-black
-                  text-[#12100e]
-                "
-              >
-                RC
-              </span>
+{
+  primaryBrandLogo
+    ? (
+        <span
+          className="
+            block
+            h-16
+            w-28
+            shrink-0
+            bg-contain
+            bg-left
+            bg-no-repeat
+          "
+          style={{
+            backgroundImage:
+              `url("${primaryBrandLogo.publicUrl}")`,
+          }}
+          aria-hidden="true"
+        />
+      )
+    : (
+        <span
+          className="
+            grid
+            size-12
+            shrink-0
+            place-items-center
+            rounded-full
+            bg-[#f7c600]
+            text-sm
+            font-black
+            text-[#12100e]
+          "
+          aria-hidden="true"
+        >
+          RC
+        </span>
+      )
+}
 
               <strong
                 className="
