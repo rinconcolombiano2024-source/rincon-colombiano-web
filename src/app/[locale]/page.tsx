@@ -24,9 +24,11 @@ import {
 } from "@/config/site";
 
 import {
+  getBrandHeroImage,
   getBrandOpenGraphImage,
   getPrimaryBrandLogo,
 } from "@/lib/brand/public-brand";
+
 import {
   SUPPORTED_LOCALES,
   isSupportedLocale,
@@ -2273,6 +2275,7 @@ const copy =
 const [
   rcOrderaCatalog,
   primaryBrandLogo,
+  heroBrandImage,
 ] =
   await Promise.all([
     getRcOrderaPublicCatalog(
@@ -2280,6 +2283,8 @@ const [
     ),
 
     getPrimaryBrandLogo(),
+
+    getBrandHeroImage(),
   ]);
 const orderHref =
   buildRcOrderaOrderUrl(
@@ -3078,141 +3083,194 @@ const menuItems =
             </div>
 
 
+{
+  heroBrandImage
+    ? (
+        <div
+          role="img"
+          aria-label={
+            heroBrandImage.altText ||
+            "Rincón Colombiano — restaurante colombiano en Varsovia"
+          }
+          className="
+            relative
+            min-h-[31rem]
+            overflow-hidden
+            rounded-[2.5rem]
+            bg-[#12100e]
+            bg-cover
+            bg-center
+            bg-no-repeat
+            shadow-[0_30px_90px_rgba(18,16,14,0.24)]
+          "
+          style={{
+            backgroundImage:
+              `url("${heroBrandImage.publicUrl}")`,
+          }}
+        >
+          <div
+            className="
+              absolute
+              inset-x-0
+              top-0
+              h-2
+              bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
+            "
+            aria-hidden="true"
+          />
+
+          <div
+            className="
+              pointer-events-none
+              absolute
+              inset-0
+              bg-gradient-to-t
+              from-black/25
+              via-transparent
+              to-transparent
+            "
+            aria-hidden="true"
+          />
+        </div>
+      )
+    : (
+        <div
+          className="
+            relative
+            min-h-[31rem]
+            overflow-hidden
+            rounded-[2.5rem]
+            bg-[#12100e]
+            p-5
+            shadow-[0_30px_90px_rgba(18,16,14,0.24)]
+            sm:p-7
+          "
+        >
+          <div
+            className="
+              absolute
+              inset-x-0
+              top-0
+              h-2
+              bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
+            "
+          />
+
+          <div
+            className="
+              grid
+              h-full
+              min-h-[27rem]
+              grid-cols-2
+              gap-3
+            "
+          >
             <div
               className="
-                relative
-                min-h-[31rem]
-                overflow-hidden
-                rounded-[2.5rem]
-                bg-[#12100e]
-                p-5
-                shadow-[0_30px_90px_rgba(18,16,14,0.24)]
-                sm:p-7
+                col-span-2
+                flex
+                min-h-44
+                flex-col
+                justify-end
+                rounded-[1.75rem]
+                bg-[#f7c600]
+                p-6
               "
             >
-              <div
+              <span
                 className="
-                  absolute
-                  inset-x-0
-                  top-0
-                  h-2
-                  bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
-                "
-              />
-
-              <div
-                className="
-                  grid
-                  h-full
-                  min-h-[27rem]
-                  grid-cols-2
-                  gap-3
+                  text-xs
+                  font-black
+                  tracking-[0.15em]
+                  uppercase
                 "
               >
-                <div
-                  className="
-                    col-span-2
-                    flex
-                    min-h-44
-                    flex-col
-                    justify-end
-                    rounded-[1.75rem]
-                    bg-[#f7c600]
-                    p-6
-                  "
-                >
-                  <span
-                    className="
-                      text-xs
-                      font-black
-                      tracking-[0.15em]
-                      uppercase
-                    "
-                  >
-                    Rincón
-                  </span>
+                Rincón
+              </span>
 
-                  <strong
-                    className="
-                      mt-2
-                      max-w-md
-                      font-serif
-                      text-3xl
-                      leading-none
-                    "
-                  >
-                    Gastronomía que cuenta una historia.
-                  </strong>
-                </div>
+              <strong
+                className="
+                  mt-2
+                  max-w-md
+                  font-serif
+                  text-3xl
+                  leading-none
+                "
+              >
+                Gastronomía que cuenta una historia.
+              </strong>
+            </div>
 
-                <div
-                  className="
-                    flex
-                    min-h-52
-                    flex-col
-                    justify-between
-                    rounded-[1.75rem]
-                    bg-[#123d73]
-                    p-5
-                    text-white
-                  "
-                >
-                  <span
-                    className="
-                      text-4xl
-                      font-black
-                      text-white/25
-                    "
-                    aria-hidden="true"
-                  >
-                    01
-                  </span>
+            <div
+              className="
+                flex
+                min-h-52
+                flex-col
+                justify-between
+                rounded-[1.75rem]
+                bg-[#123d73]
+                p-5
+                text-white
+              "
+            >
+              <span
+                className="
+                  text-4xl
+                  font-black
+                  text-white/25
+                "
+                aria-hidden="true"
+              >
+                01
+              </span>
 
-                  <strong
-                    className="
-                      text-xl
-                      text-white
-                    "
-                  >
-                    RC ORDERA
-                  </strong>
-                </div>
+              <strong
+                className="
+                  text-xl
+                  text-white
+                "
+              >
+                RC ORDERA
+              </strong>
+            </div>
 
-                <div
-                  className="
-                    flex
-                    min-h-52
-                    flex-col
-                    justify-between
-                    rounded-[1.75rem]
-                    bg-[#c92d39]
-                    p-5
-                    text-white
-                  "
-                >
-                  <span
-                    className="
-                      text-4xl
-                      font-black
-                      text-white/25
-                    "
-                    aria-hidden="true"
-                  >
-                    02
-                  </span>
+            <div
+              className="
+                flex
+                min-h-52
+                flex-col
+                justify-between
+                rounded-[1.75rem]
+                bg-[#c92d39]
+                p-5
+                text-white
+              "
+            >
+              <span
+                className="
+                  text-4xl
+                  font-black
+                  text-white/25
+                "
+                aria-hidden="true"
+              >
+                02
+              </span>
 
-                  <strong
-                    className="
-                      text-xl
-                      text-white
-                    "
-                  >
-                    Community
-                  </strong>
-                </div>
-              </div>
+              <strong
+                className="
+                  text-xl
+                  text-white
+                "
+              >
+                Community
+              </strong>
             </div>
           </div>
+        </div>
+      )
+}
+            </div>
         </section>
 
 
