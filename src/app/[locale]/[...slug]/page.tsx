@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import {
   notFound,
+  redirect,
 } from "next/navigation";
 
 import {
@@ -592,7 +593,30 @@ function routeSegmentsMatch(
     )
   );
 }
+function isOrderRoute(
+  locale:
+    AppLocale,
+  slugSegments:
+    readonly string[],
+): boolean {
+  const orderPath =
+    buildRoutePath(
+      "order",
+      locale,
+    );
 
+  const expectedSegments =
+    getDecodedRouteSegments(
+      orderPath,
+    ).slice(
+      1,
+    );
+
+  return routeSegmentsMatch(
+    slugSegments,
+    expectedSegments,
+  );
+}
 
 function getRestaurantFromRoute(
   locale:
@@ -1089,15 +1113,28 @@ export default async function RestaurantPage({
     notFound();
   }
 
-  const locale:
-    AppLocale =
-    rawLocale;
+ const locale:
+  AppLocale =
+  rawLocale;
 
-  const restaurant =
-    getRestaurantFromRoute(
-      locale,
-      slug,
-    );
+if (
+  isOrderRoute(
+    locale,
+    slug,
+  )
+) {
+  redirect(
+    buildRcOrderaOrderUrl(
+      "czapelska",
+    ),
+  );
+}
+
+const restaurant =
+  getRestaurantFromRoute(
+    locale,
+    slug,
+  );
 
   if (
     !restaurant
