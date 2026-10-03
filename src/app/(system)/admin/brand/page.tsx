@@ -42,6 +42,7 @@ const BRAND_SLOTS = [
   "favicon",
   "open_graph",
   "social_square",
+  "hero_primary",
 ] as const;
 
 
