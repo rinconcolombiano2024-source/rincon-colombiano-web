@@ -12,7 +12,7 @@ import {
 } from "next/navigation";
 
 import {
-  buildHomeMetadata,
+  buildRouteMetadata,
 } from "@/config/seo";
 
 import {
@@ -24,9 +24,9 @@ import {
 } from "@/config/site";
 
 import {
+  getBrandOpenGraphImage,
   getPrimaryBrandLogo,
 } from "@/lib/brand/public-brand";
-
 import {
   SUPPORTED_LOCALES,
   isSupportedLocale,
@@ -2114,6 +2114,7 @@ export async function generateMetadata({
   } =
     await params;
 
+
   if (
     !isSupportedLocale(
       rawLocale,
@@ -2122,8 +2123,59 @@ export async function generateMetadata({
     return {};
   }
 
-  return buildHomeMetadata(
+
+  /*
+   * Prioridad de identidad social:
+   *
+   * 1. open_graph publicado específicamente;
+   * 2. logo_primary como fallback;
+   * 3. metadata sin imagen si Supabase no está disponible.
+   *
+   * La ausencia temporal de Storage nunca debe impedir
+   * renderizar ni indexar correctamente la página.
+   */
+  const [
+    openGraphImage,
+    primaryBrandLogo,
+  ] =
+    await Promise.all([
+      getBrandOpenGraphImage(),
+      getPrimaryBrandLogo(),
+    ]);
+
+
+  const socialImage =
+    openGraphImage ??
+    primaryBrandLogo;
+
+
+  return buildRouteMetadata(
+    "home",
     rawLocale,
+    {
+      ...(
+        socialImage
+          ? {
+              images: [
+                {
+                  url:
+                    socialImage
+                      .publicUrl,
+
+                  alt:
+                    socialImage
+                      .altText ||
+                    "Rincón Colombiano",
+
+                  type:
+                    socialImage
+                      .mimeType,
+                },
+              ],
+            }
+          : {}
+      ),
+    },
   );
 }
 
