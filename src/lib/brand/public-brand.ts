@@ -31,6 +31,7 @@ export const BRAND_SLOTS = [
   "favicon",
   "open_graph",
   "social_square",
+  "hero_primary",
 ] as const;
 
 
@@ -740,5 +741,11 @@ export async function getBrandOpenGraphImage():
   Promise<PublishedBrandAsset | null> {
   return getPublishedBrandAsset(
     "open_graph",
+  );
+}
+export async function getBrandHeroImage():
+  Promise<PublishedBrandAsset | null> {
+  return getPublishedBrandAsset(
+    "hero_primary",
   );
 }
