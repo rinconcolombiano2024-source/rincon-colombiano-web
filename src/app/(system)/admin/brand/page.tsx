@@ -224,13 +224,21 @@ const SLOT_LABELS:
       "Imagen horizontal utilizada al compartir la web en redes y mensajería.",
   },
 
-  social_square: {
-    title:
-      "Imagen social cuadrada",
+social_square: {
+  title:
+    "Imagen social cuadrada",
 
-    description:
-      "Recurso cuadrado para perfiles, campañas y publicaciones sociales.",
-  },
+  description:
+    "Recurso cuadrado para perfiles, campañas y publicaciones sociales.",
+},
+
+hero_primary: {
+  title:
+    "Hero principal",
+
+  description:
+    "Imagen principal visible en la portada de Rincón Colombiano. Se administra independientemente del logo y de Open Graph.",
+},
 };
 
 
@@ -280,9 +288,6 @@ const ERROR_MESSAGES:
 
   "unsupported-file":
     "El formato del archivo no está permitido para este recurso.",
-
-  "mime-mismatch":
-    "El contenido real del archivo no coincide con el tipo declarado.",
 
   "alt-too-long":
     "El texto alternativo supera el máximo permitido.",
