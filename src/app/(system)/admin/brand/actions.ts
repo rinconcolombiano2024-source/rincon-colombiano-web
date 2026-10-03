@@ -58,6 +58,7 @@ const BRAND_SLOTS = [
   "favicon",
   "open_graph",
   "social_square",
+  "hero_primary",
 ] as const;
 
 export type BrandSlot =
@@ -461,14 +462,17 @@ function getDefaultAltText(
     case "open_graph":
       return "Rincón Colombiano — Sabor y tradición";
 
-    case "social_square":
-      return "Rincón Colombiano";
+case "social_square":
+  return "Rincón Colombiano";
 
-    case "logo_primary":
-    case "logo_compact":
-    case "logo_light":
-    case "logo_dark":
-      return "Logo de Rincón Colombiano";
+case "hero_primary":
+  return "Rincón Colombiano — restaurante colombiano en Varsovia";
+
+case "logo_primary":
+case "logo_compact":
+case "logo_light":
+case "logo_dark":
+  return "Logo de Rincón Colombiano";
   }
 }
 
