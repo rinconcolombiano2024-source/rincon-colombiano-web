@@ -30,25 +30,17 @@ const BRAND_BUCKET =
   "web-brand-assets";
 
 /**
- * Aunque Storage permite hasta 8 MB, limitamos el formulario
- * administrativo inicialmente a 4 MB.
+ * Debe mantenerse por debajo del límite configurado
+ * para Server Actions y del límite de payload de Vercel.
  *
- * Motivos:
- * - logos no deberían necesitar archivos gigantes;
- * - reduce abuso;
- * - reduce memoria;
- * - evita acercarnos a límites de plataforma.
- *
- * Para videos y multimedia construiremos posteriormente
- * uploads directos/resumibles especializados.
+ * Multimedia pesada y videos deberán utilizar posteriormente
+ * upload directo/resumible hacia Storage.
  */
 const MAX_BRAND_FILE_BYTES =
   4 * 1024 * 1024;
 
-
 const MAX_ALT_TEXT_LENGTH =
   300;
-
 
 const MAX_ORIGINAL_NAME_LENGTH =
   255;
@@ -68,7 +60,6 @@ const BRAND_SLOTS = [
   "social_square",
 ] as const;
 
-
 export type BrandSlot =
   (typeof BRAND_SLOTS)[number];
 
@@ -77,6 +68,14 @@ export type BrandSlot =
    MIME TYPES
    ============================================================ */
 
+/**
+ * Importante:
+ *
+ * Esta lista NO significa que confiemos en file.type.
+ *
+ * El formato real se determina leyendo la firma binaria
+ * del archivo recibido por el servidor.
+ */
 const BRAND_MIME_TYPES = [
   "image/png",
   "image/jpeg",
@@ -85,7 +84,6 @@ const BRAND_MIME_TYPES = [
   "image/x-icon",
   "image/vnd.microsoft.icon",
 ] as const;
-
 
 type BrandMimeType =
   (typeof BRAND_MIME_TYPES)[number];
@@ -151,6 +149,11 @@ function isBrandSlot(
    FILE NAME
    ============================================================ */
 
+/**
+ * El nombre original se conserva únicamente como metadata.
+ *
+ * Nunca se utiliza como ruta real de Storage.
+ */
 function sanitizeOriginalFileName(
   value:
     string,
@@ -243,13 +246,19 @@ function asciiAt(
    ============================================================ */
 
 /**
- * Nunca confiamos únicamente en:
+ * Detecta el formato utilizando bytes reales.
  *
- * file.type
- * file.name
- * extensión
+ * NO confiamos como fuente de verdad en:
  *
- * Comprobamos también la firma binaria del archivo.
+ * - file.type;
+ * - extensión;
+ * - nombre;
+ * - Content-Type enviado por navegador.
+ *
+ * Esto evita el falso rechazo que estábamos viendo con
+ * archivos JPEG válidos enviados por determinados clientes.
+ *
+ * SVG no se admite deliberadamente.
  */
 function detectImageMimeType(
   bytes:
@@ -327,10 +336,12 @@ function detectImageMimeType(
 
 
   /*
-   * AVIF:
+   * AVIF
    *
-   * ISO Base Media File Format.
-   * Buscamos caja ftyp y marcas AVIF conocidas.
+   * ISO Base Media File Format:
+   *
+   * bytes 4-7  -> ftyp
+   * bytes 8-11 -> avif / avis
    */
   if (
     asciiAt(
@@ -359,111 +370,6 @@ function detectImageMimeType(
 }
 
 
-/* ============================================================
-   MIME COMPATIBILITY
-   ============================================================ */
-function isMimeCompatible(
-  declaredMime:
-    string,
-  detectedMime:
-    BrandMimeType,
-): boolean {
-  /*
-   * La firma binaria detectada por el servidor es la
-   * fuente de verdad.
-   *
-   * El MIME enviado por navegador/SO solamente se usa
-   * como comprobación adicional porque distintos clientes
-   * pueden enviar aliases válidos:
-   *
-   * image/jpeg
-   * image/jpg
-   * image/pjpeg
-   *
-   * También algunos navegadores/sistemas pueden enviar
-   * application/octet-stream o incluso ningún MIME.
-   */
-
-  const normalizedDeclaredMime =
-    declaredMime
-      .trim()
-      .toLowerCase();
-
-
-  /*
-   * MIME genérico o ausente.
-   *
-   * No lo rechazamos porque el contenido ya fue validado
-   * mediante firma binaria real.
-   */
-  if (
-    normalizedDeclaredMime.length ===
-      0 ||
-    normalizedDeclaredMime ===
-      "application/octet-stream"
-  ) {
-    return true;
-  }
-
-
-  /*
-   * JPEG aliases.
-   */
-  if (
-    detectedMime ===
-      "image/jpeg"
-  ) {
-    return (
-      normalizedDeclaredMime ===
-        "image/jpeg" ||
-      normalizedDeclaredMime ===
-        "image/jpg" ||
-      normalizedDeclaredMime ===
-        "image/pjpeg"
-    );
-  }
-
-
-  /*
-   * PNG alias histórico.
-   */
-  if (
-    detectedMime ===
-      "image/png"
-  ) {
-    return (
-      normalizedDeclaredMime ===
-        "image/png" ||
-      normalizedDeclaredMime ===
-        "image/x-png"
-    );
-  }
-
-
-  /*
-   * ICO tiene dos MIME habituales.
-   */
-  if (
-    detectedMime ===
-      "image/x-icon"
-  ) {
-    return (
-      normalizedDeclaredMime ===
-        "image/x-icon" ||
-      normalizedDeclaredMime ===
-        "image/vnd.microsoft.icon"
-    );
-  }
-
-
-  /*
-   * WEBP / AVIF y demás formatos canónicos.
-   */
-  return (
-    normalizedDeclaredMime ===
-    detectedMime
-  );
-}
 /* ============================================================
    EXTENSION
    ============================================================ */
@@ -498,6 +404,13 @@ function getExtensionForMime(
    SLOT / MIME RULES
    ============================================================ */
 
+/**
+ * El favicon admite únicamente formatos apropiados para icono.
+ *
+ * Los demás recursos admiten formatos raster seguros.
+ *
+ * SVG queda expresamente excluido.
+ */
 function isMimeAllowedForSlot(
   slot:
     BrandSlot,
@@ -519,10 +432,14 @@ function isMimeAllowedForSlot(
   }
 
   return (
-    mimeType !==
-      "image/x-icon" &&
-    mimeType !==
-      "image/vnd.microsoft.icon"
+    mimeType ===
+      "image/png" ||
+    mimeType ===
+      "image/jpeg" ||
+    mimeType ===
+      "image/webp" ||
+    mimeType ===
+      "image/avif"
   );
 }
 
@@ -625,20 +542,25 @@ function redirectBrand(
    ============================================================ */
 
 /**
- * Flujo:
+ * Flujo seguro:
  *
  * 1. Verifica administrador.
- * 2. Valida FormData.
- * 3. Valida tamaño.
- * 4. Lee bytes.
- * 5. Verifica firma real.
- * 6. Calcula SHA-256.
- * 7. Genera path imposible de controlar por usuario.
- * 8. Sube Storage.
- * 9. Registra metadata vía RPC.
- * 10. Si DB falla, elimina Storage.
+ * 2. Crea cliente privilegiado exclusivamente server-side.
+ * 3. Valida slot.
+ * 4. Valida existencia y tamaño del archivo.
+ * 5. Sanitiza metadata.
+ * 6. Lee bytes reales.
+ * 7. Detecta formato mediante firma binaria.
+ * 8. Comprueba que el formato sea válido para ese slot.
+ * 9. Calcula SHA-256.
+ * 10. Genera ruta controlada exclusivamente por servidor.
+ * 11. Sube a Storage.
+ * 12. Registra metadata mediante RPC.
+ * 13. Si PostgreSQL falla, elimina el objeto de Storage.
+ * 14. Revalida superficies.
  *
- * El asset queda cargado pero NO publicado.
+ * El recurso queda cargado como borrador.
+ * La publicación es una operación independiente.
  */
 export async function uploadBrandAsset(
   formData:
@@ -770,6 +692,11 @@ export async function uploadBrandAsset(
     );
 
 
+  /*
+   * Comprobación defensiva:
+   * los bytes realmente recibidos deben coincidir con
+   * el tamaño comunicado por File.
+   */
   if (
     bytes.byteLength !==
       file.size
@@ -782,7 +709,7 @@ export async function uploadBrandAsset(
 
 
   /* ========================================================
-     MIME SIGNATURE
+     REAL MIME / BINARY SIGNATURE
      ======================================================== */
 
   const detectedMime =
@@ -790,25 +717,22 @@ export async function uploadBrandAsset(
       bytes,
     );
 
+
+  /*
+   * La firma binaria es nuestra fuente de verdad.
+   *
+   * NO comparamos detectedMime con file.type.
+   *
+   * file.type es metadata controlada por cliente/navegador
+   * y puede variar aun cuando el archivo sea completamente
+   * válido.
+   */
   if (
     !detectedMime
   ) {
     redirectBrand({
       error:
         "unsupported-file",
-    });
-  }
-
-
-  if (
-    !isMimeCompatible(
-      file.type,
-      detectedMime,
-    )
-  ) {
-    redirectBrand({
-      error:
-        "mime-mismatch",
     });
   }
 
@@ -863,6 +787,14 @@ export async function uploadBrandAsset(
      SHA-256
      ======================================================== */
 
+  /**
+   * El hash permite:
+   *
+   * - comprobación de integridad;
+   * - auditoría;
+   * - identificación inequívoca del contenido;
+   * - futuras estrategias de deduplicación.
+   */
   const sha256 =
     createHash(
       "sha256",
@@ -876,7 +808,7 @@ export async function uploadBrandAsset(
 
 
   /* ========================================================
-     STORAGE PATH
+     SERVER-CONTROLLED STORAGE PATH
      ======================================================== */
 
   const now =
@@ -901,6 +833,11 @@ export async function uploadBrandAsset(
       detectedMime,
     );
 
+
+  /*
+   * La ruta real jamás depende del nombre enviado
+   * por el cliente.
+   */
   const objectPath =
     [
       slot,
@@ -929,12 +866,23 @@ export async function uploadBrandAsset(
         objectPath,
         arrayBuffer,
         {
+          /*
+           * Content-Type derivado de los bytes,
+           * no del navegador.
+           */
           contentType:
             detectedMime,
 
+          /*
+           * El objeto utiliza path versionado/único.
+           * Puede cachearse agresivamente.
+           */
           cacheControl:
             "31536000",
 
+          /*
+           * Nunca reemplazamos silenciosamente otro objeto.
+           */
           upsert:
             false,
         },
@@ -974,6 +922,10 @@ export async function uploadBrandAsset(
           p_original_name:
             originalName,
 
+          /*
+           * Guardamos igualmente el MIME determinado
+           * mediante bytes reales.
+           */
           p_mime_type:
             detectedMime,
 
@@ -998,11 +950,11 @@ export async function uploadBrandAsset(
       "string"
   ) {
     /*
-     * Compensating transaction:
+     * Compensating transaction.
      *
-     * Si Storage funcionó pero PostgreSQL no registró
-     * correctamente el asset, eliminamos inmediatamente
-     * el objeto para evitar archivos huérfanos.
+     * Storage pudo haber funcionado aunque la BD fallara.
+     * Eliminamos el objeto inmediatamente para no dejar
+     * archivos huérfanos.
      */
     await supabaseAdmin
       .storage
@@ -1012,6 +964,7 @@ export async function uploadBrandAsset(
       .remove([
         objectPath,
       ]);
+
 
     redirectBrand({
       error:
@@ -1037,6 +990,17 @@ export async function uploadBrandAsset(
    PUBLISH BRAND ASSET
    ============================================================ */
 
+/**
+ * Publicar está separado de cargar.
+ *
+ * Esto permite:
+ *
+ * - subir borradores;
+ * - revisar antes de publicar;
+ * - mantener historial;
+ * - reemplazar identidad sin sobrescribir físicamente
+ *   recursos anteriores.
+ */
 export async function publishBrandAsset(
   formData:
     FormData,
@@ -1117,6 +1081,13 @@ export async function publishBrandAsset(
    RETIRE BRAND ASSET
    ============================================================ */
 
+/**
+ * Retirar no elimina físicamente el recurso ni destruye
+ * el historial.
+ *
+ * La operación se controla mediante PostgreSQL/RPC para
+ * conservar trazabilidad.
+ */
 export async function retireBrandAsset(
   formData:
     FormData,
