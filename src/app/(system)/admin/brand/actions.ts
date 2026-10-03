@@ -362,32 +362,108 @@ function detectImageMimeType(
 /* ============================================================
    MIME COMPATIBILITY
    ============================================================ */
-
 function isMimeCompatible(
   declaredMime:
     string,
   detectedMime:
     BrandMimeType,
 ): boolean {
+  /*
+   * La firma binaria detectada por el servidor es la
+   * fuente de verdad.
+   *
+   * El MIME enviado por navegador/SO solamente se usa
+   * como comprobación adicional porque distintos clientes
+   * pueden enviar aliases válidos:
+   *
+   * image/jpeg
+   * image/jpg
+   * image/pjpeg
+   *
+   * También algunos navegadores/sistemas pueden enviar
+   * application/octet-stream o incluso ningún MIME.
+   */
+
+  const normalizedDeclaredMime =
+    declaredMime
+      .trim()
+      .toLowerCase();
+
+
+  /*
+   * MIME genérico o ausente.
+   *
+   * No lo rechazamos porque el contenido ya fue validado
+   * mediante firma binaria real.
+   */
+  if (
+    normalizedDeclaredMime.length ===
+      0 ||
+    normalizedDeclaredMime ===
+      "application/octet-stream"
+  ) {
+    return true;
+  }
+
+
+  /*
+   * JPEG aliases.
+   */
+  if (
+    detectedMime ===
+      "image/jpeg"
+  ) {
+    return (
+      normalizedDeclaredMime ===
+        "image/jpeg" ||
+      normalizedDeclaredMime ===
+        "image/jpg" ||
+      normalizedDeclaredMime ===
+        "image/pjpeg"
+    );
+  }
+
+
+  /*
+   * PNG alias histórico.
+   */
+  if (
+    detectedMime ===
+      "image/png"
+  ) {
+    return (
+      normalizedDeclaredMime ===
+        "image/png" ||
+      normalizedDeclaredMime ===
+        "image/x-png"
+    );
+  }
+
+
+  /*
+   * ICO tiene dos MIME habituales.
+   */
   if (
     detectedMime ===
       "image/x-icon"
   ) {
     return (
-      declaredMime ===
+      normalizedDeclaredMime ===
         "image/x-icon" ||
-      declaredMime ===
+      normalizedDeclaredMime ===
         "image/vnd.microsoft.icon"
     );
   }
 
+
+  /*
+   * WEBP / AVIF y demás formatos canónicos.
+   */
   return (
-    declaredMime ===
+    normalizedDeclaredMime ===
     detectedMime
   );
 }
-
-
 /* ============================================================
    EXTENSION
    ============================================================ */
