@@ -2,6 +2,7 @@
 
 import {
   revalidatePath,
+  updateTag,
 } from "next/cache";
 
 import {
@@ -723,6 +724,9 @@ export async function publishContentDraft(
    * pero ya revalidamos estas rutas para que el siguiente paso
    * pueda conectar web_cms_published sin cambiar esta acción.
    */
+  updateTag(
+  "web-cms",
+);
   revalidatePath(
     "/admin/content",
   );
