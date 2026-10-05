@@ -5,7 +5,7 @@ import {
 } from "next/navigation";
 
 import {
-  isAdminEmailAllowed,
+  getAdminAccessWithClient,
 } from "@/lib/admin/auth";
 
 import {
@@ -34,10 +34,12 @@ function readFormString(
   field:
     string,
 ): string | null {
+
   const value =
     formData.get(
       field,
     );
+
 
   return typeof value ===
     "string"
@@ -53,37 +55,40 @@ function readFormString(
 /**
  * Inicio de sesión administrativo.
  *
- * Flujo:
+ * FLUJO:
  *
  * 1. Validar entrada.
- * 2. Autenticar con Supabase Auth.
- * 3. Volver a consultar el usuario autenticado.
- * 4. Exigir correo confirmado.
- * 5. Comprobar allowlist administrativa.
- * 6. Rechazar y destruir sesión si algo no coincide.
- * 7. Entrar a /admin únicamente después de superar
- *    todas las barreras.
+ * 2. Autenticar mediante Supabase Auth.
+ * 3. Verificar nuevamente el usuario desde Supabase.
+ * 4. Consultar web_private.admin_members mediante RPC.
+ * 5. Exigir owner/editor/publisher activo.
+ * 6. Destruir inmediatamente la sesión si no está autorizado.
+ * 7. Entrar a /admin.
  *
- * IMPORTANTE:
+ * AUTENTICACIÓN:
+ * Supabase Auth.
  *
- * Un usuario normal de Supabase NO obtiene acceso
- * administrativo solamente por conocer esta URL.
+ * AUTORIZACIÓN:
+ * web_private.admin_members.
  */
 export async function loginAdmin(
   formData:
     FormData,
 ): Promise<void> {
+
   const rawEmail =
     readFormString(
       formData,
       "email",
     );
 
+
   const password =
     readFormString(
       formData,
       "password",
     );
+
 
   /* ========================================================
      REQUIRED VALUES
@@ -100,10 +105,12 @@ export async function loginAdmin(
     );
   }
 
+
   const email =
     rawEmail
       .trim()
       .toLowerCase();
+
 
   if (
     email.length ===
@@ -140,15 +147,10 @@ export async function loginAdmin(
   const supabase =
     await createSupabaseServerClient();
 
+
   if (
     !supabase
   ) {
-    /*
-     * Fail closed.
-     *
-     * Si la infraestructura de autenticación no está
-     * configurada, nunca dejamos continuar al usuario.
-     */
     redirect(
       "/admin/login?error=configuration",
     );
@@ -170,17 +172,18 @@ export async function loginAdmin(
         password,
       });
 
+
   if (
     signInError
   ) {
     /*
-     * Mensaje genérico.
+     * Mensaje deliberadamente genérico.
      *
-     * No revelamos si:
+     * No revelamos:
      *
-     * - el correo existe,
-     * - la contraseña era incorrecta,
-     * - la cuenta es administrativa.
+     * - si el correo existe;
+     * - si la contraseña falló;
+     * - si la cuenta tiene privilegios administrativos.
      */
     redirect(
       "/admin/login?error=invalid",
@@ -189,65 +192,47 @@ export async function loginAdmin(
 
 
   /* ========================================================
-     VERIFIED USER
-     ======================================================== */
-
-  const {
-    data,
-    error:
-      userError,
-  } =
-    await supabase
-      .auth
-      .getUser();
-
-  const user =
-    data.user;
-
-  const authenticatedEmail =
-    user?.email
-      ?.trim()
-      .toLowerCase() ??
-    null;
-
-
-  /* ========================================================
      AUTHORIZATION
      ======================================================== */
 
-  const authorized =
-    !userError &&
-    Boolean(
-      user,
-    ) &&
-    Boolean(
-      authenticatedEmail,
-    ) &&
-    Boolean(
-      user?.email_confirmed_at,
-    ) &&
-    authenticatedEmail ===
-      email &&
-    (
-      authenticatedEmail !==
-        null &&
-      isAdminEmailAllowed(
-        authenticatedEmail,
-      )
+  /*
+   * Utilizamos exactamente la misma fuente de autorización
+   * que utiliza requireAdminIdentity().
+   *
+   * No existe una segunda allowlist paralela.
+   */
+  const access =
+    await getAdminAccessWithClient(
+      supabase,
     );
 
+
   if (
-    !authorized
+    access.status !==
+      "authorized" ||
+    !access.admin
   ) {
+
     /*
-     * Una autenticación válida NO implica autorización.
+     * Autenticación válida NO significa autorización.
      *
-     * Si la cuenta no está permitida destruimos inmediatamente
-     * la sesión recién creada.
+     * Eliminamos inmediatamente la sesión si esta cuenta no
+     * pertenece al panel administrativo.
      */
     await supabase
       .auth
       .signOut();
+
+
+    if (
+      access.status ===
+        "not-configured"
+    ) {
+      redirect(
+        "/admin/login?error=configuration",
+      );
+    }
+
 
     redirect(
       "/admin/login?error=invalid",
