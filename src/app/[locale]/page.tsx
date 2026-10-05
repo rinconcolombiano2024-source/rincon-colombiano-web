@@ -43,6 +43,10 @@ import {
   getRcOrderaPublicCatalog,
 } from "@/integrations/rc-ordera/public-catalog";
 
+import {
+  getPublishedCmsTextContent,
+} from "@/lib/cms/public-content";
+
 /* ============================================================
    TYPES
    ============================================================ */
@@ -2267,17 +2271,20 @@ export default async function HomePage({
     AppLocale =
     rawLocale;
 
-const copy =
+const baseCopy =
   homeContent[
     locale
   ];
+
 
 const [
   rcOrderaCatalog,
   primaryBrandLogo,
   heroBrandImage,
+  publishedHero,
 ] =
   await Promise.all([
+
     getRcOrderaPublicCatalog(
       "czapelska",
     ),
@@ -2285,8 +2292,66 @@ const [
     getPrimaryBrandLogo(),
 
     getBrandHeroImage(),
+
+    getPublishedCmsTextContent(
+      "home_hero",
+      locale,
+    ),
   ]);
-const orderHref =
+
+
+/* ============================================================
+   CMS → HOME
+   ============================================================ */
+
+/**
+ * Solamente aplicamos el contenido CMS si además cumple
+ * límites apropiados para un Hero.
+ *
+ * Que el CMS permita artículos largos no significa que
+ * debamos permitir 50.000 caracteres dentro del encabezado.
+ */
+const validPublishedHero =
+  publishedHero &&
+  publishedHero.title.length <=
+    160 &&
+  publishedHero.body.length <=
+    1500
+    ? publishedHero
+    : null;
+
+
+/**
+ * El contenido escrito en código continúa siendo fallback.
+ *
+ * Si:
+ *
+ * - Supabase cae;
+ * - falta configuración;
+ * - el documento no existe;
+ * - está corrupto;
+ * - todavía no fue publicado;
+ *
+ * la página sigue funcionando normalmente.
+ */
+const copy:
+  HomeCopy =
+  validPublishedHero
+    ? {
+        ...baseCopy,
+
+        hero: {
+          ...baseCopy.hero,
+
+          title:
+            validPublishedHero.title,
+
+          description:
+            validPublishedHero.body,
+        },
+      }
+    : baseCopy;
+  const orderHref =
   buildRcOrderaOrderUrl(
     "czapelska",
   );
