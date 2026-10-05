@@ -76,22 +76,25 @@ const ADMIN_MODULES = [
       "/admin/brand",
   },
 
-  {
-    key:
-      "content",
+ {
+  key:
+    "content",
 
-    eyebrow:
-      "CONTENIDO",
+  eyebrow:
+    "CONTENIDO",
 
-    title:
-      "Página principal",
+  title:
+    "Contenido y páginas",
 
-    description:
-      "Textos, secciones, historias, promociones y contenido publicado del sitio web.",
+  description:
+    "Administra textos, páginas, historias, promociones, servicios y contenido publicado sin modificar código.",
 
-    status:
-      "planned",
-  },
+  status:
+    "active",
+
+  href:
+    "/admin/content",
+},
 
   {
     key:
