@@ -2,9 +2,23 @@ import {
   redirect,
 } from "next/navigation";
 
+import type {
+  SupabaseClient,
+} from "@supabase/supabase-js";
+
 import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
+
+
+/* ============================================================
+   ADMIN ROLES
+   ============================================================ */
+
+export type AdminRole =
+  | "owner"
+  | "editor"
+  | "publisher";
 
 
 /* ============================================================
@@ -17,6 +31,9 @@ export interface AdminIdentity {
 
   readonly email:
     string;
+
+  readonly role:
+    AdminRole;
 }
 
 
@@ -37,8 +54,21 @@ export interface AdminAccessResult {
 
 
 /* ============================================================
-   EMAIL NORMALIZATION
+   VALUE VALIDATION
    ============================================================ */
+
+function isNonEmptyString(
+  value:
+    unknown,
+): value is string {
+  return (
+    typeof value ===
+      "string" &&
+    value.trim().length >
+      0
+  );
+}
+
 
 function normalizeEmail(
   value:
@@ -50,131 +80,208 @@ function normalizeEmail(
 }
 
 
-/* ============================================================
-   ADMIN ALLOWLIST
-   ============================================================ */
-
-/**
- * Bootstrap administrativo.
- *
- * Esta lista NO reemplazará el futuro sistema de:
- *
- * - admin_users
- * - admin_roles
- * - admin_permissions
- * - MFA
- * - auditoría
- *
- * Su función actual es impedir que cualquier usuario de
- * Supabase Auth se convierta automáticamente en administrador.
- *
- * Principio:
- *
- * deny by default.
- */
-function getAllowedAdminEmails():
-  ReadonlySet<string> {
-  const rawValue =
-    process.env[
-      "ADMIN_ALLOWED_EMAILS"
-    ];
-
-  if (
-    typeof rawValue !==
-      "string"
-  ) {
-    return new Set<string>();
-  }
-
-  const normalizedValue =
-    rawValue.trim();
-
-  if (
-    normalizedValue.length ===
-      0
-  ) {
-    return new Set<string>();
-  }
-
-  return new Set(
-    normalizedValue
-      .split(
-        ",",
-      )
-      .map(
-        (
-          email,
-        ) =>
-          normalizeEmail(
-            email,
-          ),
-      )
-      .filter(
-        (
-          email,
-        ) =>
-          email.length >
-          0,
-      ),
+export function isAdminRole(
+  value:
+    unknown,
+): value is AdminRole {
+  return (
+    value ===
+      "owner" ||
+    value ===
+      "editor" ||
+    value ===
+      "publisher"
   );
 }
 
 
 /* ============================================================
-   EMAIL AUTHORIZATION
+   RPC RESULT
    ============================================================ */
 
-export function isAdminEmailAllowed(
-  email:
-    string,
-): boolean {
-  const normalizedEmail =
-    normalizeEmail(
-      email,
-    );
-
+function normalizeAdminIdentity(
+  value:
+    unknown,
+): AdminIdentity | null {
   if (
-    normalizedEmail.length ===
-      0
+    typeof value !==
+      "object" ||
+    value ===
+      null ||
+    Array.isArray(
+      value,
+    )
   ) {
-    return false;
+    return null;
   }
 
-  return getAllowedAdminEmails()
-    .has(
-      normalizedEmail,
-    );
+  const record =
+    value as Readonly<
+      Record<
+        string,
+        unknown
+      >
+    >;
+
+  const userId =
+    record[
+      "user_id"
+    ];
+
+  const email =
+    record[
+      "email"
+    ];
+
+  const role =
+    record[
+      "role"
+    ];
+
+  if (
+    !isNonEmptyString(
+      userId,
+    ) ||
+    !isNonEmptyString(
+      email,
+    ) ||
+    !isAdminRole(
+      role,
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    id:
+      userId.trim(),
+
+    email:
+      normalizeEmail(
+        email,
+      ),
+
+    role,
+  };
 }
 
 
 /* ============================================================
-   CURRENT ADMIN ACCESS
+   ADMIN ACCESS USING CURRENT SUPABASE SESSION
    ============================================================ */
 
 /**
- * Comprueba dos barreras independientes:
+ * Fuente única de autorización administrativa.
  *
- * 1. Supabase Auth:
- *    la sesión debe pertenecer a un usuario real.
+ * AUTENTICACIÓN:
+ * Supabase Auth.
  *
- * 2. Autorización administrativa:
- *    el correo debe estar explícitamente autorizado.
+ * AUTORIZACIÓN:
+ * web_private.admin_members
+ * mediante:
  *
- * No usamos solamente cookies ni datos enviados por el cliente
- * para decidir si alguien es administrador.
+ * public.web_admin_get_current_access()
+ *
+ * IMPORTANTE:
+ *
+ * Ya no utilizamos una lista paralela de correos para decidir
+ * quién tiene acceso al panel.
  */
-export async function getAdminAccess():
-  Promise<AdminAccessResult> {
-  const allowedEmails =
-    getAllowedAdminEmails();
+export async function getAdminAccessWithClient(
+  supabase:
+    SupabaseClient,
+): Promise<AdminAccessResult> {
+
+  /* ========================================================
+     VERIFIED AUTH USER
+     ======================================================== */
+
+  const {
+    data:
+      userData,
+
+    error:
+      userError,
+  } =
+    await supabase
+      .auth
+      .getUser();
+
+
+  if (
+    userError ||
+    !userData.user
+  ) {
+    return {
+      status:
+        "unauthenticated",
+
+      admin:
+        null,
+    };
+  }
+
+
+  const user =
+    userData.user;
+
+
+  const authenticatedEmail =
+    typeof user.email ===
+      "string"
+      ? normalizeEmail(
+          user.email,
+        )
+      : "";
+
 
   /*
-   * Sin allowlist configurada:
-   * nadie entra.
+   * Un administrador debe tener:
+   *
+   * - usuario válido;
+   * - email válido;
+   * - email confirmado.
    */
   if (
-    allowedEmails.size ===
-      0
+    authenticatedEmail.length ===
+      0 ||
+    !user.email_confirmed_at
+  ) {
+    return {
+      status:
+        "unauthorized",
+
+      admin:
+        null,
+    };
+  }
+
+
+  /* ========================================================
+     DATABASE AUTHORIZATION
+     ======================================================== */
+
+  const {
+    data:
+      rawAccess,
+
+    error:
+      accessError,
+  } =
+    await supabase
+      .rpc(
+        "web_admin_get_current_access",
+      );
+
+
+  /*
+   * Si la RPC no existe o la infraestructura administrativa
+   * no está disponible, cerramos el acceso.
+   *
+   * Nunca hacemos fallback permisivo.
+   */
+  if (
+    accessError
   ) {
     return {
       status:
@@ -185,12 +292,85 @@ export async function getAdminAccess():
     };
   }
 
+
+  const admin =
+    normalizeAdminIdentity(
+      rawAccess,
+    );
+
+
+  /*
+   * La RPC devuelve null cuando:
+   *
+   * - el usuario no pertenece a admin_members;
+   * - está deshabilitado;
+   * - no tiene un rol válido;
+   * - su correo no está confirmado.
+   */
+  if (
+    !admin
+  ) {
+    return {
+      status:
+        "unauthorized",
+
+      admin:
+        null,
+    };
+  }
+
+
+  /* ========================================================
+     DEFENSIVE IDENTITY CONSISTENCY
+     ======================================================== */
+
+  /*
+   * Defensa adicional.
+   *
+   * La identidad devuelta por PostgreSQL debe corresponder
+   * exactamente al usuario verificado por Supabase Auth.
+   */
+  if (
+    admin.id !==
+      user.id ||
+    admin.email !==
+      authenticatedEmail
+  ) {
+    return {
+      status:
+        "unauthorized",
+
+      admin:
+        null,
+    };
+  }
+
+
+  return {
+    status:
+      "authorized",
+
+    admin,
+  };
+}
+
+
+/* ============================================================
+   CURRENT ADMIN ACCESS
+   ============================================================ */
+
+export async function getAdminAccess():
+  Promise<AdminAccessResult> {
+
   const supabase =
     await createSupabaseServerClient();
 
+
   /*
-   * Si Supabase no está configurado correctamente,
-   * el panel administrativo permanece cerrado.
+   * Fail closed.
+   *
+   * Si Supabase no está configurado:
+   * nadie entra.
    */
   if (
     !supabase
@@ -204,82 +384,10 @@ export async function getAdminAccess():
     };
   }
 
-  /*
-   * getUser() consulta/verifica al usuario con Supabase.
-   *
-   * Para autorización administrativa no confiamos
-   * únicamente en una sesión leída desde cookies.
-   */
-  const {
-    data,
-    error,
-  } =
-    await supabase
-      .auth
-      .getUser();
 
-  if (
-    error ||
-    !data.user
-  ) {
-    return {
-      status:
-        "unauthenticated",
-
-      admin:
-        null,
-    };
-  }
-
-  const email =
-    data.user.email;
-
-  if (
-    typeof email !==
-      "string" ||
-    email.trim().length ===
-      0
-  ) {
-    return {
-      status:
-        "unauthorized",
-
-      admin:
-        null,
-    };
-  }
-
-  const normalizedEmail =
-    normalizeEmail(
-      email,
-    );
-
-  if (
-    !allowedEmails.has(
-      normalizedEmail,
-    )
-  ) {
-    return {
-      status:
-        "unauthorized",
-
-      admin:
-        null,
-    };
-  }
-
-  return {
-    status:
-      "authorized",
-
-    admin: {
-      id:
-        data.user.id,
-
-      email:
-        normalizedEmail,
-    },
-  };
+  return getAdminAccessWithClient(
+    supabase,
+  );
 }
 
 
@@ -288,26 +396,26 @@ export async function getAdminAccess():
    ============================================================ */
 
 /**
- * Utilizado por páginas administrativas protegidas.
- *
- * Resultado:
+ * Protección común de las superficies administrativas.
  *
  * authorized
- *   → continúa.
+ *   → permite continuar.
  *
  * unauthenticated
  *   → login.
  *
  * unauthorized
- *   → login + acceso denegado.
+ *   → acceso rechazado.
  *
  * not-configured
- *   → login + error de configuración.
+ *   → infraestructura cerrada por seguridad.
  */
 export async function requireAdminIdentity():
   Promise<AdminIdentity> {
+
   const access =
     await getAdminAccess();
+
 
   if (
     access.status ===
@@ -318,6 +426,7 @@ export async function requireAdminIdentity():
     );
   }
 
+
   if (
     access.status ===
       "unauthenticated"
@@ -326,6 +435,7 @@ export async function requireAdminIdentity():
       "/admin/login",
     );
   }
+
 
   if (
     access.status ===
@@ -336,20 +446,20 @@ export async function requireAdminIdentity():
     );
   }
 
+
   if (
     !access.admin
   ) {
     /*
      * Defensa adicional.
      *
-     * En teoría este estado no debería ocurrir cuando
-     * status === "authorized", pero nunca concedemos
-     * acceso basándonos en una suposición.
+     * Nunca conceder acceso debido a un estado inesperado.
      */
     redirect(
-      "/admin/login",
+      "/admin/login?error=forbidden",
     );
   }
+
 
   return access.admin;
 }
