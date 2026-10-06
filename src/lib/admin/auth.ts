@@ -53,6 +53,33 @@ export interface AdminAccessResult {
 }
 
 
+/**
+ * Contrato defensivo del resultado devuelto por:
+ *
+ * public.web_admin_get_current_access()
+ *
+ * Las propiedades continúan siendo `unknown` hasta que hayan
+ * pasado las validaciones runtime correspondientes.
+ *
+ * Esto tiene dos objetivos:
+ *
+ * 1. No confiar ciegamente en datos provenientes de PostgreSQL.
+ * 2. Mantener compatibilidad simultánea con:
+ *    - TypeScript noPropertyAccessFromIndexSignature
+ *    - ESLint dot-notation
+ */
+interface AdminAccessRpcPayload {
+  readonly user_id?:
+    unknown;
+
+  readonly email?:
+    unknown;
+
+  readonly role?:
+    unknown;
+}
+
+
 /* ============================================================
    VALUE VALIDATION
    ============================================================ */
@@ -103,6 +130,19 @@ function normalizeAdminIdentity(
   value:
     unknown,
 ): AdminIdentity | null {
+  /*
+   * La RPC debe devolver un objeto individual.
+   *
+   * Rechazamos:
+   *
+   * - null
+   * - strings
+   * - números
+   * - booleanos
+   * - arrays
+   *
+   * antes de intentar interpretar su contenido.
+   */
   if (
     typeof value !==
       "object" ||
@@ -115,29 +155,40 @@ function normalizeAdminIdentity(
     return null;
   }
 
+
+  /*
+   * Este cast únicamente describe las propiedades que
+   * esperamos encontrar.
+   *
+   * NO implica confianza en sus valores.
+   *
+   * Cada propiedad permanece como `unknown` y será validada
+   * inmediatamente antes de construir AdminIdentity.
+   */
   const record =
-    value as Readonly<
-      Record<
-        string,
-        unknown
-      >
-    >;
+    value as AdminAccessRpcPayload;
+
 
   const userId =
-    record[
-      "user_id"
-    ];
+    record.user_id;
 
   const email =
-    record[
-      "email"
-    ];
+    record.email;
 
   const role =
-    record[
-      "role"
-    ];
+    record.role;
 
+
+  /*
+   * Validación estricta del contrato runtime.
+   *
+   * Nunca construimos una identidad administrativa si:
+   *
+   * - falta el ID;
+   * - falta el email;
+   * - alguno está vacío;
+   * - el rol no pertenece al conjunto permitido.
+   */
   if (
     !isNonEmptyString(
       userId,
@@ -151,6 +202,7 @@ function normalizeAdminIdentity(
   ) {
     return null;
   }
+
 
   return {
     id:
@@ -196,6 +248,12 @@ export async function getAdminAccessWithClient(
      VERIFIED AUTH USER
      ======================================================== */
 
+  /*
+   * getUser() valida la identidad contra Supabase Auth.
+   *
+   * No utilizamos únicamente información local de sesión
+   * para conceder acceso administrativo.
+   */
   const {
     data:
       userData,
@@ -208,6 +266,11 @@ export async function getAdminAccessWithClient(
       .getUser();
 
 
+  /*
+   * Ante cualquier error de autenticación cerramos el acceso.
+   *
+   * Fail closed.
+   */
   if (
     userError ||
     !userData.user
@@ -241,6 +304,9 @@ export async function getAdminAccessWithClient(
    * - usuario válido;
    * - email válido;
    * - email confirmado.
+   *
+   * No permitimos acceso administrativo con una identidad
+   * incompleta.
    */
   if (
     authenticatedEmail.length ===
@@ -261,6 +327,12 @@ export async function getAdminAccessWithClient(
      DATABASE AUTHORIZATION
      ======================================================== */
 
+  /*
+   * La autorización real vive en PostgreSQL.
+   *
+   * La sesión autenticada por sí sola NO concede acceso
+   * administrativo.
+   */
   const {
     data:
       rawAccess,
@@ -300,12 +372,13 @@ export async function getAdminAccessWithClient(
 
 
   /*
-   * La RPC devuelve null cuando:
+   * La RPC devuelve null o un resultado inválido cuando:
    *
    * - el usuario no pertenece a admin_members;
    * - está deshabilitado;
    * - no tiene un rol válido;
-   * - su correo no está confirmado.
+   * - su correo no está confirmado;
+   * - el contrato recibido es inesperado.
    */
   if (
     !admin
@@ -329,6 +402,9 @@ export async function getAdminAccessWithClient(
    *
    * La identidad devuelta por PostgreSQL debe corresponder
    * exactamente al usuario verificado por Supabase Auth.
+   *
+   * Esto evita aceptar una autorización que pertenezca
+   * accidentalmente a una identidad diferente.
    */
   if (
     admin.id !==
