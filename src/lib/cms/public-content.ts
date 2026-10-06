@@ -164,6 +164,49 @@ function readNumber(
 }
 
 
+/**
+ * Lee de forma segura una propiedad dinámica cuyo tipo
+ * todavía no conocemos.
+ *
+ * Se utiliza deliberadamente en lugar de:
+ *
+ * record["document"]
+ *
+ * porque ESLint dot-notation rechaza propiedades literales
+ * expresadas mediante corchetes.
+ *
+ * Tampoco utilizamos:
+ *
+ * record.document
+ *
+ * porque este proyecto mantiene habilitado:
+ *
+ * noPropertyAccessFromIndexSignature
+ *
+ * y TypeScript exige acceso por índice cuando trabajamos
+ * directamente con Record<string, unknown>.
+ *
+ * El resultado continúa siendo `unknown`, por lo que
+ * cualquier consumidor debe validarlo antes de utilizarlo.
+ */
+function readUnknown(
+  record:
+    Readonly<
+      Record<
+        string,
+        unknown
+      >
+    >,
+  key:
+    string,
+): unknown {
+
+  return record[
+    key
+  ];
+}
+
+
 /* ============================================================
    NORMALIZATION
    ============================================================ */
@@ -177,6 +220,12 @@ function normalizePublishedContent(
     AppLocale,
 ): PublishedCmsTextContent | null {
 
+  /*
+   * Nunca confiamos directamente en la respuesta HTTP.
+   *
+   * Aunque Supabase normalmente devuelve objetos válidos,
+   * todo dato externo se considera unknown hasta validarlo.
+   */
   if (
     !isRecord(
       value,
@@ -217,11 +266,23 @@ function normalizePublishedContent(
     );
 
   const document =
-    value[
-      "document"
-    ];
+    readUnknown(
+      value,
+      "document",
+    );
 
 
+  /*
+   * Comprobamos tanto identidad del contenido solicitado
+   * como integridad estructural de la respuesta.
+   *
+   * Esto evita utilizar accidentalmente:
+   *
+   * - otra clave;
+   * - otro idioma;
+   * - una revisión inválida;
+   * - documentos malformados.
+   */
   if (
     contentKey !==
       expectedContentKey ||
@@ -271,6 +332,15 @@ function normalizePublishedContent(
     rawBody.trim();
 
 
+  /*
+   * Los límites protegen:
+   *
+   * - memoria;
+   * - rendering;
+   * - datos corruptos;
+   * - cargas inesperadamente grandes;
+   * - contenido vacío después del trim.
+   */
   if (
     title.length <
       1 ||
@@ -319,6 +389,16 @@ export async function loadPublishedCmsTextContent(
      INPUT
      ======================================================== */
 
+  /*
+   * La clave se valida antes de construir parámetros HTTP.
+   *
+   * Solo permitimos:
+   *
+   * - minúsculas;
+   * - números;
+   * - guion;
+   * - guion bajo.
+   */
   if (
     !isValidContentKey(
       contentKey,
@@ -342,6 +422,10 @@ export async function loadPublishedCmsTextContent(
     getSupabasePublicConfig();
 
 
+  /*
+   * La ausencia de configuración no debe tumbar el sitio
+   * público.
+   */
   if (
     !config
   ) {
@@ -359,6 +443,11 @@ export async function loadPublishedCmsTextContent(
     URL;
 
 
+  /*
+   * Aunque normalmente config.url vendrá validada por la
+   * configuración de Supabase, conservamos una frontera
+   * defensiva adicional.
+   */
   try {
     requestUrl =
       new URL(
@@ -380,6 +469,16 @@ export async function loadPublishedCmsTextContent(
      QUERY
      ======================================================== */
 
+  /*
+   * Solicitamos únicamente las columnas necesarias.
+   *
+   * Esto reduce:
+   *
+   * - transferencia;
+   * - exposición de datos;
+   * - trabajo de PostgreSQL;
+   * - parsing en Node.js.
+   */
   requestUrl.searchParams.set(
     "select",
     [
@@ -407,6 +506,13 @@ export async function loadPublishedCmsTextContent(
   );
 
 
+  /*
+   * El par content_key + locale debería identificar una sola
+   * publicación.
+   *
+   * `limit=1` mantiene igualmente una defensa de rendimiento
+   * si la restricción de datos llegara a estar mal configurada.
+   */
   requestUrl.searchParams.set(
     "limit",
     "1",
@@ -421,6 +527,10 @@ export async function loadPublishedCmsTextContent(
     new AbortController();
 
 
+  /*
+   * Una dependencia CMS lenta nunca debe retener
+   * indefinidamente el render de la página pública.
+   */
   const timeout =
     setTimeout(
       () => {
@@ -457,6 +567,13 @@ export async function loadPublishedCmsTextContent(
           signal:
             controller.signal,
 
+          /*
+           * El contenido publicado se cachea durante
+           * CMS_CACHE_SECONDS.
+           *
+           * Las tags permiten invalidación selectiva desde
+           * operaciones administrativas.
+           */
           next: {
             revalidate:
               CMS_CACHE_SECONDS,
@@ -470,6 +587,12 @@ export async function loadPublishedCmsTextContent(
       );
 
 
+    /*
+     * No exponemos detalles internos de Supabase al usuario
+     * público.
+     *
+     * Cualquier HTTP no exitoso se convierte en unavailable.
+     */
     if (
       !response.ok
     ) {
@@ -487,6 +610,9 @@ export async function loadPublishedCmsTextContent(
       unknown;
 
 
+    /*
+     * Una respuesta HTTP 2xx no garantiza JSON válido.
+     */
     try {
       data =
         await response.json();
@@ -501,6 +627,12 @@ export async function loadPublishedCmsTextContent(
     }
 
 
+    /*
+     * Supabase REST devuelve una colección.
+     *
+     * Un array vacío significa que no existe publicación
+     * para la combinación solicitada.
+     */
     if (
       !Array.isArray(
         data,
@@ -518,6 +650,10 @@ export async function loadPublishedCmsTextContent(
     }
 
 
+    /*
+     * Incluso después de recibir datos desde Supabase,
+     * ejecutamos la normalización runtime completa.
+     */
     const content =
       normalizePublishedContent(
         data[
@@ -555,6 +691,14 @@ export async function loadPublishedCmsTextContent(
      *
      * Un problema temporal del CMS nunca debe tumbar
      * la página pública.
+     *
+     * Esto cubre, entre otros:
+     *
+     * - timeout;
+     * - AbortError;
+     * - problemas DNS;
+     * - errores de red;
+     * - fallos temporales de Supabase.
      */
     return {
       status:
@@ -566,6 +710,10 @@ export async function loadPublishedCmsTextContent(
 
   } finally {
 
+    /*
+     * Evita mantener timers activos después de que la
+     * solicitud haya terminado.
+     */
     clearTimeout(
       timeout,
     );
