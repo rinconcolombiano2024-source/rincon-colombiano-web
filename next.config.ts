@@ -1,4 +1,7 @@
-import type { NextConfig } from "next";
+import type {
+  NextConfig,
+} from "next";
+
 
 /**
  * ============================================================
@@ -7,37 +10,62 @@ import type { NextConfig } from "next";
  * ============================================================
  *
  * Objetivos:
- * - Seguridad por defecto
- * - Rendimiento
- * - Optimización de imágenes
- * - Compatibilidad con Vercel
- * - Preparado para RC ORDERA / Supabase
- * - Sin configuraciones experimentales innecesarias
+ *
+ * - seguridad por defecto;
+ * - rendimiento;
+ * - optimización de imágenes;
+ * - compatibilidad con Vercel;
+ * - preparación para RC ORDERA / Supabase;
+ * - evitar configuraciones que interfieran con la gestión
+ *   interna de Next.js.
  */
 
-const isProduction = process.env.NODE_ENV === "production";
+
+/* ============================================================
+   ENVIRONMENT
+   ============================================================ */
+
+const isProduction =
+  process.env.NODE_ENV ===
+  "production";
+
+
+/* ============================================================
+   SECURITY HEADERS
+   ============================================================ */
 
 /**
  * Headers de seguridad globales.
  *
- * CSP se implementará posteriormente en middleware,
- * donde podremos manejar nonces correctamente.
+ * CSP se implementará posteriormente mediante una estrategia
+ * compatible con nonces y contenido dinámico.
+ *
+ * No se configura Cache-Control globalmente.
+ * Next.js debe conservar el control de las políticas de caché
+ * de sus páginas y assets internos.
  */
 const securityHeaders = [
   {
-    key: "X-Content-Type-Options",
-    value: "nosniff",
+    key:
+      "X-Content-Type-Options",
+    value:
+      "nosniff",
   },
   {
-    key: "X-Frame-Options",
-    value: "SAMEORIGIN",
+    key:
+      "X-Frame-Options",
+    value:
+      "SAMEORIGIN",
   },
   {
-    key: "Referrer-Policy",
-    value: "strict-origin-when-cross-origin",
+    key:
+      "Referrer-Policy",
+    value:
+      "strict-origin-when-cross-origin",
   },
   {
-    key: "Permissions-Policy",
+    key:
+      "Permissions-Policy",
     value: [
       "camera=()",
       "microphone=()",
@@ -45,139 +73,219 @@ const securityHeaders = [
       "payment=(self)",
       "usb=()",
       "interest-cohort=()",
-    ].join(", "),
+    ].join(
+      ", ",
+    ),
   },
   {
-    key: "Cross-Origin-Opener-Policy",
-    value: "same-origin",
+    key:
+      "Cross-Origin-Opener-Policy",
+    value:
+      "same-origin",
   },
   {
-    key: "Cross-Origin-Resource-Policy",
-    value: "same-origin",
+    key:
+      "Cross-Origin-Resource-Policy",
+    value:
+      "same-origin",
   },
 ];
 
+
 /**
- * HSTS debe utilizarse únicamente en producción mediante HTTPS.
+ * HSTS únicamente debe enviarse en producción HTTPS.
  */
-if (isProduction) {
+if (
+  isProduction
+) {
   securityHeaders.push({
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
+    key:
+      "Strict-Transport-Security",
+    value:
+      "max-age=63072000; includeSubDomains; preload",
   });
 }
 
-const nextConfig: NextConfig = {
-    /**
-   * Server Actions
+
+/* ============================================================
+   NEXT CONFIG
+   ============================================================ */
+
+const nextConfig:
+  NextConfig = {
+
+  /* ========================================================
+     SERVER ACTIONS
+     ======================================================== */
+
+  /**
+   * Las imágenes administrativas de marca pueden superar
+   * el límite estándar de una Server Action.
    *
-   * Las imágenes administrativas de marca pueden pesar
-   * varios MB. Next.js limita por defecto las Server Actions
-   * a 1 MB, lo cual impediría que nuestro propio límite de
-   * 4 MB llegue siquiera a ejecutarse.
-   *
-   * Vercel mantiene un límite de payload de 4.5 MB.
-   * Dejamos margen de seguridad para multipart/form-data.
-   *
-   * Archivos multimedia grandes y videos utilizarán después
-   * carga directa a Storage y no atravesarán la Function.
+   * El sistema de branding mantiene su propio límite de
+   * archivo y posteriormente los archivos multimedia grandes
+   * deberán utilizar carga directa hacia Storage.
    */
   experimental: {
     serverActions: {
-      bodySizeLimit: "4.25mb",
+      bodySizeLimit:
+        "4.25mb",
     },
   },
-  /**
-   * React
-   */
-  reactStrictMode: true,
+
+
+  /* ========================================================
+     REACT
+     ======================================================== */
+
+  reactStrictMode:
+    true,
+
+
+  /* ========================================================
+     SECURITY
+     ======================================================== */
 
   /**
-   * Seguridad
+   * Evita exponer:
    *
-   * Evita exponer el header:
    * X-Powered-By: Next.js
    */
-  poweredByHeader: false,
+  poweredByHeader:
+    false,
+
+
+  /* ========================================================
+     URL BEHAVIOR
+     ======================================================== */
+
+  trailingSlash:
+    false,
+
+
+  /* ========================================================
+     COMPRESSION
+     ======================================================== */
+
+  compress:
+    true,
+
+
+  /* ========================================================
+     SOURCE MAPS
+     ======================================================== */
 
   /**
-   * URLs
-   */
-  trailingSlash: false,
-
-  /**
-   * Compresión HTTP.
-   */
-  compress: true,
-
-  /**
-   * Source maps del navegador desactivados en producción.
+   * Los source maps del navegador permanecen desactivados
+   * en producción.
    *
-   * Más adelante Sentry manejará el proceso de source maps
-   * de manera privada.
+   * Si posteriormente utilizamos un sistema como Sentry,
+   * los source maps deberán manejarse de forma privada.
    */
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps:
+    false,
 
-  /**
-   * Optimización de imágenes.
-   */
+
+  /* ========================================================
+     IMAGE OPTIMIZATION
+     ======================================================== */
+
   images: {
-    formats: ["image/avif", "image/webp"],
+
+    formats: [
+      "image/avif",
+      "image/webp",
+    ],
+
 
     /**
-     * Evita servir imágenes enormes innecesariamente.
+     * Tamaños utilizados por el optimizador responsive.
      */
-    deviceSizes: [360, 390, 430, 640, 750, 828, 1080, 1200, 1440, 1920],
+    deviceSizes: [
+      360,
+      390,
+      430,
+      640,
+      750,
+      828,
+      1080,
+      1200,
+      1440,
+      1920,
+    ],
 
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+
+    imageSizes: [
+      16,
+      32,
+      48,
+      64,
+      96,
+      128,
+      256,
+      384,
+    ],
+
 
     /**
-     * Caché mínima de imágenes optimizadas:
+     * Caché mínima para imágenes procesadas por next/image:
      * 24 horas.
      */
-    minimumCacheTTL: 86400,
+    minimumCacheTTL:
+      86400,
   },
 
-  /**
-   * Headers globales.
-   */
+
+  /* ========================================================
+     HTTP HEADERS
+     ======================================================== */
+
   async headers() {
+
     return [
       {
-        source: "/:path*",
-        headers: securityHeaders,
-      },
+        source:
+          "/:path*",
 
-      /**
-       * Archivos estáticos versionados de Next.js.
-       *
-       * Pueden almacenarse agresivamente en caché porque
-       * sus nombres cambian cuando cambia su contenido.
-       */
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
+        headers:
+          securityHeaders,
       },
     ];
   },
 
+
+  /*
+   * IMPORTANTE:
+   *
+   * No añadimos manualmente Cache-Control a:
+   *
+   * /_next/static/:path*
+   *
+   * Next.js administra automáticamente el cacheado de sus
+   * assets versionados/inmutables.
+   *
+   * Intervenir manualmente sobre esos headers provocaba el
+   * warning detectado por `next build` y puede alterar el
+   * comportamiento esperado entre development y production.
+   */
+
+
+  /* ========================================================
+     REDIRECTS
+     ======================================================== */
+
   /**
-   * Redirects globales.
+   * Se mantiene vacío deliberadamente.
    *
-   * Por ahora se deja vacío.
-   *
-   * Los redirects desde la antigua página SumUp y URLs
-   * históricas se incorporarán cuando hagamos la migración
-   * definitiva del dominio.
+   * Los redirects desde URLs históricas o desde la plataforma
+   * anterior deberán incorporarse únicamente durante la
+   * migración definitiva del dominio.
    */
   async redirects() {
+
     return [];
   },
 };
+
 
 export default nextConfig;
