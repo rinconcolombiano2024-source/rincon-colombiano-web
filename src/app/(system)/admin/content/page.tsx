@@ -226,9 +226,7 @@ function normalizeDraft(
     );
 
   const document =
-    value[
-      "document"
-    ];
+    value.document;
 
 
   if (
