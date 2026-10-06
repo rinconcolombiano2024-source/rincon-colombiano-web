@@ -70,24 +70,28 @@ export type BrandSlot =
    ============================================================ */
 
 /**
- * Importante:
+ * Tipos MIME admitidos por el sistema de identidad visual.
  *
- * Esta lista NO significa que confiemos en file.type.
+ * No utilizamos una constante runtime únicamente para derivar
+ * este tipo porque eso generaba un warning de ESLint.
  *
- * El formato real se determina leyendo la firma binaria
- * del archivo recibido por el servidor.
+ * La validación real del archivo sigue realizándose mediante
+ * su firma binaria en detectImageMimeType().
+ *
+ * Por tanto:
+ *
+ * - NO confiamos en file.type;
+ * - NO confiamos en la extensión;
+ * - NO confiamos en el nombre;
+ * - NO confiamos en Content-Type enviado por el navegador.
  */
-const BRAND_MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/avif",
-  "image/x-icon",
-  "image/vnd.microsoft.icon",
-] as const;
-
 type BrandMimeType =
-  (typeof BRAND_MIME_TYPES)[number];
+  | "image/png"
+  | "image/jpeg"
+  | "image/webp"
+  | "image/avif"
+  | "image/x-icon"
+  | "image/vnd.microsoft.icon";
 
 
 /* ============================================================
@@ -256,8 +260,8 @@ function asciiAt(
  * - nombre;
  * - Content-Type enviado por navegador.
  *
- * Esto evita el falso rechazo que estábamos viendo con
- * archivos JPEG válidos enviados por determinados clientes.
+ * Esto evita falsos positivos/falsos negativos provocados
+ * por metadata incorrecta enviada por determinados clientes.
  *
  * SVG no se admite deliberadamente.
  */
@@ -265,6 +269,7 @@ function detectImageMimeType(
   bytes:
     Uint8Array,
 ): BrandMimeType | null {
+
   /* PNG */
   if (
     bytesEqual(
@@ -462,17 +467,17 @@ function getDefaultAltText(
     case "open_graph":
       return "Rincón Colombiano — Sabor y tradición";
 
-case "social_square":
-  return "Rincón Colombiano";
+    case "social_square":
+      return "Rincón Colombiano";
 
-case "hero_primary":
-  return "Rincón Colombiano — restaurante colombiano en Varsovia";
+    case "hero_primary":
+      return "Rincón Colombiano — restaurante colombiano en Varsovia";
 
-case "logo_primary":
-case "logo_compact":
-case "logo_light":
-case "logo_dark":
-  return "Logo de Rincón Colombiano";
+    case "logo_primary":
+    case "logo_compact":
+    case "logo_light":
+    case "logo_dark":
+      return "Logo de Rincón Colombiano";
   }
 }
 
