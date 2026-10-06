@@ -175,6 +175,24 @@ function readNumber(
 }
 
 
+function readUnknown(
+  value:
+    Readonly<
+      Record<
+        string,
+        unknown
+      >
+    >,
+  key:
+    string,
+): unknown {
+
+  return value[
+    key
+  ];
+}
+
+
 function normalizeDraft(
   value:
     unknown,
@@ -226,7 +244,10 @@ function normalizeDraft(
     );
 
   const document =
-    value.document;
+    readUnknown(
+      value,
+      "document",
+    );
 
 
   if (
