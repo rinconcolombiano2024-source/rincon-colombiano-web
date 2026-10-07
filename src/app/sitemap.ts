@@ -12,38 +12,30 @@ import {
 } from "@/config/routes";
 
 import {
+  getOpenRestaurants,
+} from "@/config/restaurants";
+
+import {
   SUPPORTED_LOCALES,
 } from "@/i18n/config";
 
 
 /* ============================================================
-   PUBLISHED ROUTES
+   PUBLISHED STATIC ROUTES
    ============================================================ */
 
 /**
- * IMPORTANTE:
+ * Únicamente incluimos rutas públicas que:
  *
- * Solamente deben aparecer aquí rutas que:
+ * - existen realmente;
+ * - responden correctamente;
+ * - son indexables;
+ * - contienen contenido útil;
+ * - forman parte de la experiencia pública actual.
  *
- * 1. existan realmente;
- * 2. respondan HTTP 200;
- * 3. sean públicas;
- * 4. sean indexables;
- * 5. tengan contenido útil y definitivo.
- *
- * routes.ts contiene la arquitectura completa futura,
- * pero NO debemos anunciar a Google páginas que todavía
- * no están implementadas.
- *
- * A medida que construyamos nuevas páginas:
- *
- * menu
- * locations
- * catering
- * services
- * etc.
- *
- * las agregaremos aquí después de comprobar que existen.
+ * routes.ts contiene también arquitectura futura.
+ * Esas rutas NO deben entrar al sitemap hasta estar
+ * implementadas y listas para indexación.
  */
 const PUBLISHED_STATIC_ROUTE_KEYS =
   [
@@ -58,13 +50,14 @@ const PUBLISHED_STATIC_ROUTE_KEYS =
    ============================================================ */
 
 /**
- * El sitemap siempre publica el dominio canónico.
+ * El sitemap siempre publica el dominio canónico oficial.
  *
  * Nunca debe anunciar:
  *
- * - localhost
- * - preview deployments
- * - dominios temporales de Vercel
+ * - localhost;
+ * - previews de Vercel;
+ * - dominios temporales;
+ * - URLs internas.
  */
 function buildProductionUrl(
   path:
@@ -82,10 +75,10 @@ function buildProductionUrl(
 
 
 /* ============================================================
-   SITEMAP
+   STATIC ROUTES
    ============================================================ */
 
-export default function sitemap():
+function buildStaticSitemapEntries():
   MetadataRoute.Sitemap {
   return PUBLISHED_STATIC_ROUTE_KEYS
     .flatMap(
@@ -106,4 +99,68 @@ export default function sitemap():
           }),
         ),
     );
+}
+
+
+/* ============================================================
+   RESTAURANT ROUTES
+   ============================================================ */
+
+/**
+ * Únicamente las sedes realmente abiertas aparecen
+ * en el sitemap.
+ *
+ * Esto mantiene sincronizadas:
+ *
+ * - disponibilidad pública;
+ * - política de indexación;
+ * - SEO local;
+ * - sitemap.
+ *
+ * Ejemplo actual:
+ *
+ * Czapelska -> incluida.
+ * Brzeska   -> excluida mientras sea coming_soon.
+ *
+ * Cuando una futura sede cambie a status "open",
+ * entrará automáticamente al sitemap.
+ */
+function buildRestaurantSitemapEntries():
+  MetadataRoute.Sitemap {
+  return getOpenRestaurants()
+    .flatMap(
+      (
+        restaurant,
+      ) =>
+        SUPPORTED_LOCALES.map(
+          (
+            locale,
+          ) => ({
+            url:
+              buildProductionUrl(
+                buildRoutePath(
+                  "location",
+                  locale,
+                  {
+                    slug:
+                      restaurant.slug,
+                  },
+                ),
+              ),
+          }),
+        ),
+    );
+}
+
+
+/* ============================================================
+   SITEMAP
+   ============================================================ */
+
+export default function sitemap():
+  MetadataRoute.Sitemap {
+  return [
+    ...buildStaticSitemapEntries(),
+    ...buildRestaurantSitemapEntries(),
+  ];
 }
