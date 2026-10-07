@@ -34,13 +34,24 @@ import {
    STATIC LOCALES
    ============================================================ */
 
+/**
+ * Parámetros estáticos soportados por la aplicación.
+ *
+ * Next.js 16 espera que generateStaticParams() retorne
+ * un array mutable.
+ *
+ * Las propiedades internas continúan siendo readonly
+ * para conservar inmutabilidad dentro de nuestra aplicación.
+ */
 export function generateStaticParams():
-  readonly {
+  {
     readonly locale:
       AppLocale;
   }[] {
   return SUPPORTED_LOCALES.map(
-    (locale) => ({
+    (
+      locale,
+    ) => ({
       locale,
     }),
   );
