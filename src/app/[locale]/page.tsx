@@ -1,6 +1,7 @@
 import {
   RinconAiWidget,
 } from "@/components/rincon-ai/RinconAiWidget";
+
 import type {
   Metadata,
 } from "next";
@@ -46,6 +47,7 @@ import {
 import {
   getPublishedCmsTextContent,
 } from "@/lib/cms/public-content";
+
 
 /* ============================================================
    TYPES
@@ -100,320 +102,303 @@ interface HomeCopy {
   readonly navigationLabel:
     string;
 
-  readonly nav:
-    {
-      readonly menu:
-        string;
+  readonly nav: {
+    readonly menu:
+      string;
 
-      readonly services:
-        string;
+    readonly services:
+      string;
 
-      readonly stories:
-        string;
+    readonly stories:
+      string;
 
-      readonly community:
-        string;
+    readonly community:
+      string;
 
-      readonly rewards:
-        string;
+    readonly rewards:
+      string;
 
-      readonly locations:
-        string;
+    readonly locations:
+      string;
 
-      readonly order:
-        string;
-    };
+    readonly order:
+      string;
+  };
 
   readonly announcement:
     string;
 
-  readonly hero:
-    {
-      readonly eyebrow:
-        string;
+  readonly hero: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly primaryAction:
-        string;
+    readonly primaryAction:
+      string;
 
-      readonly secondaryAction:
-        string;
+    readonly secondaryAction:
+      string;
 
-      readonly highlights:
-        readonly string[];
-    };
+    readonly highlights:
+      readonly string[];
+  };
 
-  readonly services:
-    {
-      readonly eyebrow:
-        string;
+  readonly services: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly items:
-        readonly ServiceCopy[];
-    };
+    readonly items:
+      readonly ServiceCopy[];
+  };
 
-  readonly ordering:
-    {
-      readonly eyebrow:
-        string;
+  readonly ordering: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly action:
-        string;
+    readonly action:
+      string;
 
-      readonly secondaryAction:
-        string;
+    readonly secondaryAction:
+      string;
 
-      readonly steps:
-        readonly StepCopy[];
-    };
+    readonly steps:
+      readonly StepCopy[];
+  };
 
-  readonly menu:
-    {
-      readonly eyebrow:
-        string;
+  readonly menu: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly action:
-        string;
+    readonly action:
+      string;
 
-      readonly items:
-        readonly MenuItemCopy[];
-    };
+    readonly items:
+      readonly MenuItemCopy[];
+  };
 
-  readonly stories:
-    {
-      readonly eyebrow:
-        string;
+  readonly stories: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly labels:
-        readonly string[];
-    };
+    readonly labels:
+      readonly string[];
+  };
 
-  readonly community:
-    {
-      readonly eyebrow:
-        string;
+  readonly community: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly features:
-        readonly string[];
+    readonly features:
+      readonly string[];
 
-      readonly action:
-        string;
-    };
+    readonly action:
+      string;
+  };
 
-  readonly reviews:
-    {
-      readonly eyebrow:
-        string;
+  readonly reviews: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly action:
-        string;
+    readonly action:
+      string;
 
-      readonly suggestionAction:
-        string;
-    };
+    readonly suggestionAction:
+      string;
+  };
 
-  readonly rewards:
-    {
-      readonly eyebrow:
-        string;
+  readonly rewards: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly purchaseTitle:
-        string;
+    readonly purchaseTitle:
+      string;
 
-      readonly purchaseDescription:
-        string;
+    readonly purchaseDescription:
+      string;
 
-      readonly referralTitle:
-        string;
+    readonly referralTitle:
+      string;
 
-      readonly referralDescription:
-        string;
+    readonly referralDescription:
+      string;
 
-      readonly tokenTitle:
-        string;
+    readonly tokenTitle:
+      string;
 
-      readonly tokenDescription:
-        string;
+    readonly tokenDescription:
+      string;
 
-      readonly action:
-        string;
-    };
+    readonly action:
+      string;
+  };
 
-  readonly ai:
-    {
-      readonly eyebrow:
-        string;
+  readonly ai: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly features:
-        readonly string[];
+    readonly features:
+      readonly string[];
 
-      readonly action:
-        string;
-    };
+    readonly action:
+      string;
+  };
 
-  readonly events:
-    {
-      readonly eyebrow:
-        string;
+  readonly events: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly categories:
-        readonly string[];
+    readonly categories:
+      readonly string[];
 
-      readonly action:
-        string;
-    };
+    readonly action:
+      string;
+  };
 
-  readonly locations:
-    {
-      readonly eyebrow:
-        string;
+  readonly locations: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly open:
-        string;
+    readonly open:
+      string;
 
-      readonly comingSoon:
-        string;
+    readonly comingSoon:
+      string;
 
-      readonly directions:
-        string;
-    };
+    readonly directions:
+      string;
+  };
 
-  readonly social:
-    {
-      readonly eyebrow:
-        string;
+  readonly social: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
-    };
+    readonly description:
+      string;
+  };
 
-  readonly legal:
-    {
-      readonly eyebrow:
-        string;
+  readonly legal: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly items:
-        readonly string[];
-    };
+    readonly items:
+      readonly string[];
+  };
 
-  readonly faq:
-    {
-      readonly eyebrow:
-        string;
+  readonly faq: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly items:
-        readonly FaqCopy[];
-    };
+    readonly items:
+      readonly FaqCopy[];
+  };
 
-  readonly contact:
-    {
-      readonly eyebrow:
-        string;
+  readonly contact: {
+    readonly eyebrow:
+      string;
 
-      readonly title:
-        string;
+    readonly title:
+      string;
 
-      readonly description:
-        string;
+    readonly description:
+      string;
 
-      readonly contactAction:
-        string;
+    readonly contactAction:
+      string;
 
-      readonly careersTitle:
-        string;
+    readonly careersTitle:
+      string;
 
-      readonly careersDescription:
-        string;
+    readonly careersDescription:
+      string;
 
-      readonly careersAction:
-        string;
-    };
+    readonly careersAction:
+      string;
+  };
 
-  readonly footer:
-    {
-      readonly description:
-        string;
+  readonly footer: {
+    readonly description:
+      string;
 
-      readonly rights:
-        string;
-    };
+    readonly rights:
+      string;
+  };
 }
 
 
@@ -2094,13 +2079,22 @@ interface HomePageProps {
    STATIC GENERATION
    ============================================================ */
 
+/**
+ * Next.js 16 expects generateStaticParams() to return
+ * a mutable outer array.
+ *
+ * The locale property can remain readonly; only the array
+ * container must satisfy the generated AppPageConfig contract.
+ */
 export function generateStaticParams():
-  readonly {
+  {
     readonly locale:
       AppLocale;
   }[] {
   return SUPPORTED_LOCALES.map(
-    (locale) => ({
+    (
+      locale,
+    ) => ({
       locale,
     }),
   );
@@ -2120,7 +2114,6 @@ export async function generateMetadata({
   } =
     await params;
 
-
   if (
     !isSupportedLocale(
       rawLocale,
@@ -2128,7 +2121,6 @@ export async function generateMetadata({
   ) {
     return {};
   }
-
 
   /*
    * Prioridad de identidad social:
@@ -2149,11 +2141,9 @@ export async function generateMetadata({
       getPrimaryBrandLogo(),
     ]);
 
-
   const socialImage =
     openGraphImage ??
     primaryBrandLogo;
-
 
   return buildRouteMetadata(
     "home",
@@ -2271,197 +2261,195 @@ export default async function HomePage({
     AppLocale =
     rawLocale;
 
-const baseCopy =
-  homeContent[
-    locale
-  ];
+  const baseCopy =
+    homeContent[
+      locale
+    ];
+
+  const [
+    rcOrderaCatalog,
+    primaryBrandLogo,
+    heroBrandImage,
+    publishedHero,
+  ] =
+    await Promise.all([
+      getRcOrderaPublicCatalog(
+        "czapelska",
+      ),
+
+      getPrimaryBrandLogo(),
+
+      getBrandHeroImage(),
+
+      getPublishedCmsTextContent(
+        "home_hero",
+        locale,
+      ),
+    ]);
 
 
-const [
-  rcOrderaCatalog,
-  primaryBrandLogo,
-  heroBrandImage,
-  publishedHero,
-] =
-  await Promise.all([
+  /* ============================================================
+     CMS → HOME
+     ============================================================ */
 
-    getRcOrderaPublicCatalog(
-      "czapelska",
-    ),
+  /**
+   * Solamente aplicamos el contenido CMS si además cumple
+   * límites apropiados para un Hero.
+   *
+   * Que el CMS permita artículos largos no significa que
+   * debamos permitir 50.000 caracteres dentro del encabezado.
+   */
+  const validPublishedHero =
+    publishedHero &&
+    publishedHero.title.length <=
+      160 &&
+    publishedHero.body.length <=
+      1500
+      ? publishedHero
+      : null;
 
-    getPrimaryBrandLogo(),
+  /**
+   * El contenido escrito en código continúa siendo fallback.
+   *
+   * Si:
+   *
+   * - Supabase cae;
+   * - falta configuración;
+   * - el documento no existe;
+   * - está corrupto;
+   * - todavía no fue publicado;
+   *
+   * la página sigue funcionando normalmente.
+   */
+  const copy:
+    HomeCopy =
+    validPublishedHero
+      ? {
+          ...baseCopy,
 
-    getBrandHeroImage(),
-
-    getPublishedCmsTextContent(
-      "home_hero",
-      locale,
-    ),
-  ]);
-
-
-/* ============================================================
-   CMS → HOME
-   ============================================================ */
-
-/**
- * Solamente aplicamos el contenido CMS si además cumple
- * límites apropiados para un Hero.
- *
- * Que el CMS permita artículos largos no significa que
- * debamos permitir 50.000 caracteres dentro del encabezado.
- */
-const validPublishedHero =
-  publishedHero &&
-  publishedHero.title.length <=
-    160 &&
-  publishedHero.body.length <=
-    1500
-    ? publishedHero
-    : null;
-
-
-/**
- * El contenido escrito en código continúa siendo fallback.
- *
- * Si:
- *
- * - Supabase cae;
- * - falta configuración;
- * - el documento no existe;
- * - está corrupto;
- * - todavía no fue publicado;
- *
- * la página sigue funcionando normalmente.
- */
-const copy:
-  HomeCopy =
-  validPublishedHero
-    ? {
-        ...baseCopy,
-
-        hero: {
-          ...baseCopy.hero,
-
-          title:
-            validPublishedHero.title,
-
-          description:
-            validPublishedHero.body,
-        },
-      }
-    : baseCopy;
-  const orderHref =
-  buildRcOrderaOrderUrl(
-    "czapelska",
-  );
-
-const numberLocale =
-  locale ===
-  "pl"
-    ? "pl-PL"
-    : locale ===
-        "es"
-      ? "es-CO"
-      : "en-GB";
-
-const liveMenuItems =
-  rcOrderaCatalog
-    ? rcOrderaCatalog
-        .categories
-        .flatMap(
-          (
-            category,
-          ) =>
-            category
-              .products
-              .filter(
-                (
-                  product,
-                ) =>
-                  product
-                    .available,
-              )
-              .map(
-                (
-                  product,
-                ) => {
-                  const formattedPrice =
-                    new Intl.NumberFormat(
-                      numberLocale,
-                      {
-                        maximumFractionDigits:
-                          2,
-                      },
-                    ).format(
-                      product
-                        .price,
-                    );
-
-                  const price =
-                    rcOrderaCatalog
-                      .settings
-                      .currencyPosition ===
-                    "before"
-                      ? `${rcOrderaCatalog.settings.currencySymbol}${formattedPrice}`
-                      : `${formattedPrice} ${rcOrderaCatalog.settings.currencySymbol}`;
-
-                  return {
-                    key:
-                      product
-                        .id ??
-                      `${category.name}:${product.name}`,
-
-                    title:
-                      product
-                        .name,
-
-                    description:
-                      product
-                        .description,
-
-                    category:
-                      category
-                        .name,
-
-                    price,
-                  };
-                },
-              ),
-        )
-        .slice(
-          0,
-          6,
-        )
-    : [];
-
-const menuItems =
-  liveMenuItems.length >
-  0
-    ? liveMenuItems
-    : copy
-        .menu
-        .items
-        .map(
-          (
-            item,
-          ) => ({
-            key:
-              `fallback:${item.title}`,
+          hero: {
+            ...baseCopy.hero,
 
             title:
-              item.title,
+              validPublishedHero.title,
 
             description:
-              item.description,
+              validPublishedHero.body,
+          },
+        }
+      : baseCopy;
 
-            category:
-              null,
+  const orderHref =
+    buildRcOrderaOrderUrl(
+      "czapelska",
+    );
 
-            price:
-              null,
-          }),
-        );
+  const numberLocale =
+    locale ===
+    "pl"
+      ? "pl-PL"
+      : locale ===
+          "es"
+        ? "es-CO"
+        : "en-GB";
+
+  const liveMenuItems =
+    rcOrderaCatalog
+      ? rcOrderaCatalog
+          .categories
+          .flatMap(
+            (
+              category,
+            ) =>
+              category
+                .products
+                .filter(
+                  (
+                    product,
+                  ) =>
+                    product
+                      .available,
+                )
+                .map(
+                  (
+                    product,
+                  ) => {
+                    const formattedPrice =
+                      new Intl.NumberFormat(
+                        numberLocale,
+                        {
+                          maximumFractionDigits:
+                            2,
+                        },
+                      ).format(
+                        product
+                          .price,
+                      );
+
+                    const price =
+                      rcOrderaCatalog
+                        .settings
+                        .currencyPosition ===
+                      "before"
+                        ? `${rcOrderaCatalog.settings.currencySymbol}${formattedPrice}`
+                        : `${formattedPrice} ${rcOrderaCatalog.settings.currencySymbol}`;
+
+                    return {
+                      key:
+                        product
+                          .id ??
+                        `${category.name}:${product.name}`,
+
+                      title:
+                        product
+                          .name,
+
+                      description:
+                        product
+                          .description,
+
+                      category:
+                        category
+                          .name,
+
+                      price,
+                    };
+                  },
+                ),
+          )
+          .slice(
+            0,
+            6,
+          )
+      : [];
+
+  const menuItems =
+    liveMenuItems.length >
+    0
+      ? liveMenuItems
+      : copy
+          .menu
+          .items
+          .map(
+            (
+              item,
+            ) => ({
+              key:
+                `fallback:${item.title}`,
+
+              title:
+                item.title,
+
+              description:
+                item.description,
+
+              category:
+                null,
+
+              price:
+                null,
+            }),
+          );
 
   const whatsappHref =
     getWhatsappHref(
@@ -2500,6 +2488,7 @@ const menuItems =
     red:
       "border-t-[#c92d39]",
   } as const;
+
 
   return (
     <>
@@ -2559,47 +2548,48 @@ const menuItems =
             "
             aria-label="Rincón Colombiano"
           >
-{
-  primaryBrandLogo
-    ? (
-        <span
-          className="
-            block
-            h-14
-            w-20
-            shrink-0
-            bg-contain
-            bg-center
-            bg-no-repeat
-            sm:w-24
-          "
-          style={{
-            backgroundImage:
-              `url("${primaryBrandLogo.publicUrl}")`,
-          }}
-          aria-hidden="true"
-        />
-      )
-    : (
-        <span
-          className="
-            grid
-            size-11
-            shrink-0
-            place-items-center
-            rounded-full
-            bg-[#f7c600]
-            text-sm
-            font-black
-            text-[#12100e]
-            shadow-sm
-          "
-          aria-hidden="true"
-        >
-          RC
-        </span>
-      )
-}
+            {
+              primaryBrandLogo
+                ? (
+                    <span
+                      className="
+                        block
+                        h-14
+                        w-20
+                        shrink-0
+                        bg-contain
+                        bg-center
+                        bg-no-repeat
+                        sm:w-24
+                      "
+                      style={{
+                        backgroundImage:
+                          `url("${primaryBrandLogo.publicUrl}")`,
+                      }}
+                      aria-hidden="true"
+                    />
+                  )
+                : (
+                    <span
+                      className="
+                        grid
+                        size-11
+                        shrink-0
+                        place-items-center
+                        rounded-full
+                        bg-[#f7c600]
+                        text-sm
+                        font-black
+                        text-[#12100e]
+                        shadow-sm
+                      "
+                      aria-hidden="true"
+                    >
+                      RC
+                    </span>
+                  )
+            }
+
             <span
               className="
                 leading-none
@@ -3078,6 +3068,7 @@ const menuItems =
                   "
                 >
                   {copy.hero.primaryAction}
+
                   <span
                     className="ml-2"
                     aria-hidden="true"
@@ -3148,194 +3139,194 @@ const menuItems =
             </div>
 
 
-{
-  heroBrandImage
-    ? (
-        <div
-          role="img"
-          aria-label={
-            heroBrandImage.altText ||
-            "Rincón Colombiano — restaurante colombiano en Varsovia"
-          }
-          className="
-            relative
-            min-h-[31rem]
-            overflow-hidden
-            rounded-[2.5rem]
-            bg-[#12100e]
-            bg-cover
-            bg-center
-            bg-no-repeat
-            shadow-[0_30px_90px_rgba(18,16,14,0.24)]
-          "
-          style={{
-            backgroundImage:
-              `url("${heroBrandImage.publicUrl}")`,
-          }}
-        >
-          <div
-            className="
-              absolute
-              inset-x-0
-              top-0
-              h-2
-              bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
-            "
-            aria-hidden="true"
-          />
+            {
+              heroBrandImage
+                ? (
+                    <div
+                      role="img"
+                      aria-label={
+                        heroBrandImage.altText ||
+                        "Rincón Colombiano — restaurante colombiano en Varsovia"
+                      }
+                      className="
+                        relative
+                        min-h-[31rem]
+                        overflow-hidden
+                        rounded-[2.5rem]
+                        bg-[#12100e]
+                        bg-cover
+                        bg-center
+                        bg-no-repeat
+                        shadow-[0_30px_90px_rgba(18,16,14,0.24)]
+                      "
+                      style={{
+                        backgroundImage:
+                          `url("${heroBrandImage.publicUrl}")`,
+                      }}
+                    >
+                      <div
+                        className="
+                          absolute
+                          inset-x-0
+                          top-0
+                          h-2
+                          bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
+                        "
+                        aria-hidden="true"
+                      />
 
-          <div
-            className="
-              pointer-events-none
-              absolute
-              inset-0
-              bg-gradient-to-t
-              from-black/25
-              via-transparent
-              to-transparent
-            "
-            aria-hidden="true"
-          />
-        </div>
-      )
-    : (
-        <div
-          className="
-            relative
-            min-h-[31rem]
-            overflow-hidden
-            rounded-[2.5rem]
-            bg-[#12100e]
-            p-5
-            shadow-[0_30px_90px_rgba(18,16,14,0.24)]
-            sm:p-7
-          "
-        >
-          <div
-            className="
-              absolute
-              inset-x-0
-              top-0
-              h-2
-              bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
-            "
-          />
+                      <div
+                        className="
+                          pointer-events-none
+                          absolute
+                          inset-0
+                          bg-gradient-to-t
+                          from-black/25
+                          via-transparent
+                          to-transparent
+                        "
+                        aria-hidden="true"
+                      />
+                    </div>
+                  )
+                : (
+                    <div
+                      className="
+                        relative
+                        min-h-[31rem]
+                        overflow-hidden
+                        rounded-[2.5rem]
+                        bg-[#12100e]
+                        p-5
+                        shadow-[0_30px_90px_rgba(18,16,14,0.24)]
+                        sm:p-7
+                      "
+                    >
+                      <div
+                        className="
+                          absolute
+                          inset-x-0
+                          top-0
+                          h-2
+                          bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]
+                        "
+                      />
 
-          <div
-            className="
-              grid
-              h-full
-              min-h-[27rem]
-              grid-cols-2
-              gap-3
-            "
-          >
-            <div
-              className="
-                col-span-2
-                flex
-                min-h-44
-                flex-col
-                justify-end
-                rounded-[1.75rem]
-                bg-[#f7c600]
-                p-6
-              "
-            >
-              <span
-                className="
-                  text-xs
-                  font-black
-                  tracking-[0.15em]
-                  uppercase
-                "
-              >
-                Rincón
-              </span>
+                      <div
+                        className="
+                          grid
+                          h-full
+                          min-h-[27rem]
+                          grid-cols-2
+                          gap-3
+                        "
+                      >
+                        <div
+                          className="
+                            col-span-2
+                            flex
+                            min-h-44
+                            flex-col
+                            justify-end
+                            rounded-[1.75rem]
+                            bg-[#f7c600]
+                            p-6
+                          "
+                        >
+                          <span
+                            className="
+                              text-xs
+                              font-black
+                              tracking-[0.15em]
+                              uppercase
+                            "
+                          >
+                            Rincón
+                          </span>
 
-              <strong
-                className="
-                  mt-2
-                  max-w-md
-                  font-serif
-                  text-3xl
-                  leading-none
-                "
-              >
-                Gastronomía que cuenta una historia.
-              </strong>
-            </div>
+                          <strong
+                            className="
+                              mt-2
+                              max-w-md
+                              font-serif
+                              text-3xl
+                              leading-none
+                            "
+                          >
+                            Gastronomía que cuenta una historia.
+                          </strong>
+                        </div>
 
-            <div
-              className="
-                flex
-                min-h-52
-                flex-col
-                justify-between
-                rounded-[1.75rem]
-                bg-[#123d73]
-                p-5
-                text-white
-              "
-            >
-              <span
-                className="
-                  text-4xl
-                  font-black
-                  text-white/25
-                "
-                aria-hidden="true"
-              >
-                01
-              </span>
+                        <div
+                          className="
+                            flex
+                            min-h-52
+                            flex-col
+                            justify-between
+                            rounded-[1.75rem]
+                            bg-[#123d73]
+                            p-5
+                            text-white
+                          "
+                        >
+                          <span
+                            className="
+                              text-4xl
+                              font-black
+                              text-white/25
+                            "
+                            aria-hidden="true"
+                          >
+                            01
+                          </span>
 
-              <strong
-                className="
-                  text-xl
-                  text-white
-                "
-              >
-                RC ORDERA
-              </strong>
-            </div>
+                          <strong
+                            className="
+                              text-xl
+                              text-white
+                            "
+                          >
+                            RC ORDERA
+                          </strong>
+                        </div>
 
-            <div
-              className="
-                flex
-                min-h-52
-                flex-col
-                justify-between
-                rounded-[1.75rem]
-                bg-[#c92d39]
-                p-5
-                text-white
-              "
-            >
-              <span
-                className="
-                  text-4xl
-                  font-black
-                  text-white/25
-                "
-                aria-hidden="true"
-              >
-                02
-              </span>
+                        <div
+                          className="
+                            flex
+                            min-h-52
+                            flex-col
+                            justify-between
+                            rounded-[1.75rem]
+                            bg-[#c92d39]
+                            p-5
+                            text-white
+                          "
+                        >
+                          <span
+                            className="
+                              text-4xl
+                              font-black
+                              text-white/25
+                            "
+                            aria-hidden="true"
+                          >
+                            02
+                          </span>
 
-              <strong
-                className="
-                  text-xl
-                  text-white
-                "
-              >
-                Community
-              </strong>
-            </div>
+                          <strong
+                            className="
+                              text-xl
+                              text-white
+                            "
+                          >
+                            Community
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  )
+            }
           </div>
-        </div>
-      )
-}
-            </div>
         </section>
 
 
@@ -3621,6 +3612,7 @@ const menuItems =
                       .ordering
                       .action
                   }
+
                   <span
                     className="ml-2"
                     aria-hidden="true"
@@ -4431,10 +4423,12 @@ const menuItems =
                 {
                   number:
                     "01",
+
                   title:
                     copy
                       .rewards
                       .purchaseTitle,
+
                   description:
                     copy
                       .rewards
@@ -4443,10 +4437,12 @@ const menuItems =
                 {
                   number:
                     "02",
+
                   title:
                     copy
                       .rewards
                       .referralTitle,
+
                   description:
                     copy
                       .rewards
@@ -4455,10 +4451,12 @@ const menuItems =
                 {
                   number:
                     "03",
+
                   title:
                     copy
                       .rewards
                       .tokenTitle,
+
                   description:
                     copy
                       .rewards
@@ -4971,6 +4969,7 @@ const menuItems =
                       .locations
                       .directions
                   }
+
                   <span
                     className="ml-2"
                     aria-hidden="true"
@@ -5066,6 +5065,7 @@ const menuItems =
                       .locations
                       .directions
                   }
+
                   <span
                     className="ml-2"
                     aria-hidden="true"
@@ -5150,6 +5150,7 @@ const menuItems =
                 {
                   label:
                     "Instagram",
+
                   href:
                     siteConfig
                       .social
@@ -5158,6 +5159,7 @@ const menuItems =
                 {
                   label:
                     "TikTok",
+
                   href:
                     siteConfig
                       .social
@@ -5166,6 +5168,7 @@ const menuItems =
                 {
                   label:
                     "Facebook",
+
                   href:
                     siteConfig
                       .social
@@ -5174,6 +5177,7 @@ const menuItems =
                 {
                   label:
                     "WhatsApp",
+
                   href:
                     whatsappHref,
                 },
@@ -5703,45 +5707,45 @@ const menuItems =
                 gap-3
               "
             >
-{
-  primaryBrandLogo
-    ? (
-        <span
-          className="
-            block
-            h-16
-            w-28
-            shrink-0
-            bg-contain
-            bg-left
-            bg-no-repeat
-          "
-          style={{
-            backgroundImage:
-              `url("${primaryBrandLogo.publicUrl}")`,
-          }}
-          aria-hidden="true"
-        />
-      )
-    : (
-        <span
-          className="
-            grid
-            size-12
-            shrink-0
-            place-items-center
-            rounded-full
-            bg-[#f7c600]
-            text-sm
-            font-black
-            text-[#12100e]
-          "
-          aria-hidden="true"
-        >
-          RC
-        </span>
-      )
-}
+              {
+                primaryBrandLogo
+                  ? (
+                      <span
+                        className="
+                          block
+                          h-16
+                          w-28
+                          shrink-0
+                          bg-contain
+                          bg-left
+                          bg-no-repeat
+                        "
+                        style={{
+                          backgroundImage:
+                            `url("${primaryBrandLogo.publicUrl}")`,
+                        }}
+                        aria-hidden="true"
+                      />
+                    )
+                  : (
+                      <span
+                        className="
+                          grid
+                          size-12
+                          shrink-0
+                          place-items-center
+                          rounded-full
+                          bg-[#f7c600]
+                          text-sm
+                          font-black
+                          text-[#12100e]
+                        "
+                        aria-hidden="true"
+                      >
+                        RC
+                      </span>
+                    )
+              }
 
               <strong
                 className="
@@ -5919,11 +5923,12 @@ const menuItems =
           </div>
         </div>
       </footer>
+
       <RinconAiWidget
-  locale={locale}
-  orderHref={orderHref}
-  contactHref={primaryContactHref}
-/>
+        locale={locale}
+        orderHref={orderHref}
+        contactHref={primaryContactHref}
+      />
     </>
   );
 }
