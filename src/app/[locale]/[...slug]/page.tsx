@@ -593,6 +593,8 @@ function routeSegmentsMatch(
     )
   );
 }
+
+
 function isOrderRoute(
   locale:
     AppLocale,
@@ -617,6 +619,7 @@ function isOrderRoute(
     expectedSegments,
   );
 }
+
 
 function getRestaurantFromRoute(
   locale:
@@ -935,8 +938,16 @@ function getActiveServices(
    STATIC PARAMS
    ============================================================ */
 
+/**
+ * Next.js 16 exige que generateStaticParams() devuelva
+ * un array mutable.
+ *
+ * RestaurantStaticParam puede seguir teniendo propiedades
+ * readonly; únicamente el contenedor exterior debe cumplir
+ * el contrato AppPageConfig generado por Next.
+ */
 export function generateStaticParams():
-  readonly RestaurantStaticParam[] {
+  RestaurantStaticParam[] {
   return SUPPORTED_LOCALES
     .flatMap(
       (
@@ -1113,28 +1124,28 @@ export default async function RestaurantPage({
     notFound();
   }
 
- const locale:
-  AppLocale =
-  rawLocale;
+  const locale:
+    AppLocale =
+    rawLocale;
 
-if (
-  isOrderRoute(
-    locale,
-    slug,
-  )
-) {
-  redirect(
-    buildRcOrderaOrderUrl(
-      "czapelska",
-    ),
-  );
-}
+  if (
+    isOrderRoute(
+      locale,
+      slug,
+    )
+  ) {
+    redirect(
+      buildRcOrderaOrderUrl(
+        "czapelska",
+      ),
+    );
+  }
 
-const restaurant =
-  getRestaurantFromRoute(
-    locale,
-    slug,
-  );
+  const restaurant =
+    getRestaurantFromRoute(
+      locale,
+      slug,
+    );
 
   if (
     !restaurant
