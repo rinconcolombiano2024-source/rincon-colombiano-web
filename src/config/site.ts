@@ -102,14 +102,14 @@ export interface SiteConfig {
 
   readonly features: FeatureFlags;
 
-readonly orderAppUrl:
-  string | undefined;
+  readonly orderAppUrl:
+    string | undefined;
 
-readonly googleBusinessProfileUrl:
-  string | undefined;
+  readonly googleBusinessProfileUrl:
+    string | undefined;
 
-readonly googleSiteVerification:
-  string | undefined;
+  readonly googleSiteVerification:
+    string | undefined;
 }
 
 
@@ -142,15 +142,23 @@ function officialSocialUrl(
   allowedHosts: readonly string[],
 ): string {
   const candidate = value?.trim();
-  if (!candidate) return fallback;
+
+  if (!candidate) {
+    return fallback;
+  }
+
   try {
     const parsed = new URL(candidate);
+
     if (
       parsed.protocol !== "https:" ||
       parsed.username ||
       parsed.password ||
       !allowedHosts.includes(parsed.hostname.toLowerCase())
-    ) return fallback;
+    ) {
+      return fallback;
+    }
+
     return parsed.toString();
   } catch {
     return fallback;
@@ -160,20 +168,25 @@ function officialSocialUrl(
 /** Puede ser un teléfono internacional o una URL https://wa.me/. */
 function whatsappContactUrl(value: string | undefined): string {
   const candidate = value?.trim();
-  if (!candidate) return OFFICIAL_SOCIAL_LINKS.whatsapp;
+
+  if (!candidate) {
+    return OFFICIAL_SOCIAL_LINKS.whatsapp;
+  }
+
   if (/^\+?[0-9\s()-]+$/.test(candidate)) {
     const digits = candidate.replace(/\D/g, "");
+
     return digits.length >= 8 && digits.length <= 15
       ? `https://wa.me/${digits}`
       : OFFICIAL_SOCIAL_LINKS.whatsapp;
   }
+
   return officialSocialUrl(
     candidate,
     OFFICIAL_SOCIAL_LINKS.whatsapp,
     ["wa.me", "api.whatsapp.com"],
   );
 }
-
 
 
 /* ============================================================
@@ -326,6 +339,7 @@ export const supportedLocales =
 /* ============================================================
    PUBLIC SITE CONFIG
    ============================================================ */
+
 const environment =
   parseEnvironment(
     process.env[
