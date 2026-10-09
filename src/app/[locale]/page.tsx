@@ -49,6 +49,9 @@ import {
 } from "@/lib/cms/public-content";
 
 
+import { SocialLinks } from "@/components/social/SocialLinks";
+
+
 /* ============================================================
    TYPES
    ============================================================ */
