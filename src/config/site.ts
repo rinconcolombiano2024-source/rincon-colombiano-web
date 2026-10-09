@@ -1,3 +1,4 @@
+
 /**
  * ============================================================
  * RINCÓN COLOMBIANO WEB
@@ -121,6 +122,58 @@ const DEFAULT_SITE_URL =
 
 const PRODUCTION_SITE_URL =
   "https://rinconcolombiano.pl";
+
+/** Enlaces oficiales publicados por Rincón Colombiano. */
+export const OFFICIAL_SOCIAL_LINKS = {
+  whatsapp: "https://wa.me/message/OWMYNNNTJEIFF1",
+  instagram: "https://www.instagram.com/rinconcolombiano.pl",
+  tiktok: "https://www.tiktok.com/@rinconcolombiano.pl",
+  facebook: "https://www.facebook.com/share/1CdzPbwFAu/",
+} as const;
+
+/**
+ * Acepta únicamente URLs HTTPS y de los dominios oficiales.
+ * Si la variable pública está vacía o mal configurada, recupera el
+ * enlace oficial para no mostrar botones sin destino ni esquemas inseguros.
+ */
+function officialSocialUrl(
+  value: string | undefined,
+  fallback: string,
+  allowedHosts: readonly string[],
+): string {
+  const candidate = value?.trim();
+  if (!candidate) return fallback;
+  try {
+    const parsed = new URL(candidate);
+    if (
+      parsed.protocol !== "https:" ||
+      parsed.username ||
+      parsed.password ||
+      !allowedHosts.includes(parsed.hostname.toLowerCase())
+    ) return fallback;
+    return parsed.toString();
+  } catch {
+    return fallback;
+  }
+}
+
+/** Puede ser un teléfono internacional o una URL https://wa.me/. */
+function whatsappContactUrl(value: string | undefined): string {
+  const candidate = value?.trim();
+  if (!candidate) return OFFICIAL_SOCIAL_LINKS.whatsapp;
+  if (/^\+?[0-9\s()-]+$/.test(candidate)) {
+    const digits = candidate.replace(/\D/g, "");
+    return digits.length >= 8 && digits.length <= 15
+      ? `https://wa.me/${digits}`
+      : OFFICIAL_SOCIAL_LINKS.whatsapp;
+  }
+  return officialSocialUrl(
+    candidate,
+    OFFICIAL_SOCIAL_LINKS.whatsapp,
+    ["wa.me", "api.whatsapp.com"],
+  );
+}
+
 
 
 /* ============================================================
@@ -338,7 +391,7 @@ export const siteConfig:
       ),
 
     whatsapp:
-      optionalString(
+      whatsappContactUrl(
         process.env[
           "NEXT_PUBLIC_WHATSAPP_PHONE"
         ],
@@ -359,24 +412,30 @@ export const siteConfig:
 
   social: {
     instagram:
-      optionalString(
+      officialSocialUrl(
         process.env[
           "NEXT_PUBLIC_INSTAGRAM_URL"
         ],
+        OFFICIAL_SOCIAL_LINKS.instagram,
+        ["instagram.com", "www.instagram.com"],
       ),
 
     facebook:
-      optionalString(
+      officialSocialUrl(
         process.env[
           "NEXT_PUBLIC_FACEBOOK_URL"
         ],
+        OFFICIAL_SOCIAL_LINKS.facebook,
+        ["facebook.com", "www.facebook.com", "m.facebook.com"],
       ),
 
     tiktok:
-      optionalString(
+      officialSocialUrl(
         process.env[
           "NEXT_PUBLIC_TIKTOK_URL"
         ],
+        OFFICIAL_SOCIAL_LINKS.tiktok,
+        ["tiktok.com", "www.tiktok.com", "m.tiktok.com"],
       ),
   },
 
