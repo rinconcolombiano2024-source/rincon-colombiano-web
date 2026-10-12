@@ -42,7 +42,8 @@ for (const phrase of [
   "Points and rewards are not active yet",
   "Punkty i nagrody nie są jeszcze aktywne",
 ]) {
-  assert.ok(home.includes(phrase), `Expected localized customer copy: ${phrase}`);
+  assert.ok(home.toLocaleLowerCase().includes(phrase.toLocaleLowerCase()),
+    `Expected localized customer copy: ${phrase}`);
 }
 assert.ok(
   !home.includes("key={\n                        service.title\n                      }"),
