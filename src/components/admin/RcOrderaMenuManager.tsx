@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
+  addMenuProduct,
+  removeMenuProduct,
   detectProductImageMime,
   isSafeMenuRevision,
   menuProductCount,
@@ -181,6 +183,75 @@ function ProductCard({
   );
 }
 
+function AddProductForm({
+  busy,
+  onCreate,
+}: {
+  readonly busy: boolean;
+  readonly onCreate: (fields: {
+    name: string;
+    description: string;
+    price: number;
+    station: "kitchen" | "bar";
+  }) => boolean;
+}) {
+  function create(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    const rawPrice = String(fields.get("price") ?? "").trim().replace(",", ".");
+    const price = Number(rawPrice);
+    const station = fields.get("station") === "bar" ? "bar" : "kitchen";
+    const success = onCreate({
+      name: String(fields.get("name") ?? "").trim(),
+      description: String(fields.get("description") ?? "").trim(),
+      price,
+      station,
+    });
+    if (success) {
+      form.reset();
+    }
+  }
+
+  return (
+    <form onSubmit={create} className="mt-4 grid gap-3 rounded-2xl bg-[#faf9f6] p-5 sm:grid-cols-2">
+      <div>
+        <label htmlFor="ordera-new-name" className="block text-sm font-bold">Nuevo producto</label>
+        <input id="ordera-new-name" name="name" required maxLength={160} disabled={busy}
+          placeholder="Nombre del plato" className="mt-2 min-h-11 w-full rounded-xl border px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label htmlFor="ordera-new-price" className="block text-sm font-bold">Precio en PLN</label>
+        <input id="ordera-new-price" name="price" type="number" inputMode="decimal"
+          required min="0" max="9999" step="0.01" disabled={busy}
+          className="mt-2 min-h-11 w-full rounded-xl border px-3 py-2 text-sm" />
+      </div>
+      <div className="sm:col-span-2">
+        <label htmlFor="ordera-new-description" className="block text-sm font-bold">
+          Descripción del nuevo producto
+        </label>
+        <textarea id="ordera-new-description" name="description" maxLength={3000}
+          rows={2} disabled={busy}
+          className="mt-2 w-full rounded-xl border px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label htmlFor="ordera-new-station" className="block text-sm font-bold">
+          Estación de preparación
+        </label>
+        <select id="ordera-new-station" name="station" disabled={busy}
+          className="mt-2 min-h-11 w-full rounded-xl border bg-white px-3 py-2 text-sm">
+          <option value="kitchen">Cocina</option>
+          <option value="bar">Bar / bebidas</option>
+        </select>
+      </div>
+      <button type="submit" disabled={busy}
+        className="inline-flex min-h-11 items-center justify-center self-end rounded-full bg-[#123d73] px-5 text-sm font-black text-white disabled:opacity-50">
+        + Agregar al borrador
+      </button>
+    </form>
+  );
+}
+
 /**
  * Two separate authorization domains:
  * 1) Next.js server requires an approved Web administrator.
@@ -253,6 +324,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function reload() {
+    if (original && draft && JSON.stringify(original) !== JSON.stringify(draft) &&
+      !window.confirm("Tienes cambios sin guardar. ¿Descartarlos y recargar RC ORDERA?")) {
+      return;
+    }
     setBusy(true);
     setErrorMessage("");
     try {
@@ -267,6 +342,56 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar el menú.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  function addProduct(fields: {
+    name: string;
+    description: string;
+    price: number;
+    station: "kitchen" | "bar";
+  }): boolean {
+    if (!draft || !original || busy || !connected) {
+      return false;
+    }
+    try {
+      const id = `prod-web-${crypto.randomUUID()}`;
+      const candidate = addMenuProduct(draft, activeCategory, { ...fields, id });
+      if (!isSafeMenuRevision(original, candidate)) {
+        throw new Error("Máximo tres productos nuevos por guardado. Guarda los anteriores primero.");
+      }
+      setDraft(candidate);
+      setProductId(id);
+      setErrorMessage("");
+      setMessage("Nuevo producto añadido al borrador. Revisa sus datos y guarda en RC ORDERA.");
+      return true;
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No fue posible agregar el producto.");
+      return false;
+    }
+  }
+
+  function deleteProduct(product: RcMenuProduct): void {
+    if (!draft || !original || busy || !connected) {
+      return;
+    }
+    const confirmation = window.confirm(
+      `¿Retirar «${product.name}» del menú? Aún no se enviará a RC ORDERA hasta pulsar Guardar. Descarga primero el respaldo JSON.`,
+    );
+    if (!confirmation) {
+      return;
+    }
+    try {
+      const candidate = removeMenuProduct(draft, activeCategory, product.id);
+      if (!isSafeMenuRevision(original, candidate)) {
+        throw new Error("Por seguridad, sólo se permite eliminar un producto por guardado.");
+      }
+      setDraft(candidate);
+      setProductId("");
+      setMessage("Producto retirado del borrador local. Confirma con Guardar en RC ORDERA.");
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo eliminar el producto.");
     }
   }
 
@@ -432,14 +557,33 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </div>
           </div>
           {selected ? (
-            <ProductCard
-              key={`${activeCategory}:${selected.id}`}
-              product={selected}
-              busy={busy}
-              onApply={(patch) => patchProduct(selected.id, patch)}
-              onUpload={(file) => uploadImage(file, selected.id)}
-            />
+            <>
+              <ProductCard
+                key={`${activeCategory}:${selected.id}`}
+                product={selected}
+                busy={busy}
+                onApply={(patch) => patchProduct(selected.id, patch)}
+                onUpload={(file) => uploadImage(file, selected.id)}
+              />
+              <div className="mt-3 flex justify-end">
+                <button type="button" disabled={busy} onClick={() => deleteProduct(selected)}
+                  className="min-h-11 rounded-full border border-red-300 px-5 text-sm font-bold text-red-800 hover:bg-red-50 disabled:opacity-50">
+                  Retirar «{selected.name}» del menú
+                </button>
+              </div>
+            </>
           ) : <p className="mt-5 text-sm text-[#62594f]">No hay productos en esta categoría.</p>}
+          <details className="mt-7 rounded-2xl border border-[#e4dccf] bg-white p-5">
+            <summary className="cursor-pointer text-base font-black text-[#123d73]">
+              + Crear un producto en «{activeCategory}»
+            </summary>
+            <p className="mt-3 text-sm text-[#62594f]">
+              Los nuevos productos se crean con un ID único. Completa traducciones
+              adicionales en RC ORDERA cuando estén disponibles.
+              Se incorporarán al menú sólo cuando guardes el borrador.
+            </p>
+            <AddProductForm busy={busy} onCreate={addProduct} />
+          </details>
           <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
             <button type="button" disabled={!dirty || busy} onClick={() => void save()}
               className="inline-flex min-h-12 items-center rounded-full bg-[#f7c600] px-6 text-sm font-black text-[#12100e] disabled:cursor-not-allowed disabled:opacity-50">
@@ -452,8 +596,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </button>
           </div>
           <p className="mt-3 text-xs leading-6 text-[#62594f]">
-            Cambia productos existentes sin eliminar categorías ni ID. Las traducciones,
-            modificadores y estaciones de cocina se mantienen intactos.
+            Puedes modificar, crear o retirar productos sin borrar categorías.
+            Los productos existentes conservan identificadores, traducciones,
+            modificadores y estaciones de cocina. Hasta tres altas y una baja por guardado.
             Una fotografía subida no aparece en pedidos hasta guardar el menú.
           </p>
         </>
