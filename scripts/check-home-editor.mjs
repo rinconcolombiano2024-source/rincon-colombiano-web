@@ -1,0 +1,37 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import {
+  HOME_EDITABLE_SECTIONS,
+  HOME_EDITABLE_KEYS,
+  validHomeCmsCopy,
+} from "../src/config/home-cms.ts";
+
+assert.equal(HOME_EDITABLE_SECTIONS.length, 11);
+assert.equal(new Set(HOME_EDITABLE_KEYS).size, HOME_EDITABLE_KEYS.length,
+  "Duplicate CMS keys will cause conflicting publications");
+assert.ok(HOME_EDITABLE_KEYS.includes("home_seo"));
+assert.ok(HOME_EDITABLE_KEYS.includes("home_services"));
+
+for (const section of HOME_EDITABLE_SECTIONS) {
+  const copy = { kind: section.kind, title: "Texto de prueba", body: "Cocina colombiana en Varsovia" };
+  assert.equal(validHomeCmsCopy(section.key, copy), true);
+  assert.equal(validHomeCmsCopy(section.key, { ...copy, title: " " }), false);
+  assert.equal(validHomeCmsCopy(section.key, { ...copy, body: " " }), false);
+  assert.equal(validHomeCmsCopy(section.key, { ...copy, title: "a".repeat(section.maxTitle + 1) }), false);
+  assert.equal(validHomeCmsCopy(section.key, { ...copy, body: "a".repeat(section.maxBody + 1) }), false);
+  assert.equal(validHomeCmsCopy(section.key, { ...copy, kind: "article" }), false);
+}
+assert.equal(validHomeCmsCopy("home_unknown", {
+  title: "Title", body: "Description", kind: "page",
+}), false, "Cannot accept unknown editable areas");
+
+const home = await readFile("src/app/[locale]/page.tsx", "utf8");
+assert.doesNotMatch(home, /La web de Rincón Colombiano será el centro de contacto con la marca/);
+assert.doesNotMatch(home, /The Rincón Colombiano website is becoming the central relationship point/);
+assert.doesNotMatch(home, /Strona Rincón Colombiano jest centralnym punktem kontaktu z marką/);
+assert.match(home, /getPublishedCmsTextBatch/);
+assert.match(home, /home_seo/);
+const widget = await readFile("src/components/rincon-ai/RinconAiWidget.tsx", "utf8");
+assert.match(widget, /sm:block/, "Floating AI launcher should hide expanded copy on narrow screens");
+
+console.log("PASS: 11 editable commercial/SEO areas and mobile sales copy guard");
