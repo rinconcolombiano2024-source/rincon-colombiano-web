@@ -462,10 +462,10 @@ const homeContent:
         "Kolumbia w sercu Warszawy",
 
       title:
-        "Smak, kultura i społeczność. Wszystko w jednym Rincón.",
+        "Smak Kolumbii w sercu Warszawy.",
 
       description:
-        "Rincón Colombiano to nie tylko restauracja. Tworzymy cyfrowy dom naszej marki: gastronomię, zamówienia, wydarzenia, catering, społeczność, nagrody, historie i inteligentną obsługę klienta.",
+        "Odkryj autentyczne kolumbijskie potrawy, zamów jedzenie online lub zapytaj o catering na rodzinną uroczystość, spotkanie firmowe czy wydarzenie w Warszawie.",
 
       primaryAction:
         "Zamów online",
@@ -489,7 +489,7 @@ const homeContent:
         "Od rodzinnego obiadu po duże wydarzenie.",
 
       description:
-        "Strona Rincón Colombiano jest centralnym punktem kontaktu z marką. Każda usługa może być zarządzana później z prywatnego panelu administracyjnego bez zmiany kodu.",
+        "Wspólne obiady, urodziny i firmowe spotkania smakują lepiej z Kolumbią. Przygotujemy tradycyjne dania i catering dopasowany do Twojego wydarzenia.",
 
       items: [
         {
@@ -1011,10 +1011,10 @@ const homeContent:
         "Colombia en el corazón de Varsovia",
 
       title:
-        "Sabor, cultura y comunidad. Todo vive en Rincón.",
+        "El auténtico sabor de Colombia en Varsovia.",
 
       description:
-        "Rincón Colombiano es mucho más que un restaurante. Estamos construyendo el hogar digital de nuestra marca: gastronomía, pedidos, eventos, catering, comunidad, recompensas, historias y atención inteligente.",
+        "Disfruta nuestros platos tradicionales, haz tu pedido en línea o descubre nuestro catering para celebraciones familiares, reuniones de empresa y eventos en Varsovia.",
 
       primaryAction:
         "Pedir online",
@@ -1038,7 +1038,7 @@ const homeContent:
         "Desde una comida familiar hasta un gran evento.",
 
       description:
-        "La web de Rincón Colombiano será el centro de contacto con la marca. Cada servicio podrá administrarse desde una pantalla privada sin tener que cambiar código.",
+        "Llevamos el sabor y la tradición de Colombia a tus celebraciones, reuniones familiares y eventos empresariales en Varsovia. Cuéntanos qué estás preparando.",
 
       items: [
         {
@@ -1197,7 +1197,7 @@ const homeContent:
         "Los sabores que construyeron Rincón Colombiano.",
 
       description:
-        "Los precios y la disponibilidad se obtendrán directamente de RC ORDERA para evitar tener dos menús diferentes y desactualizados.",
+        "Descubre nuestros platos colombianos y consulta el menú, los precios y la disponibilidad actualizados para hacer tu pedido.",
 
       action:
         "Ver menú actual",
@@ -1560,10 +1560,10 @@ const homeContent:
         "Colombia in the heart of Warsaw",
 
       title:
-        "Flavor, culture and community. Everything lives in Rincón.",
+        "Authentic Colombian flavours in Warsaw.",
 
       description:
-        "Rincón Colombiano is more than a restaurant. We are building the digital home of our brand: food, ordering, events, catering, community, rewards, stories and intelligent customer care.",
+        "Enjoy traditional Colombian dishes, order online or explore catering for birthdays, family celebrations and business events in Warsaw.",
 
       primaryAction:
         "Order online",
@@ -1587,7 +1587,7 @@ const homeContent:
         "From a family meal to a major event.",
 
       description:
-        "The Rincón Colombiano website is becoming the central relationship point for the brand. Services will be manageable from a private admin interface without changing code.",
+        "Bring Colombian flavour and tradition to your family celebrations, business meetings and special events in Warsaw. Tell us what you are planning.",
 
       items: [
         {
@@ -1746,7 +1746,7 @@ const homeContent:
         "The flavors that built Rincón Colombiano.",
 
       description:
-        "Prices and availability will come directly from RC ORDERA so the website never maintains an outdated duplicate menu.",
+        "Discover our Colombian dishes, explore today's menu and check up-to-date prices and availability before ordering.",
 
       action:
         "View current menu",
