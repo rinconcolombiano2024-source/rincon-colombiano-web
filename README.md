@@ -269,3 +269,16 @@ respaldar el menú, crear un producto de prueba con autorización
 propietaria, comprobar su aparición en RC ORDERA, la fotografía
 subida, la sincronización del catálogo y retirar el producto de prueba.
 Una compilación verde no sustituye esta prueba real.
+
+## Verificación de Vercel antes de publicar el dominio oficial
+
+GitHub Actions incluye el flujo manual **Verify Vercel Staging (read-only)**.
+El responsable del proyecto Vercel puede lanzar las pruebas contra una URL de
+preview HTTPS `*.vercel.app`; el flujo rechaza credenciales, tokens en URL,
+redireccionamientos de dominio y destinos ajenos a Vercel. Verifica el HTML real,
+el menú, SEO, sitemap, enlaces, PWA y protección del panel sin escribir datos.
+
+Guía de preparación, variables, aceptación comercial y reversión DNS:
+[`docs/VERCEL-STAGING-RELEASE.md`](docs/VERCEL-STAGING-RELEASE.md).
+Un Quality Gate verde **no** significa que la página esté publicada ni que
+RC ORDERA haya procesado pagos de prueba.
