@@ -11,6 +11,7 @@ import {
 
 import { validPublishedSeo } from "@/config/seo-cms";
 import { getPublishedCmsTextContent } from "@/lib/cms/public-content";
+import { getBrandOpenGraphImage, getPrimaryBrandLogo } from "@/lib/brand/public-brand";
 
 import {
   buildBreadcrumbJsonLd,
@@ -234,7 +235,7 @@ const restaurantPageContent:
       "To miejsce dla osób szukających kolumbijskiego jedzenia, latynoskiej atmosfery, spotkań z rodziną i przyjaciółmi, cateringu oraz doświadczeń związanych z kulturą Kolumbii.",
 
     availabilityNote:
-      "Dostępność dań może zmieniać się w ciągu dnia. Aktualne produkty i ceny sprawdzisz w naszym menu oraz systemie zamówień RC ORDERA.",
+      "Dostępność dań może zmieniać się w ciągu dnia. Aktualne produkty i ceny sprawdzisz w menu, a szczegóły potwierdzisz przy składaniu zamówienia.",
 
     services: {
       dineIn:
@@ -343,7 +344,7 @@ const restaurantPageContent:
       "Un espacio para quienes buscan comida colombiana, ambiente latino, reuniones con familia y amigos, catering y experiencias relacionadas con la cultura de Colombia.",
 
     availabilityNote:
-      "La disponibilidad de los platos puede cambiar durante el día. Consulta los productos y precios actuales en nuestro menú y en RC ORDERA.",
+      "La disponibilidad de algunos platos puede variar durante el día. Consulta el menú y confirma el precio y la disponibilidad al hacer tu pedido.",
 
     services: {
       dineIn:
@@ -452,7 +453,7 @@ const restaurantPageContent:
       "A place for people looking for Colombian food, a Latin atmosphere, meals with family and friends, catering and experiences connected with Colombian culture.",
 
     availabilityNote:
-      "Dish availability may change during the day. Check current products and prices in our menu and RC ORDERA.",
+      "Some dishes may sell out during the day. Explore our menu and confirm the final price and availability when ordering.",
 
     services: {
       dineIn:
@@ -1040,11 +1041,15 @@ export async function generateMetadata({
   // Only the verified, open Czapelska location has a live SEO editor.
   // Brzeska is coming soon and remains intentionally non-indexable.
   const seoKey = "location_czapelska_seo";
-  const publishedSeo = indexable && restaurant.slug === "czapelska"
-    ? await getPublishedCmsTextContent(seoKey, rawLocale)
-    : null;
+  const [publishedSeo, openGraphImage, primaryLogo] = await Promise.all([
+    indexable && restaurant.slug === "czapelska"
+      ? getPublishedCmsTextContent(seoKey, rawLocale) : Promise.resolve(null),
+    getBrandOpenGraphImage(),
+    getPrimaryBrandLogo(),
+  ]);
   const seoCopy = publishedSeo && validPublishedSeo(seoKey, publishedSeo)
     ? publishedSeo : null;
+  const socialImage = openGraphImage ?? primaryLogo;
 
   return buildRestaurantMetadata({
     locale:
@@ -1053,13 +1058,22 @@ export async function generateMetadata({
     slug:
       restaurant.slug,
 
-    name:
-      seoCopy?.title ?? getRestaurantMetadataName(
-        restaurant,
-        rawLocale,
-      ),
+    name: getRestaurantMetadataName(
+      restaurant,
+      rawLocale,
+    ),
+
+    ...(seoCopy ? { metadataTitle: seoCopy.title } : {}),
 
     description: seoCopy?.body ?? description,
+
+    ...(socialImage ? {
+      images: [{
+        url: socialImage.publicUrl,
+        alt: socialImage.altText || "Rincón Colombiano",
+        type: socialImage.mimeType,
+      }],
+    } : {}),
 
     streetAddress:
       restaurant
