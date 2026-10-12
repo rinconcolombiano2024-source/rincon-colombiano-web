@@ -248,7 +248,8 @@ for (const guard of [
   "unappliedChanges",
   "setErrorMessage(unappliedWarning)",
   "onUnappliedChange(false)",
-  "window.confirm(",
+  "setPendingLogout(true)",
+  "Sí, desconectar y descartar",
 ]) {
   assert.ok(managerSource.includes(guard), `Missing unsaved-editor UX guard: ${guard}`);
 }
