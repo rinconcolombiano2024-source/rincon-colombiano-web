@@ -59,6 +59,26 @@ interface AdminModule {
 const ADMIN_MODULES = [
   {
     key:
+      "operations",
+
+    eyebrow:
+      "DIRECCIÓN / CEO",
+
+    title:
+      "Control de lanzamiento comercial",
+
+    description:
+      "Verifica estado real del dominio, RC ORDERA, marca, publicidad y las pruebas pendientes antes de publicar.",
+
+    status:
+      "active",
+
+    href:
+      "/admin/operations",
+  },
+
+  {
+    key:
       "brand",
 
     eyebrow:
