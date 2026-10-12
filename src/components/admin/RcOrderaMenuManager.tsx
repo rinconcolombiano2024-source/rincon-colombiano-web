@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   addMenuProduct,
@@ -339,6 +339,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingRemoval, setPendingRemoval] = useState<string | null>(null);
   const [pendingReload, setPendingReload] = useState(false);
+  // ProductCard holds controlled input state; a successful server
+  // refresh must replace its inputs even when the selected ID is unchanged.
+  const [serverSnapshotEpoch, setServerSnapshotEpoch] = useState(0);
 
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -361,6 +364,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setRevision(snapshot.revision);
       setCategory(Object.keys(snapshot.menu)[0] ?? "");
       setProductId("");
+      setServerSnapshotEpoch((value) => value + 1);
       setConnected(true);
       setMessage("Conexión autorizada con RC ORDERA. Descarga la copia de seguridad antes de editar.");
     } catch (error) {
@@ -386,6 +390,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setRevision(null);
       setCategory("");
       setProductId("");
+      setServerSnapshotEpoch((value) => value + 1);
       setMessage("");
       setBusy(false);
     }
@@ -407,6 +412,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setRevision(current.revision);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
+      setServerSnapshotEpoch((value) => value + 1);
       setMessage("Menú actualizado con la versión más reciente de RC ORDERA.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar el menú.");
@@ -481,32 +487,42 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function uploadImage(file: File, selectedProductId: string): Promise<string> {
-    if (busy || !connected || file.size === 0 || file.size > 2 * 1024 * 1024) {
+    if (busy || !connected) {
+      throw new Error("Espera a que termine la operación anterior.");
+    }
+    if (file.size === 0 || file.size > 2 * 1024 * 1024) {
       throw new Error("Imagen demasiado grande. Máximo 2 MB.");
     }
-    const mime = detectProductImageMime(new Uint8Array(await file.slice(0, 16).arrayBuffer()));
-    if (!mime) {
-      throw new Error("La imagen no tiene una firma válida JPG, PNG o WebP.");
-    }
+    // Lock all product selectors and actions while an upload is running.
+    // Otherwise the user can select another product halfway through an
+    // asynchronous upload and silently orphan or misapply its photo.
+    setBusy(true);
+    try {
+      const mime = detectProductImageMime(new Uint8Array(await file.slice(0, 16).arrayBuffer()));
+      if (!mime) {
+        throw new Error("La imagen no tiene una firma válida JPG, PNG o WebP.");
+      }
 
-    const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
-    const safeId = selectedProductId.replace(/[^a-z0-9_-]/gi, "-").slice(0, 90);
-    const path = `${config.restaurantId}/products/${safeId}-${crypto.randomUUID()}.${extension}`;
-    // Storage RLS: a restaurant owner can INSERT only under auth.uid()/...
-    const result = await client.storage.from("restaurant-media").upload(path, file, {
-      contentType: mime,
-      cacheControl: "31536000",
-      upsert: false,
-    });
-
-    if (result.error) {
-      throw new Error("Storage rechazó la imagen. Comprueba permisos de RC ORDERA.");
+      const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
+      const safeId = selectedProductId.replace(/[^a-z0-9_-]/gi, "-").slice(0, 90);
+      const path = `${config.restaurantId}/products/${safeId}-${crypto.randomUUID()}.${extension}`;
+      // Storage RLS: only the owner can insert to auth.uid()/products.
+      const result = await client.storage.from("restaurant-media").upload(path, file, {
+        contentType: mime,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+      if (result.error) {
+        throw new Error("Storage rechazó la imagen. Comprueba permisos de RC ORDERA.");
+      }
+      const url = client.storage.from("restaurant-media").getPublicUrl(path).data.publicUrl;
+      if (!validProductImageUrl(url)) {
+        throw new Error("Storage no devolvió una URL pública segura.");
+      }
+      return url;
+    } finally {
+      setBusy(false);
     }
-    const url = client.storage.from("restaurant-media").getPublicUrl(path).data.publicUrl;
-    if (!validProductImageUrl(url)) {
-      throw new Error("Storage no devolvió una URL pública segura.");
-    }
-    return url;
   }
 
   async function save() {
@@ -540,6 +556,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(current.menu);
       setDraft(current.menu);
       setRevision(current.revision);
+      setServerSnapshotEpoch((value) => value + 1);
       setMessage("Menú guardado en RC ORDERA. La web comercial puede tardar unos minutos en actualizar el catálogo público.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo guardar el menú.");
@@ -553,6 +570,19 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
+
+  useEffect(() => {
+    if (!dirty && !busy) {
+      return;
+    }
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      // Browsers choose their own generic dialog text.
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [dirty, busy]);
 
   return (
     <section aria-labelledby="ordera-edit-title" className="mt-8 rounded-[2rem] border border-[#d9dfe9] bg-white p-6 shadow-sm sm:p-8">
@@ -646,7 +676,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
           {selected ? (
             <>
               <ProductCard
-                key={`${activeCategory}:${selected.id}`}
+                key={`${activeCategory}:${selected.id}:${serverSnapshotEpoch}`}
                 product={selected}
                 busy={busy}
                 onApply={(patch) => patchProduct(selected.id, patch)}
@@ -693,7 +723,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               {busy ? "Guardando…" : "Guardar en RC ORDERA"}
             </button>
             <button type="button" disabled={!dirty || busy}
-              onClick={() => { setDraft(original); setProductId(""); setMessage("Borrador local descartado."); }}
+              onClick={() => {
+                setDraft(original);
+                setProductId("");
+                setServerSnapshotEpoch((value) => value + 1);
+                setMessage("Borrador local descartado.");
+              }}
               className="inline-flex min-h-12 items-center rounded-full border px-6 text-sm font-bold disabled:opacity-50">
               Descartar borrador
             </button>

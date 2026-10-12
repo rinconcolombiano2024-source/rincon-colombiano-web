@@ -58,6 +58,21 @@ internal sealed class AdminWindow : Form
     };
 
     private bool _ready;
+    private bool _connecting;
+
+    // Native shortcuts are pinned to known protected routes. This list is
+    // intentionally NOT supplied by the server, a URL parameter or config.
+    private static readonly HashSet<string> AdminShortcuts = new(StringComparer.Ordinal)
+    {
+        "/admin",
+        "/admin/operations",
+        "/admin/menu",
+        "/admin/home",
+        "/admin/marketing",
+        "/admin/seo",
+        "/admin/brand",
+        "/admin/content",
+    };
 
     public AdminWindow()
     {
@@ -111,6 +126,38 @@ internal sealed class AdminWindow : Form
         toolbar.Controls.Add(refresh, 2, 0);
         toolbar.Controls.Add(website, 3, 0);
 
+        var shortcuts = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 56,
+            BackColor = Color.FromArgb(244, 241, 235),
+            Padding = new Padding(12, 6, 12, 4),
+            WrapContents = false,
+            AutoScroll = true,
+            AccessibleName = "Accesos rápidos de administración",
+        };
+        foreach (var (label, path) in new (string Label, string Path)[]
+        {
+            ("CEO", "/admin/operations"),
+            ("Menú y productos", "/admin/menu"),
+            ("Editar web", "/admin/home"),
+            ("SEO", "/admin/seo"),
+            ("Publicidad", "/admin/marketing"),
+            ("Fotografías", "/admin/brand"),
+            ("Contenidos", "/admin/content"),
+        })
+        {
+            var button = Command(label, () => NavigateAdminPage(path));
+            button.AutoSize = true;
+            button.MinimumSize = new Size(92, 38);
+            button.Margin = new Padding(3, 2, 3, 2);
+            button.BackColor = Color.White;
+            button.FlatAppearance.BorderColor = Blue;
+            button.FlatAppearance.BorderSize = 1;
+            button.AccessibleName = $"Abrir {label} del administrador";
+            shortcuts.Controls.Add(button);
+        }
+
         var colors = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
@@ -152,6 +199,7 @@ internal sealed class AdminWindow : Form
         Controls.Add(_placeholder);
         Controls.Add(status);
         Controls.Add(colors);
+        Controls.Add(shortcuts);
         Controls.Add(toolbar);
 
         _web.Visible = false;
@@ -190,6 +238,30 @@ internal sealed class AdminWindow : Form
         {
             label.Text = message;
         }
+    }
+
+    private void NavigateAdminPage(string path)
+    {
+        if (!_ready || _web.CoreWebView2 is null)
+        {
+            Report("La administración aún no está lista. Espera la verificación del dominio.", true);
+            return;
+        }
+
+        if (!AdminShortcuts.Contains(path))
+        {
+            Report("Ruta administrativa no autorizada.", true);
+            return;
+        }
+
+        var target = new Uri(OfficialOrigin + path);
+        if (!IsOfficialAdminNavigation(target.AbsoluteUri))
+        {
+            Report("Destino fuera del dominio administrativo permitido.", true);
+            return;
+        }
+
+        _web.CoreWebView2.Navigate(target.AbsoluteUri);
     }
 
     private static bool IsOfficialAdminNavigation(string candidate)
@@ -254,11 +326,12 @@ internal sealed class AdminWindow : Form
 
     private async Task ConnectAsync()
     {
-        if (IsDisposed)
+        if (IsDisposed || _connecting)
         {
             return;
         }
 
+        _connecting = true;
         Report("Verificando administración de Rincón Colombiano…");
         try
         {
@@ -343,6 +416,10 @@ internal sealed class AdminWindow : Form
                 "Comprueba Internet y que Microsoft Edge WebView2 Runtime esté instalado.\n\n" +
                 exception.Message,
                 error: true);
+        }
+        finally
+        {
+            _connecting = false;
         }
     }
 }
