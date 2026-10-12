@@ -28,6 +28,7 @@ import {
   getBrandHeroImage,
   getBrandOpenGraphImage,
   getPrimaryBrandLogo,
+  getPublishedBrandAsset,
 } from "@/lib/brand/public-brand";
 
 import {
@@ -48,6 +49,8 @@ import {
   getPublishedCmsTextContent,
 } from "@/lib/cms/public-content";
 
+
+import FoodGallery from "@/components/commercial/FoodGallery";
 
 import { SocialLinks } from "@/components/social/SocialLinks";
 
@@ -2275,6 +2278,7 @@ export default async function HomePage({
     heroBrandImage,
     publishedHero,
     publishedCampaign,
+    publishedCampaignImage,
   ] =
     await Promise.all([
       getRcOrderaPublicCatalog(
@@ -2293,6 +2297,10 @@ export default async function HomePage({
       getPublishedCmsTextContent(
         "home_campaign",
         locale,
+      ),
+
+      getPublishedBrandAsset(
+        "campaign_primary",
       ),
     ]);
 
@@ -3421,16 +3429,28 @@ export default async function HomePage({
                     {activeCampaign.body}
                   </p>
                 </div>
-                <Link
-                  href={`/${locale}/menu`}
-                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#f7c600] px-7 text-sm font-black text-[#12100e] shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                >
-                  {campaignLabels[locale].action} →
-                </Link>
+                <div className="flex flex-col items-center gap-4">
+                  {publishedCampaignImage ? (
+                    <div
+                      role="img"
+                      aria-label={publishedCampaignImage.altText || activeCampaign.title}
+                      className="h-40 w-full min-w-52 rounded-2xl bg-cover bg-center bg-no-repeat shadow-md sm:h-44 lg:w-64"
+                      style={{ backgroundImage: `url("${publishedCampaignImage.publicUrl}")` }}
+                    />
+                  ) : null}
+                  <Link
+                    href={`/${locale}/menu`}
+                    className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#f7c600] px-7 text-sm font-black text-[#12100e] shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  >
+                    {campaignLabels[locale].action} →
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
         ) : null}
+
+        <FoodGallery locale={locale} />
 
         {/* ==================================================
             SERVICES
