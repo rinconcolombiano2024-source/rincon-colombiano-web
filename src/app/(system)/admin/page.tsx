@@ -239,13 +239,16 @@ const ADMIN_MODULES = [
       "SEO",
 
     title:
-      "Posicionamiento",
+      "SEO de la página de inicio",
 
     description:
-      "Páginas locales, metadatos, indexación, contenido gastronómico y crecimiento orgánico.",
+      "Edita título y descripción de Google en español, polaco e inglés. Las demás páginas continúan en configuración técnica.",
 
     status:
-      "planned",
+      "active",
+
+    href:
+      "/admin/home",
   },
 
   {
