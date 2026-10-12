@@ -49,6 +49,9 @@ jobs:
       - name: Protect RC ORDERA menu shape and product images
         run: node --experimental-strip-types scripts/check-rc-menu-editor.mjs
 
+      - name: Verify CEO launch gate honesty
+        run: node --experimental-strip-types scripts/check-launch-readiness.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
