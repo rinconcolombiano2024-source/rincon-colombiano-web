@@ -46,6 +46,9 @@ jobs:
       - name: Verify administrative photo permissions
         run: node --experimental-strip-types scripts/check-brand-roles.mjs
 
+      - name: Verify secure RC ORDERA server and public URL origins
+        run: node --experimental-strip-types scripts/test-rc-ordera-origins.mjs
+
       - name: Protect RC ORDERA menu shape and product images
         run: node --experimental-strip-types scripts/check-rc-menu-editor.mjs
 
