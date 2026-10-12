@@ -87,9 +87,10 @@ export function normalizeMenu(value: unknown): RcEditableMenu | null {
     return null;
   }
   const seen = new Set<string>();
-  const menu: RcEditableMenu = {};
+  const menu: RcEditableMenu = Object.create(null) as RcEditableMenu;
   for (const [category, products] of entries) {
     if (category.trim().length === 0 || category.length > 120 ||
+      category === "__proto__" || category === "constructor" ||
       !Array.isArray(products) || products.length > 300) {
       return null;
     }
@@ -139,42 +140,140 @@ export function updateProduct(
   };
 }
 
+/**
+ * RC ORDERA product creation uses a unique, collision-resistant ID. The
+ * existing menu format is preserved (stations and PL/ES/EN translations).
+ * No backend writes occur until the owner explicitly saves the whole draft.
+ */
+export interface RcNewProductFields {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly price: number;
+  readonly station: "kitchen" | "bar";
+}
+
+const NEW_PRODUCT_ID = /^prod-web-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function addMenuProduct(
+  menu: RcEditableMenu,
+  category: string,
+  fields: RcNewProductFields,
+): RcEditableMenu {
+  const group = menu[category];
+  if (!group || group.length >= 300 ||
+    !NEW_PRODUCT_ID.test(fields.id) ||
+    Object.values(menu).some((products) => products.some((item) => item.id === fields.id))) {
+    throw new Error("Categoría llena, producto duplicado o ID inválido.");
+  }
+  const name = fields.name.trim();
+  const nextProduct: RcMenuProduct = {
+    id: fields.id,
+    name,
+    description: fields.description.trim(),
+    price: fields.price,
+    available: true,
+    imageUrl: "",
+    station: fields.station,
+    translations: {
+      es: { name, description: fields.description.trim() },
+      pl: { name: "", description: "" },
+      en: { name: "", description: "" },
+    },
+  };
+  if (!isValidProduct(nextProduct) ||
+    !["kitchen", "bar"].includes(fields.station)) {
+    throw new Error("El nuevo producto contiene datos no válidos.");
+  }
+  return {
+    ...menu,
+    [category]: [...group, nextProduct],
+  };
+}
+
+export function removeMenuProduct(
+  menu: RcEditableMenu,
+  category: string,
+  productId: string,
+): RcEditableMenu {
+  const group = menu[category];
+  if (!group || !group.some((product) => product.id === productId)) {
+    throw new Error("Producto inexistente.");
+  }
+  if (menuProductCount(menu) <= 1) {
+    throw new Error("No se puede eliminar el último producto del menú.");
+  }
+  return {
+    ...menu,
+    [category]: group.filter((product) => product.id !== productId),
+  };
+}
+
+function hasPreservedMetadata(before: RcMenuProduct, after: RcMenuProduct): boolean {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  for (const key of ["name", "description", "price", "available", "imageUrl"]) {
+    keys.delete(key);
+  }
+  for (const key of keys) {
+    if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Validates at most 3 additions and 1 removal per save.
+ * Existing product IDs, relative order, all metadata and category structure
+ * must remain stable. Newly added products can only be appended; their
+ * initial metadata is tightly constrained to the supported RC ORDERA shape.
+ */
 export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown): boolean {
   const next = normalizeMenu(candidate);
-  if (!next) {
+  if (!next || menuProductCount(next) === 0) {
     return false;
   }
   const originalGroups = Object.keys(original);
   const nextGroups = Object.keys(next);
   if (originalGroups.length !== nextGroups.length ||
-    originalGroups.some((category) => !Object.hasOwn(next, category))) {
+    originalGroups.some((category, i) => nextGroups[i] !== category)) {
     return false;
   }
-  for (const [category, previous] of Object.entries(original)) {
-    const edited = next[category];
-    if (!edited || edited.length !== previous.length) {
-      return false;
-    }
-    for (let i = 0; i < previous.length; i++) {
-      const before = previous[i];
-      const after = edited[i];
-      if (!before || !after || before.id !== after.id) {
-        return false;
-      }
-      // The UI cannot change IDs, translations, modifiers, category
-      // order or kitchen routing; prevent accidental future changes.
-      const unchangedKeys = new Set([
-        ...Object.keys(before),
-        ...Object.keys(after),
-      ]);
-      for (const key of ["name", "description", "price", "available", "imageUrl"]) {
-        unchangedKeys.delete(key);
-      }
-      for (const key of unchangedKeys) {
-        if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
+  let added = 0;
+  let removed = 0;
+  for (const category of originalGroups) {
+    const before = original[category] ?? [];
+    const after = next[category] ?? [];
+    const beforeById = new Map(before.map((item, index) => [item.id, { item, index }]));
+    let lastExistingIndex = -1;
+    let encounteredNew = false;
+    let retained = 0;
+    for (const product of after) {
+      const existing = beforeById.get(product.id);
+      if (!existing) {
+        encounteredNew = true;
+        added++;
+        if (!NEW_PRODUCT_ID.test(product.id) ||
+          !["kitchen", "bar"].includes(String(product.station)) ||
+          typeof product.description !== "string" ||
+          typeof product.imageUrl !== "string" ||
+          !isObject(product.translations) ||
+          Object.keys(product).some((key) =>
+            !["id", "name", "description", "price", "available", "imageUrl", "station", "translations"].includes(key))) {
           return false;
         }
+        continue;
       }
+      if (encounteredNew || existing.index <= lastExistingIndex ||
+        !hasPreservedMetadata(existing.item, product)) {
+        return false;
+      }
+      lastExistingIndex = existing.index;
+      retained++;
+    }
+    removed += before.length - retained;
+    if (added > 3 || removed > 1) {
+      return false;
     }
   }
   return true;
