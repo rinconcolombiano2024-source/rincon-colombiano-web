@@ -47,25 +47,35 @@ export function validProductImageUrl(value: string): boolean {
   }
 }
 
+interface ProductInput {
+  readonly id?: unknown;
+  readonly name?: unknown;
+  readonly price?: unknown;
+  readonly available?: unknown;
+  readonly description?: unknown;
+  readonly imageUrl?: unknown;
+}
+
 export function isValidProduct(value: unknown): value is RcMenuProduct {
   if (!isObject(value)) {
     return false;
   }
-  return typeof value["id"] === "string" &&
-    value["id"].length > 0 &&
-    typeof value["name"] === "string" &&
-    value["name"].trim().length > 0 &&
-    value["name"].length <= 160 &&
-    typeof value["price"] === "number" &&
-    Number.isFinite(value["price"]) &&
-    value["price"] >= 0 &&
-    value["price"] <= 9999 &&
-    Math.round(value["price"] * 100) === value["price"] * 100 &&
-    typeof value["available"] === "boolean" &&
-    (value["description"] === undefined ||
-      (typeof value["description"] === "string" && value["description"].length <= 3000)) &&
-    (value["imageUrl"] === undefined ||
-      (typeof value["imageUrl"] === "string" && validProductImageUrl(value["imageUrl"])));
+  const product = value as ProductInput;
+  return typeof product.id === "string" &&
+    product.id.length > 0 &&
+    typeof product.name === "string" &&
+    product.name.trim().length > 0 &&
+    product.name.length <= 160 &&
+    typeof product.price === "number" &&
+    Number.isFinite(product.price) &&
+    product.price >= 0 &&
+    product.price <= 9999 &&
+    Math.round(product.price * 100) === product.price * 100 &&
+    typeof product.available === "boolean" &&
+    (product.description === undefined ||
+      (typeof product.description === "string" && product.description.length <= 3000)) &&
+    (product.imageUrl === undefined ||
+      (typeof product.imageUrl === "string" && validProductImageUrl(product.imageUrl)));
 }
 
 export function normalizeMenu(value: unknown): RcEditableMenu | null {
