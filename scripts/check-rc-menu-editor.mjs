@@ -83,7 +83,11 @@ assert.throws(() => addMenuProduct(firstAdded, "BEBIDAS",
 const oneRemoved = removeMenuProduct(menu, "BEBIDAS", "prod-masato");
 assert.equal(isSafeMenuRevision(menu, oneRemoved), true, "one removal is safe");
 assert.equal(oneRemoved.BEBIDAS.length, 0, "empty category is allowed");
-const removedTwice = removeMenuProduct(oneRemoved, "PLATOS PRINCIPALES", "prod-bandeja");
+const removedTwice = removeMenuProduct(
+  removeMenuProduct(firstAdded, "BEBIDAS", "prod-masato"),
+  "PLATOS PRINCIPALES",
+  "prod-bandeja",
+);
 assert.equal(isSafeMenuRevision(menu, removedTwice), false, "two removals are blocked");
 assert.throws(() => removeMenuProduct({
   A: [{ id: "only", name: "Only", price: 1, available: true }],
@@ -96,7 +100,7 @@ assert.equal(isSafeMenuRevision(menu, {
     available: true, station: "cashier",
   }],
 }), false, "unsupported new product station blocked");
-assert.equal(normalizeMenu({ "__proto__": [] }), null, "prototype pollution blocked");
+assert.equal(normalizeMenu(JSON.parse('{"__proto__":[]}')), null, "prototype pollution blocked");
 
 assert.equal(validProductImageUrl("https://example.com/image.jpg"), true);
 assert.equal(validProductImageUrl(["java", "script:alert(1)"].join("")), false);
