@@ -9,12 +9,12 @@ import {
 } from "next/navigation";
 
 import {
-  buildMenuMetadata,
   buildRouteMetadata,
   serializeJsonLd,
 } from "@/config/seo";
 import { validPublishedSeo } from "@/config/seo-cms";
 import { getPublishedCmsTextContent } from "@/lib/cms/public-content";
+import { getBrandOpenGraphImage, getPrimaryBrandLogo } from "@/lib/brand/public-brand";
 import { buildVerifiedMenuJsonLd } from "@/config/seo-menu";
 
 import {
@@ -155,13 +155,13 @@ const menuPageContent:
       "Kolumbijskie menu Rincón Colombiano",
 
     description:
-      "Poznaj smaki Kolumbii w Warszawie. W Rincón Colombiano znajdziesz tradycyjne dania, przekąski i wyjątkowe kolumbijskie propozycje. Aktualne ceny i dostępność produktów są synchronizowane z naszym systemem zamówień RC ORDERA.",
+      "Odkryj smaki Kolumbii w Warszawie: tradycyjne dania, przekąski i nasze domowe specjały. Sprawdź menu i wybierz coś pysznego dla siebie.",
 
     order:
       "Zamów online",
 
     liveLabel:
-      "Menu połączone z RC ORDERA",
+      "Aktualne menu restauracji",
 
     unavailableLabel:
       "Aktualne menu jest chwilowo niedostępne online",
@@ -176,7 +176,7 @@ const menuPageContent:
       "Kolumbijskie dania, których warto spróbować",
 
     featuredDescription:
-      "Oferta może zmieniać się w zależności od dnia i dostępności. Aktualne produkty oraz ceny znajdziesz w menu połączonym z RC ORDERA.",
+      "Codziennie przygotowujemy nasze kolumbijskie specjały. Dostępność potraw i ceny możesz sprawdzić poniżej.",
 
     featuredDishes: [
       {
@@ -244,7 +244,7 @@ const menuPageContent:
       "Menu dostępne teraz",
 
     liveDescription:
-      "Poniższe produkty pochodzą bezpośrednio z publicznego katalogu RC ORDERA.",
+      "Poznaj dania dostępne obecnie w restauracji. Ostateczną dostępność potwierdzisz podczas składania zamówienia.",
 
     available:
       "Dostępne",
@@ -271,13 +271,13 @@ const menuPageContent:
       "Menú colombiano de Rincón Colombiano",
 
     description:
-      "Descubre los sabores de Colombia en Varsovia. En Rincón Colombiano encontrarás platos tradicionales, entradas y propuestas colombianas. Los precios y la disponibilidad actual se sincronizan con nuestro sistema de pedidos RC ORDERA.",
+      "Descubre el sabor de Colombia en Varsovia. Te esperan nuestros platos tradicionales, entradas y especialidades hechas con cariño. Consulta el menú y elige tus favoritos.",
 
     order:
       "Pedir en línea",
 
     liveLabel:
-      "Menú conectado con RC ORDERA",
+      "Menú actual del restaurante",
 
     unavailableLabel:
       "El menú actualizado no está disponible temporalmente en línea",
@@ -292,7 +292,7 @@ const menuPageContent:
       "Platos colombianos que vale la pena descubrir",
 
     featuredDescription:
-      "La oferta puede cambiar según el día y la disponibilidad. Los productos y precios actuales aparecen en el menú conectado con RC ORDERA.",
+      "Preparamos nuestros sabores colombianos cada día. Consulta aquí los platos y precios disponibles.",
 
     featuredDishes: [
       {
@@ -360,7 +360,7 @@ const menuPageContent:
       "Menú disponible ahora",
 
     liveDescription:
-      "Los siguientes productos proceden directamente del catálogo público de RC ORDERA.",
+      "Estos son los platos disponibles actualmente. Confirma su disponibilidad al realizar tu pedido.",
 
     available:
       "Disponible",
@@ -387,13 +387,13 @@ const menuPageContent:
       "Rincón Colombiano Colombian menu",
 
     description:
-      "Discover Colombian flavors in Warsaw. Rincón Colombiano brings together traditional dishes, snacks and Colombian specialties. Current prices and availability are synchronized with our RC ORDERA ordering system.",
+      "Discover authentic Colombian flavours in Warsaw. Enjoy traditional dishes, snacks and homemade favourites prepared with care. Explore the menu and choose your favourites.",
 
     order:
       "Order online",
 
     liveLabel:
-      "Menu connected to RC ORDERA",
+      "Today's restaurant menu",
 
     unavailableLabel:
       "The current online menu is temporarily unavailable",
@@ -408,7 +408,7 @@ const menuPageContent:
       "Colombian dishes worth discovering",
 
     featuredDescription:
-      "The offer may change depending on the day and availability. Current products and prices are shown through the menu connected to RC ORDERA.",
+      "Our Colombian favourites are prepared fresh throughout the week. Explore the dishes and prices available below.",
 
     featuredDishes: [
       {
@@ -476,7 +476,7 @@ const menuPageContent:
       "Menu available now",
 
     liveDescription:
-      "The products below come directly from the public RC ORDERA catalog.",
+      "Discover the dishes currently on our menu. Final availability is confirmed when you order.",
 
     available:
       "Available",
@@ -514,16 +514,24 @@ export async function generateMetadata({
     return {};
   }
 
-  const published = await getPublishedCmsTextContent("menu_seo", rawLocale);
-  if (published && validPublishedSeo("menu_seo", published)) {
-    return buildRouteMetadata("menu", rawLocale, {
-      title: published.title,
-      description: published.body,
-    });
-  }
-  return buildMenuMetadata(
-    rawLocale,
-  );
+  const [published, openGraphImage, primaryLogo] = await Promise.all([
+    getPublishedCmsTextContent("menu_seo", rawLocale),
+    getBrandOpenGraphImage(),
+    getPrimaryBrandLogo(),
+  ]);
+  const socialImage = openGraphImage ?? primaryLogo;
+  const seoCopy = published && validPublishedSeo("menu_seo", published)
+    ? published : null;
+  return buildRouteMetadata("menu", rawLocale, {
+    ...(seoCopy ? { title: seoCopy.title, description: seoCopy.body } : {}),
+    ...(socialImage ? {
+      images: [{
+        url: socialImage.publicUrl,
+        alt: socialImage.altText || "Rincón Colombiano",
+        type: socialImage.mimeType,
+      }],
+    } : {}),
+  });
 }
 
 
