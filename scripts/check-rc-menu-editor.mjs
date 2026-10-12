@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
   addMenuProduct, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision,
@@ -172,5 +173,38 @@ assert.equal(detectProductImageMime(new Uint8Array([
   82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80,
 ])), "image/webp");
 assert.equal(detectProductImageMime(new Uint8Array(16)), null);
+
+const catalogProduct = {
+  id: "dish-1", category: "MAIN", name: "Bandeja paisa",
+  description: "Descripción en español", price: 60,
+  available: true, imageUrl: null, station: "kitchen",
+  translations: {
+    pl: { name: "Kolumbijska bandeja paisa", description: "Tradycyjne danie" },
+    en: { name: "Colombian platter", description: "" },
+  },
+};
+assert.equal(localizeRcOrderaProduct(catalogProduct, "pl").name,
+  "Kolumbijska bandeja paisa", "Polish dish label is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "pl").description,
+  "Tradycyjne danie", "Polish description is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "en").name,
+  "Colombian platter", "English dish label is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "en").description,
+  "", "Missing English description is not silently replaced with Spanish text");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "es").name,
+  "Bandeja paisa", "No Spanish translation => use original name");
+assert.equal(catalogProduct.name, "Bandeja paisa",
+  "Localization never mutates the source product");
+const localizedCategories = localizeRcOrderaCategories([
+  { name: "PLATOS", products: [catalogProduct] },
+], "pl");
+assert.equal(localizedCategories[0].products[0].name, "Kolumbijska bandeja paisa");
+assert.equal(localizedCategories[0].products[0].price, 60,
+  "Published original prices must survive localization");
+assert.equal(localizeRcOrderaProduct({
+  ...catalogProduct,
+  translations: { pl: { name: " ", description: "Fake" } },
+}, "pl").name, "Bandeja paisa", "Blank translations never override real dish names");
+
 
 console.log("PASS: menu editing preserves product IDs/metadata, validates prices and image signatures");
