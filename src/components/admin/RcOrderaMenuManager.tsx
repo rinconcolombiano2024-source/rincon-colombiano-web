@@ -487,32 +487,42 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function uploadImage(file: File, selectedProductId: string): Promise<string> {
-    if (busy || !connected || file.size === 0 || file.size > 2 * 1024 * 1024) {
+    if (busy || !connected) {
+      throw new Error("Espera a que termine la operación anterior.");
+    }
+    if (file.size === 0 || file.size > 2 * 1024 * 1024) {
       throw new Error("Imagen demasiado grande. Máximo 2 MB.");
     }
-    const mime = detectProductImageMime(new Uint8Array(await file.slice(0, 16).arrayBuffer()));
-    if (!mime) {
-      throw new Error("La imagen no tiene una firma válida JPG, PNG o WebP.");
-    }
+    // Lock all product selectors and actions while an upload is running.
+    // Otherwise the user can select another product halfway through an
+    // asynchronous upload and silently orphan or misapply its photo.
+    setBusy(true);
+    try {
+      const mime = detectProductImageMime(new Uint8Array(await file.slice(0, 16).arrayBuffer()));
+      if (!mime) {
+        throw new Error("La imagen no tiene una firma válida JPG, PNG o WebP.");
+      }
 
-    const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
-    const safeId = selectedProductId.replace(/[^a-z0-9_-]/gi, "-").slice(0, 90);
-    const path = `${config.restaurantId}/products/${safeId}-${crypto.randomUUID()}.${extension}`;
-    // Storage RLS: a restaurant owner can INSERT only under auth.uid()/...
-    const result = await client.storage.from("restaurant-media").upload(path, file, {
-      contentType: mime,
-      cacheControl: "31536000",
-      upsert: false,
-    });
-
-    if (result.error) {
-      throw new Error("Storage rechazó la imagen. Comprueba permisos de RC ORDERA.");
+      const extension = mime === "image/jpeg" ? "jpg" : mime === "image/png" ? "png" : "webp";
+      const safeId = selectedProductId.replace(/[^a-z0-9_-]/gi, "-").slice(0, 90);
+      const path = `${config.restaurantId}/products/${safeId}-${crypto.randomUUID()}.${extension}`;
+      // Storage RLS: only the owner can insert to auth.uid()/products.
+      const result = await client.storage.from("restaurant-media").upload(path, file, {
+        contentType: mime,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+      if (result.error) {
+        throw new Error("Storage rechazó la imagen. Comprueba permisos de RC ORDERA.");
+      }
+      const url = client.storage.from("restaurant-media").getPublicUrl(path).data.publicUrl;
+      if (!validProductImageUrl(url)) {
+        throw new Error("Storage no devolvió una URL pública segura.");
+      }
+      return url;
+    } finally {
+      setBusy(false);
     }
-    const url = client.storage.from("restaurant-media").getPublicUrl(path).data.publicUrl;
-    if (!validProductImageUrl(url)) {
-      throw new Error("Storage no devolvió una URL pública segura.");
-    }
-    return url;
   }
 
   async function save() {
