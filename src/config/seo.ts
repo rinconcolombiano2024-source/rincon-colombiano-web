@@ -300,6 +300,12 @@ export interface PageSeoInput {
    ============================================================ */
 
 export interface RestaurantSeoInput {
+  /**
+   * Verified editorial SEO title, used ONLY for metadata.
+   * The restaurant's real business name remains in JSON-LD.
+   */
+  readonly metadataTitle?: string;
+
   readonly locale:
     SupportedLocale;
 
@@ -1753,6 +1759,7 @@ export function buildRestaurantMetadata(
     ].cityName;
 
   const title =
+    input.metadataTitle ??
     `${input.name} | ${city}`;
 
   return buildPageMetadata({
