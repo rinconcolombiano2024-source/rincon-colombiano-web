@@ -133,7 +133,7 @@ const widgetCopy:
         "Asystent Rincón • beta",
 
       welcome:
-        "Cześć! Jestem Rincón AI. Mogę pomóc w menu, zamówieniach, cateringu, wydarzeniach, lokalach i kontakcie. Na tym etapie korzystam wyłącznie ze sprawdzonych działań dostępnych na stronie.",
+        "Cześć! Jestem Rincón AI. Pomogę Ci znaleźć menu, złożyć zamówienie lub skontaktować się z nami w sprawie cateringu i wydarzeń.",
 
       placeholder:
         "Napisz pytanie…",
@@ -163,10 +163,10 @@ const widgetCopy:
         "Kontakt",
 
       menuAnswer:
-        "Aktualne menu znajdziesz w sekcji Menu. Gdy połączenie z RC ORDERA jest aktywne, strona korzysta z bieżącego katalogu restauracji.",
+        "Zajrzyj do naszego menu, by poznać dostępne dania i ceny. Dostępność potwierdzisz podczas zamawiania.",
 
       orderAnswer:
-        "Mogę skierować Cię bezpośrednio do systemu zamówień RC ORDERA.",
+        "Chcesz zamówić? Otwórz nasze zamówienia online i wybierz ulubione dania.",
 
       eventsAnswer:
         "Rincón obsługuje catering, wydarzenia, urodziny, firmy, rodziny, śniadania, niespodzianki i dekoracje. Najbezpieczniej przejść do kontaktu i opisać wydarzenie.",
@@ -175,13 +175,13 @@ const widgetCopy:
         "Informacje o lokalach Rincón znajdziesz w sekcji Lokale.",
 
       rewardsAnswer:
-        "Program Rincón Rewards jest rozwijany wokół zweryfikowanych zakupów i poleceń. Nagrody będą walidowane przez system, a nie wyłącznie przez obraz kodu QR.",
+        "Program punktów i nagród nie jest jeszcze aktywny. O aktualnych promocjach zapytaj nasz zespół.",
 
       allergyAnswer:
         "W przypadku alergii lub poważnych ograniczeń żywieniowych nie polegaj wyłącznie na czacie. Skontaktuj się bezpośrednio z personelem restauracji przed zamówieniem.",
 
       fallbackAnswer:
-        "Mogę teraz pomóc w menu, zamówieniach, cateringu, lokalach, nagrodach albo skierować Cię do zespołu Rincón. Pełne odpowiedzi AI oparte na danych restauracji zostaną podłączone jako kolejna warstwa.",
+        "Mogę pomóc Ci znaleźć menu, złożyć zamówienie lub skontaktować się z naszym zespołem. W innych sprawach napisz do nas bezpośrednio.",
 
       viewMenu:
         "Zobacz menu",
@@ -210,7 +210,7 @@ const widgetCopy:
         "Asistente Rincón • beta",
 
       welcome:
-        "¡Hola! Soy Rincón AI. Puedo ayudarte con menú, pedidos, catering, eventos, restaurantes y contacto. En esta etapa utilizo únicamente acciones verificadas disponibles en la web.",
+        "¡Hola! Soy Rincón AI. Te ayudo a encontrar el menú, hacer un pedido o contactar con nuestro equipo para catering y eventos.",
 
       placeholder:
         "Escribe tu pregunta…",
@@ -240,10 +240,10 @@ const widgetCopy:
         "Contacto",
 
       menuAnswer:
-        "Puedes consultar el menú actual en la sección Menú. Cuando la conexión con RC ORDERA está activa, la web utiliza el catálogo vigente del restaurante.",
+        "Descubre nuestros platos y precios en el menú. La disponibilidad final se confirma al realizar el pedido.",
 
       orderAnswer:
-        "Puedo llevarte directamente al sistema propio de pedidos RC ORDERA.",
+        "¿Te apetece algo colombiano? Abre nuestros pedidos en línea y elige tus platos favoritos.",
 
       eventsAnswer:
         "Rincón atiende catering, eventos, cumpleaños, empresas, familias, desayunos, sorpresas y decoración. Lo más seguro es contactar al equipo y describir lo que necesitas.",
@@ -252,13 +252,13 @@ const widgetCopy:
         "Puedes consultar la información de nuestros restaurantes en la sección Restaurantes.",
 
       rewardsAnswer:
-        "Rincón Rewards se está construyendo alrededor de compras y referidos realmente validados. Las recompensas se validarán en el sistema y no solamente mostrando una imagen QR.",
+        "El programa de puntos y recompensas todavía no está activo. Pregunta a nuestro equipo por las promociones disponibles.",
 
       allergyAnswer:
         "Si tienes alergias o restricciones alimentarias importantes, no dependas solamente del chat. Confirma directamente con el personal del restaurante antes de hacer el pedido.",
 
       fallbackAnswer:
-        "Ahora puedo ayudarte con menú, pedidos, catering, restaurantes, recompensas o conectarte con el equipo de Rincón. La capa completa de IA basada en datos reales del restaurante se conectará como siguiente etapa.",
+        "Puedo ayudarte a consultar el menú, realizar pedidos y contactar con nuestro equipo. Si necesitas algo más, estaremos encantados de atenderte.",
 
       viewMenu:
         "Ver menú",
@@ -287,7 +287,7 @@ const widgetCopy:
         "Rincón assistant • beta",
 
       welcome:
-        "Hi! I’m Rincón AI. I can help with the menu, ordering, catering, events, locations and contact. At this stage I only use verified actions available on the website.",
+        "Hi! I'm Rincón AI. I can help you explore our menu, order online or contact the team about catering and events.",
 
       placeholder:
         "Type your question…",
@@ -317,10 +317,10 @@ const widgetCopy:
         "Contact",
 
       menuAnswer:
-        "You can view the current menu in the Menu section. When the RC ORDERA connection is active, the website uses the restaurant’s current catalog.",
+        "Explore our menu for dishes and prices. Final availability is confirmed when you place your order.",
 
       orderAnswer:
-        "I can take you directly to the RC ORDERA ordering system.",
+        "Ready for a taste of Colombia? Open our online ordering page and pick your favourites.",
 
       eventsAnswer:
         "Rincón supports catering, events, birthdays, companies, families, breakfasts, surprises and table decoration. The safest next step is to contact the team and describe what you need.",
@@ -329,13 +329,13 @@ const widgetCopy:
         "You can find our restaurant information in the Locations section.",
 
       rewardsAnswer:
-        "Rincón Rewards is being built around verified purchases and referrals. Rewards will be validated by the system rather than by simply showing a QR image.",
+        "Our points and rewards programme isn't active yet. Ask our team about current promotions.",
 
       allergyAnswer:
         "For allergies or important dietary restrictions, do not rely on chat alone. Confirm directly with restaurant staff before ordering.",
 
       fallbackAnswer:
-        "I can currently help with menu, ordering, catering, locations, rewards or connect you with the Rincón team. The full AI layer grounded in live restaurant data will be connected as the next stage.",
+        "I can help you find the menu, place an order or contact our team. For anything else, please get in touch with us directly.",
 
       viewMenu:
         "View menu",
