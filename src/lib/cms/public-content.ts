@@ -798,11 +798,15 @@ export async function getPublishedCmsTextBatch(
     }
     const accepted = new Set(requested);
     for (const row of rows.slice(0, requested.length)) {
-      if (!isRecord(row) || typeof row.content_key !== "string" ||
-        !accepted.has(row.content_key)) {
+      if (!isRecord(row)) {
         continue;
       }
-      const key = row.content_key;
+      const record: { content_key?: unknown } = row;
+      if (typeof record.content_key !== "string" ||
+        !accepted.has(record.content_key)) {
+        continue;
+      }
+      const key = record.content_key;
       const normalized = normalizePublishedContent(row, key, locale);
       if (normalized) {
         empty.set(key, normalized);
