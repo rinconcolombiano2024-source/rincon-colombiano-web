@@ -97,7 +97,7 @@ function ProductCard({
     if (!name.trim() || name.length > 160 ||
       description.length > 3000 ||
       !Number.isFinite(value) || value < 0 || value > 9999 ||
-      Math.round(value * 100) !== value * 100 ||
+      Math.abs(value * 100 - Math.round(value * 100)) >= 0.000001 ||
       !validProductImageUrl(imageUrl.trim())) {
       setUploadMessage("Revisa nombre, precio, descripción y dirección HTTPS de la fotografía.");
       return;
