@@ -612,6 +612,11 @@ export async function saveContentDraft(
     redirect(`/admin/home?locale=${rawLocale}&status=saved`);
   }
 
+  if (readFormString(formData, "returnTo") === "seo" &&
+    ["home_seo", "menu_seo", "location_czapelska_seo"].includes(contentKey)) {
+    redirect(`/admin/seo?locale=${rawLocale}&status=saved`);
+  }
+
   redirectContent({
     success:
       "saved",
@@ -768,6 +773,14 @@ export async function publishContentDraft(
       redirect(`/admin/home?locale=${preferredLocale}&status=published`);
     }
     redirect("/admin/home?status=published");
+  }
+
+  if (readFormString(formData, "returnTo") === "seo") {
+    const preferredLocale = readFormString(formData, "locale");
+    if (preferredLocale && isCmsLocale(preferredLocale)) {
+      redirect(`/admin/seo?locale=${preferredLocale}&status=published`);
+    }
+    redirect("/admin/seo?status=published");
   }
 
   redirectContent({
