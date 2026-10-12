@@ -174,9 +174,13 @@ export default async function MarketingAdminPage({
           </p>
         </header>
 
-        {query.status === "unpublished" ? (
+        {query.status === "unpublished" || query.status === "saved" || query.status === "published" ? (
           <p role="status" className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-900">
-            La campaña publicada fue retirada. El cambio puede tardar hasta cinco minutos en reflejarse en toda la caché pública.
+            {query.status === "saved"
+              ? "Borrador guardado. Puedes revisarlo y publicarlo desde aquí."
+              : query.status === "published"
+                ? "Campaña publicada. La página pública puede tardar unos minutos en actualizarse."
+                : "La campaña publicada fue retirada. El cambio puede tardar hasta cinco minutos en reflejarse en toda la caché pública."}
           </p>
         ) : query.status ? (
           <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-900">
@@ -221,6 +225,7 @@ export default async function MarketingAdminPage({
                     </p>
                   ) : (
                     <form action={saveContentDraft} className="mt-6 space-y-4">
+                      <input type="hidden" name="returnTo" value="marketing" />
                       <input type="hidden" name="contentKey" value="home_campaign" />
                       <input type="hidden" name="locale" value={locale} />
                       <input type="hidden" name="kind" value="promotion" />
@@ -269,6 +274,7 @@ export default async function MarketingAdminPage({
 
                   {draft && canPublish && !kindConflict && !upToDate ? (
                     <form action={publishContentDraft} className="mt-5 border-t border-[#e4dccf] pt-5">
+                      <input type="hidden" name="returnTo" value="marketing" />
                       <input type="hidden" name="draftId" value={draft.id} />
                       <input type="hidden" name="expectedRevision" value={draft.revision} />
                       <button type="submit" className="inline-flex min-h-11 items-center rounded-full bg-[#f7c600] px-5 text-sm font-black text-[#12100e]">
