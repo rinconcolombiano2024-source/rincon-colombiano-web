@@ -910,26 +910,26 @@ export const routeSeoContent:
   home: {
     pl: {
       title:
-        "Rincón Colombiano | Kuchnia kolumbijska w Warszawie",
+        "Restauracja kolumbijska Warszawa | Rincón Colombiano",
 
       description:
-        "Poznaj Rincón Colombiano w Warszawie: autentyczna kuchnia kolumbijska, zamówienia, catering, wydarzenia, rezerwacje, społeczność i wyjątkowe doświadczenia.",
+        "Kuchnia kolumbijska na Pradze-Południe: bandeja paisa, lechona, tamal tolimense, arepas i empanadas. Zamów na wynos lub z dostawą w Warszawie.",
     },
 
     es: {
       title:
-        "Rincón Colombiano | Gastronomía colombiana en Varsovia",
+        "Restaurante colombiano en Varsovia | Rincón Colombiano",
 
       description:
-        "Descubre Rincón Colombiano en Varsovia: gastronomía colombiana, pedidos, catering, eventos, reservas, comunidad y experiencias especiales.",
+        "Auténtica comida colombiana en Varsovia: bandeja paisa, lechona, tamales, arepas y empanadas. Consulta nuestro menú, pedidos y catering.",
     },
 
     en: {
       title:
-        "Rincón Colombiano | Colombian food in Warsaw",
+        "Colombian restaurant in Warsaw | Rincón Colombiano",
 
       description:
-        "Discover Rincón Colombiano in Warsaw: Colombian food, ordering, catering, events, reservations, community and special experiences.",
+        "Colombian food in Warsaw: bandeja paisa, lechona, tamales, arepas and empanadas. Explore the menu, order online or ask about catering.",
     },
   },
 
@@ -937,10 +937,10 @@ export const routeSeoContent:
   menu: {
     pl: {
       title:
-        "Menu kolumbijskie w Warszawie | Rincón Colombiano",
+        "Kolumbijskie jedzenie i menu Warszawa | Rincón Colombiano",
 
       description:
-        "Poznaj menu Rincón Colombiano: kolumbijskie dania, przekąski, napoje i aktualna oferta dostępna w naszych lokalach w Warszawie.",
+        "Sprawdź aktualne menu Rincón Colombiano: bandeja paisa, lechona tolimense, tamale, empanadas, arepas i kolumbijskie napoje w Warszawie.",
     },
 
     es: {
@@ -948,7 +948,7 @@ export const routeSeoContent:
         "Menú colombiano en Varsovia | Rincón Colombiano",
 
       description:
-        "Descubre el menú de Rincón Colombiano: platos colombianos, entradas, bebidas y la oferta disponible en nuestros restaurantes de Varsovia.",
+        "Consulta nuestro menú colombiano en Varsovia: bandeja paisa, lechona tolimense, tamales, empanadas, arepas y bebidas típicas con precios actuales.",
     },
 
     en: {
@@ -956,7 +956,7 @@ export const routeSeoContent:
         "Colombian menu in Warsaw | Rincón Colombiano",
 
       description:
-        "Explore Rincón Colombiano's menu with Colombian dishes, snacks, drinks and the current offer available at our Warsaw locations.",
+        "Explore our Colombian menu in Warsaw: bandeja paisa, lechona, tamales, empanadas, arepas and traditional drinks with current prices.",
     },
   },
 
