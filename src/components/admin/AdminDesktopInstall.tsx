@@ -47,7 +47,9 @@ export default function AdminDesktopInstall() {
   }, []);
 
   async function install(): Promise<void> {
-    if (!installPrompt) return;
+    if (!installPrompt) {
+      return;
+    }
     try {
       await installPrompt.prompt();
       await installPrompt.userChoice;
