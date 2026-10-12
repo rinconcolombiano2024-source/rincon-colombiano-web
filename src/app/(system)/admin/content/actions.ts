@@ -18,6 +18,9 @@ import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 
+import { getHomeSection, validHomeCmsCopy } from "@/config/home-cms";
+import { SEO_EDITABLE_ROUTES, validPublishedSeo } from "@/config/seo-cms";
+
 
 /* ============================================================
    CMS CONSTANTS
@@ -54,6 +57,32 @@ const MAX_BODY_LENGTH =
 const MAX_CONTENT_KEY_LENGTH =
   120;
 
+
+/* ============================================================
+   COMMERCIALLY MANAGED CONTENT POLICY
+   ============================================================ */
+
+/**
+ * Browser maxLength is only UX; malicious POSTs can ignore it.
+ * Enforce the same length and document-kind limits on the server,
+ * without changing the legacy/advanced CMS's other content types.
+ *
+ * This also protects editorial drafts created before these controls
+ * when an owner/publisher later tries to publish them.
+ */
+function isValidManagedDocument(
+  key: string,
+  kind: string,
+  title: string,
+  body: string,
+): boolean {
+  const doc = { kind, title, body };
+  if (SEO_EDITABLE_ROUTES.some((route) => route.key === key)) {
+    return validPublishedSeo(key, doc);
+  }
+  const section = getHomeSection(key);
+  return !section || validHomeCmsCopy(key, doc);
+}
 
 /* ============================================================
    ROLE POLICY
@@ -372,6 +401,12 @@ export async function saveContentDraft(
     });
   }
 
+
+  if (!isValidManagedDocument(contentKey, rawKind, title, body)) {
+    redirectContent({
+      error: "invalid-managed-content",
+    });
+  }
 
   const expectedRevision =
     parseRevision(
@@ -700,6 +735,37 @@ export async function publishContentDraft(
   }
 
 
+  // Before publication validate older or externally-written drafts too.
+  // Only a genuine admin session can query these RLS-protected rows.
+  const { data: draft, error: draftError } = await supabase
+    .from("web_cms_drafts")
+    .select("content_key,kind,document,revision")
+    .eq("id", draftId)
+    .maybeSingle();
+
+  if (draftError || !draft) {
+    redirectContent({ error: "read" });
+  }
+
+  const managedKey = String(draft.content_key ?? "");
+  if (SEO_EDITABLE_ROUTES.some((route) => route.key === managedKey) ||
+      getHomeSection(managedKey)) {
+    const source = draft.document;
+    const sourceTitle = source && typeof source === "object" &&
+      !Array.isArray(source) && typeof source.title === "string"
+      ? source.title.trim() : "";
+    const sourceBody = source && typeof source === "object" &&
+      !Array.isArray(source) && typeof source.body === "string"
+      ? source.body.trim() : "";
+
+    if (Number(draft.revision) !== expectedRevision) {
+      redirectContent({ error: "conflict" });
+    }
+    if (!isValidManagedDocument(managedKey, String(draft.kind ?? ""), sourceTitle, sourceBody)) {
+      redirectContent({ error: "invalid-managed-content" });
+    }
+  }
+
   const {
     error,
   } =
@@ -762,6 +828,21 @@ export async function publishContentDraft(
     "/en",
   );
 
+  // Metadata for menu and the open restaurant is generated on these
+  // routes independently from /pl, /es, /en home pages. Invalidate
+  // all language siblings after approved SEO publication.
+  if (managedKey === "menu_seo") {
+    for (const lang of CMS_LOCALES) {
+      revalidatePath(`/${lang}/menu`);
+    }
+  } else if (managedKey === "location_czapelska_seo") {
+    revalidatePath("/pl/lokale/czapelska");
+    revalidatePath("/es/restaurantes/czapelska");
+    revalidatePath("/en/locations/czapelska");
+  }
+
+  revalidatePath("/admin/home");
+  revalidatePath("/admin/seo");
 
   if (readFormString(formData, "returnTo") === "marketing") {
     redirect("/admin/marketing?status=published");
