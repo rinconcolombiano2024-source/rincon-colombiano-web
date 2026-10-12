@@ -62,7 +62,7 @@ assert.match(contentActions, /if \(!isValidManagedDocument\(contentKey, rawKind,
 assert.match(contentActions, /if \(!isValidManagedDocument\(managedKey,/,
   "Legacy drafts must be validated before publication");
 for (const route of [
-  "/pl/menu", "/es/restaurantes/czapelska", "/en/locations/czapelska",
+  "`/${lang}/menu`", "/es/restaurantes/czapelska", "/en/locations/czapelska",
   "/admin/home", "/admin/seo",
 ]) {
   assert.ok(contentActions.includes(route), `Missing publication revalidation: ${route}`);
