@@ -179,7 +179,7 @@ internal sealed class AdminWindow : Form
 
     private static Button Command(string title, Func<Task> action)
     {
-        return Command(title, () => _ = action());
+        return Command(title, (Action)(() => { _ = action(); }));
     }
 
     private void Report(string message, bool error = false)
