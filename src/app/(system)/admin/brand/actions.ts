@@ -59,6 +59,10 @@ const BRAND_SLOTS = [
   "open_graph",
   "social_square",
   "hero_primary",
+  "campaign_primary",
+  "food_featured_1",
+  "food_featured_2",
+  "food_featured_3",
 ] as const;
 
 export type BrandSlot =
@@ -472,6 +476,14 @@ function getDefaultAltText(
 
     case "hero_primary":
       return "Rincón Colombiano — restaurante colombiano en Varsovia";
+
+    case "campaign_primary":
+      return "Campaña especial de Rincón Colombiano";
+
+    case "food_featured_1":
+    case "food_featured_2":
+    case "food_featured_3":
+      return "Plato colombiano preparado en Rincón Colombiano";
 
     case "logo_primary":
     case "logo_compact":
