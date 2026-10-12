@@ -34,7 +34,7 @@ function isLocale(value: unknown): value is Locale {
 }
 
 function parseDraft(value: unknown): CmsRow | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) { return null; }
   const row = value as {
     id?: unknown; locale?: unknown; content_key?: unknown;
     kind?: unknown; revision?: unknown; document?: unknown;
@@ -47,7 +47,7 @@ function parseDraft(value: unknown): CmsRow | null {
     return null;
   }
   const doc = row.document as { title?: unknown; body?: unknown };
-  if (typeof doc.title !== "string" || typeof doc.body !== "string") return null;
+  if (typeof doc.title !== "string" || typeof doc.body !== "string") { return null; }
   return {
     id: row.id, locale: row.locale, content_key: row.content_key,
     kind: row.kind, revision: row.revision as number,
@@ -56,12 +56,12 @@ function parseDraft(value: unknown): CmsRow | null {
 }
 
 function parsePublished(value: unknown): PublishedRow | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) { return null; }
   const row = value as {
     locale?: unknown; content_key?: unknown; source_revision?: unknown;
   };
   if (!isLocale(row.locale) || typeof row.content_key !== "string" ||
-    !Number.isSafeInteger(row.source_revision)) return null;
+    !Number.isSafeInteger(row.source_revision)) { return null; }
   return {
     locale: row.locale, content_key: row.content_key,
     source_revision: row.source_revision as number,
@@ -74,7 +74,7 @@ async function loadEditorData(): Promise<{
   readonly published: readonly PublishedRow[];
 }> {
   const client = await createSupabaseServerClient();
-  if (!client) return { connected: false, drafts: [], published: [] };
+  if (!client) { return { connected: false, drafts: [], published: [] }; }
 
   const [drafts, published] = await Promise.all([
     client.from("web_cms_drafts")
