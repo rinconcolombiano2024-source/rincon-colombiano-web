@@ -94,10 +94,15 @@ la configuracion del conector RC ORDERA ya existente y una cache de
 hasta cinco minutos. Si el backend no esta disponible se muestra un
 estado de error en vez de datos ficticios.
 
-**Importante:** este modulo es de SOLO LECTURA. Para editar productos,
-precios, imagenes del menu y stock desde aqui falta establecer una API
-de escritura autenticada, autorizada por sede y auditada en RC ORDERA.
-Las claves anon/publicas no se deben usar para dichas mutaciones.
+**Importante:** el catálogo público es de solo lectura. La **edición**
+de productos, precios, fotografías y traducciones se realiza en un
+módulo separado de esta pantalla, mediante inicio de sesión adicional
+con la **cuenta propietaria de RC ORDERA** y la RPC protegida
+`save_current_restaurant_menu`. El acceso de Rincón Admin por sí
+solo no autoriza una modificación del menú. La disponibilidad se
+controla por producto; no se gestionan existencias por cantidades.
+El editor requiere prueba manual de escritura con permisos reales
+antes de utilizarse en producción.
 
 El CMS de contenido y el gestor de imagenes de marca ya tienen
 pantallas administrativas en este repositorio, pero la biblioteca
@@ -224,9 +229,11 @@ administrar estos objetos temporales, sin borrar imágenes en uso.
 ### Respaldo y cambios seguros
 
 - Descargar copia JSON con revisión antes de empezar.
-- Actualizar sólo campos comerciales de productos existentes.
-- Conservar ID, categorías, orden, traducciones, modificadores,
-  estaciones y otros metadatos de RC ORDERA.
+- Actualizar datos comerciales y traducciones PL/ES/EN de los productos
+  existentes. No se crean traducciones automáticas ni se fabrican textos.
+- Conservar ID, categorías, orden, modificadores, estaciones y cualquier
+  otro metadato de RC ORDERA. Las traducciones de idiomas adicionales
+  y otros campos especiales se preservan sin cambios.
 - Recargar si hay conflicto de revisión; no sobrescribir a ciegas.
 - Se pueden crear productos y retirar un producto por guardado, sin borrar categorías.
 - Se admiten hasta 3 productos nuevos por guardado para facilitar revisión.
@@ -234,6 +241,12 @@ administrar estos objetos temporales, sin borrar imágenes en uso.
   borrador hasta que el propietario ejecuta «Guardar en RC ORDERA».
 - Productos nuevos reciben ID seguro, estación de cocina/bar y campos iniciales
   de traducción en ES/PL/EN. Los textos PL/EN necesitan revisión editorial.
+- El catálogo público puede mostrar traducciones aprobadas cuando el RPC
+  de RC ORDERA incluye el objeto `translations`. El menú y sus datos
+  estructurados utilizan entonces el idioma de la página; sin traducción
+  disponible se conserva el nombre original y no se inventa otro.
+- Verificar en staging que `get_public_restaurant_menu` publica
+  efectivamente las traducciones antes de prometer un menú traducido.
 - No se modifica la base de datos ni los pedidos durante el build/CI.
 
 Pruebas: `node --experimental-strip-types scripts/check-rc-menu-editor.mjs`.
