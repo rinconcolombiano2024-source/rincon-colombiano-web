@@ -22,6 +22,20 @@ type CampaignDraft = {
 };
 type Publication = { locale: Locale; sourceRevision: number };
 
+interface CampaignRowPayload {
+  readonly id?: unknown;
+  readonly locale?: unknown;
+  readonly kind?: unknown;
+  readonly document?: unknown;
+  readonly revision?: unknown;
+  readonly source_revision?: unknown;
+}
+
+interface CampaignDocumentPayload {
+  readonly title?: unknown;
+  readonly body?: unknown;
+}
+
 const campaigns = [
   { locale: "pl", name: "Polski", destination: "/pl" },
   { locale: "es", name: "Español", destination: "/es" },
@@ -36,7 +50,7 @@ function draftFromRow(value: unknown): CampaignDraft | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
-  const row = value as Record<string, unknown>;
+  const row = value as CampaignRowPayload;
   const document = row.document;
   if (
     !isLocale(row.locale) ||
@@ -50,7 +64,7 @@ function draftFromRow(value: unknown): CampaignDraft | null {
     return null;
   }
 
-  const copy = document as Record<string, unknown>;
+  const copy = document as CampaignDocumentPayload;
   if (typeof copy.title !== "string" || typeof copy.body !== "string") {
     return null;
   }
@@ -68,7 +82,7 @@ function publicationFromRow(value: unknown): Publication | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
-  const row = value as Record<string, unknown>;
+  const row = value as CampaignRowPayload;
   if (!isLocale(row.locale) || !Number.isSafeInteger(row.source_revision)) {
     return null;
   }
