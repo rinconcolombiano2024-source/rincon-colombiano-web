@@ -3,7 +3,7 @@ import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/inte
 import {
   addMenuProduct, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision,
-  getProductTranslation,
+  getProductTranslation, hasUnappliedProductChanges,
   normalizeMenu, updateProduct, validProductImageUrl,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
@@ -207,4 +207,51 @@ assert.equal(localizeRcOrderaProduct({
 }, "pl").name, "Bandeja paisa", "Blank translations never override real dish names");
 
 
+const editorBase = menu["PLATOS PRINCIPALES"][0];
+const unchangedFields = {
+  name: "Bandeja paisa",
+  description: "Traditional",
+  priceText: "60,00",
+  available: true,
+  imageUrl: "",
+  translations: {
+    pl: { name: "Bandeja", description: "Tradycyjna" },
+    es: { name: "", description: "" },
+    en: { name: "Bandeja", description: "" },
+  },
+};
+assert.equal(hasUnappliedProductChanges(editorBase, unchangedFields), false,
+  "Formatted money without a real price change must not show pending edits");
+assert.equal(hasUnappliedProductChanges(editorBase, {
+  ...unchangedFields, name: "Nueva bandeja",
+}), true, "An unapplied product title must be detected before changing products");
+assert.equal(hasUnappliedProductChanges(editorBase, {
+  ...unchangedFields, priceText: "NaN",
+}), true, "Invalid in-progress price is still an unapplied edit");
+assert.equal(hasUnappliedProductChanges(editorBase, {
+  ...unchangedFields, available: false,
+}), true, "Unchecked product availability is a real unapplied edit");
+assert.equal(hasUnappliedProductChanges(editorBase, {
+  ...unchangedFields, translations: {
+    ...unchangedFields.translations,
+    en: { name: "Colombian platter", description: "" },
+  },
+}), true, "Changing a translation must protect pending input");
+assert.equal(hasUnappliedProductChanges(editorBase, {
+  ...unchangedFields, imageUrl: "https://example.com/new-photo.jpg",
+}), true, "Photo URL change must be applied before changing products");
+const { readFile } = await import("node:fs/promises");
+const managerSource = await readFile("src/components/admin/RcOrderaMenuManager.tsx", "utf8");
+for (const guard of [
+  "hasUnappliedProductChanges(product",
+  "onUnappliedChange={reportUnappliedChanges}",
+  "unappliedChanges",
+  "setErrorMessage(unappliedWarning)",
+  "onUnappliedChange(false)",
+  "setPendingLogout(true)",
+  "Sí, desconectar y descartar",
+]) {
+  assert.ok(managerSource.includes(guard), `Missing unsaved-editor UX guard: ${guard}`);
+}
+console.log("PASS: un-applied product form fields protected independently of the RC ORDERA server menu draft");
 console.log("PASS: menu editing preserves product IDs/metadata, validates prices and image signatures");

@@ -156,6 +156,46 @@ function safeNewTranslations(value: unknown): boolean {
     Object.keys(translation).every((key) => key === "name" || key === "description"));
 }
 
+/**
+ * Compare product-editing INPUTS with their last applied draft.
+ * This distinction matters: local keystrokes have not even entered the menu
+ * draft until the operator presses "Aplicar al borrador". A green "sin cambios"
+ * counter must never permit silently losing those keystrokes.
+ *
+ * This pure check also handles commas in Polish/Spanish price input without
+ * treating 60,0 and 60.00 as different prices.
+ */
+export interface RcProductEditorFields {
+  readonly name: string;
+  readonly description: string;
+  readonly priceText: string;
+  readonly available: boolean;
+  readonly imageUrl: string;
+  readonly translations: Readonly<Record<RcTranslationLocale, RcProductTranslation>>;
+}
+
+export function hasUnappliedProductChanges(
+  product: RcMenuProduct,
+  fields: RcProductEditorFields,
+): boolean {
+  const normalizedPrice = Number(fields.priceText.trim().replace(",", "."));
+  if (!Number.isFinite(normalizedPrice) ||
+      fields.name.trim() !== product.name ||
+      fields.description !== (product.description ?? "") ||
+      normalizedPrice !== product.price ||
+      fields.available !== product.available ||
+      fields.imageUrl.trim() !== (product.imageUrl ?? "")) {
+    return true;
+  }
+
+  return SUPPORTED_TRANSLATION_LOCALES.some((locale) => {
+    const previous = getProductTranslation(product, locale);
+    const current = fields.translations[locale];
+    return current.name.trim() !== previous.name ||
+      current.description.trim() !== previous.description;
+  });
+}
+
 export function validProductImageUrl(value: string): boolean {
   if (value === "") {
     return true;
