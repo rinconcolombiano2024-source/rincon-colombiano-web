@@ -85,6 +85,7 @@ jobs:
           fi
 
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
+          node scripts/smoke-public.mjs http://127.0.0.1:3100
 
       - name: Upload temporary lockfile for repository commit
         if: ${{ always() && steps.lockfile.outputs.generated == 'true' }}

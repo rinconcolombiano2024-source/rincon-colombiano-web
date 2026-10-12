@@ -5149,7 +5149,7 @@ export default async function HomePage({
                 lg:justify-end
               "
             >
-              <SocialLinks />
+              <SocialLinks locale={locale} />
             </div>
           </div>
         </section>
