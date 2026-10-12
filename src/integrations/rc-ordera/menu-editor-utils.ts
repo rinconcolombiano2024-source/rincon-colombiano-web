@@ -19,16 +19,139 @@ export interface RcMenuProduct {
 
 export type RcEditableMenu = Record<string, RcMenuProduct[]>;
 
+export type RcTranslationLocale = "pl" | "es" | "en";
+
+export interface RcProductTranslation {
+  readonly name: string;
+  readonly description: string;
+}
+
+export type RcProductTranslationUpdates =
+  Partial<Record<RcTranslationLocale, RcProductTranslation>>;
+
 export interface RcProductUpdate {
   readonly name?: string;
   readonly description?: string;
   readonly price?: number;
   readonly available?: boolean;
   readonly imageUrl?: string;
+  readonly translations?: RcProductTranslationUpdates;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const SUPPORTED_TRANSLATION_LOCALES = ["pl", "es", "en"] as const;
+
+function validTranslationEntry(value: unknown): value is RcProductTranslation {
+  if (!isObject(value)) {
+    return false;
+  }
+  return typeof value.name === "string" &&
+    value.name.length <= 160 &&
+    typeof value.description === "string" &&
+    value.description.length <= 3000;
+}
+
+export function getProductTranslation(
+  product: RcMenuProduct,
+  locale: RcTranslationLocale,
+): RcProductTranslation {
+  const entries = product.translations;
+  const value = isObject(entries) ? entries[locale] : undefined;
+  if (validTranslationEntry(value)) {
+    return { name: value.name, description: value.description };
+  }
+  return { name: "", description: "" };
+}
+
+function mergeProductTranslations(
+  original: unknown,
+  changes: RcProductTranslationUpdates,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = isObject(original)
+    ? { ...original }
+    : {};
+  for (const locale of SUPPORTED_TRANSLATION_LOCALES) {
+    const translation = changes[locale];
+    if (translation === undefined) {
+      continue;
+    }
+    if (!validTranslationEntry(translation)) {
+      throw new Error("Traducción demasiado extensa o no válida.");
+    }
+    const previous = result[locale];
+    // Preserve future/RC ORDERA-specific metadata in each language record.
+    result[locale] = {
+      ...(isObject(previous) ? previous : {}),
+      name: translation.name.trim(),
+      description: translation.description.trim(),
+    };
+  }
+  return result;
+}
+
+/**
+ * Existing metadata cannot change except title/description on three language
+ * keys. Any other translation language or additional RC ORDERA fields survive.
+ */
+function isSafeTranslationChange(before: unknown, after: unknown): boolean {
+  if (JSON.stringify(before) === JSON.stringify(after)) {
+    return true;
+  }
+  if (!isObject(after) || (before !== undefined && !isObject(before))) {
+    return false;
+  }
+  const previous = isObject(before) ? before : {};
+  for (const [locale, original] of Object.entries(previous)) {
+    if (!Object.hasOwn(after, locale)) {
+      return false;
+    }
+    if (!SUPPORTED_TRANSLATION_LOCALES.some((supported) => supported === locale)) {
+      if (JSON.stringify(after[locale]) !== JSON.stringify(original)) {
+        return false;
+      }
+      continue;
+    }
+    const changed = after[locale];
+    if (!validTranslationEntry(changed)) {
+      return false;
+    }
+    if (!isObject(original)) {
+      return false;
+    }
+    const keys = new Set([...Object.keys(original), ...Object.keys(changed)]);
+    keys.delete("name");
+    keys.delete("description");
+    for (const key of keys) {
+      if (JSON.stringify(original[key]) !== JSON.stringify(changed[key])) {
+        return false;
+      }
+    }
+  }
+  for (const [locale, value] of Object.entries(after)) {
+    if (Object.hasOwn(previous, locale)) {
+      continue;
+    }
+    if (!SUPPORTED_TRANSLATION_LOCALES.some((supported) => supported === locale) ||
+      !validTranslationEntry(value) ||
+      Object.keys(value).some((key) => key !== "name" && key !== "description")) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function safeNewTranslations(value: unknown): boolean {
+  if (!isObject(value) ||
+    Object.keys(value).some((key) =>
+      !SUPPORTED_TRANSLATION_LOCALES.some((locale) => locale === key))) {
+    return false;
+  }
+  return Object.values(value).every((translation) =>
+    validTranslationEntry(translation) &&
+    Object.keys(translation).every((key) => key === "name" || key === "description"));
 }
 
 export function validProductImageUrl(value: string): boolean {
@@ -131,6 +254,9 @@ export function updateProduct(
   const next = {
     ...currentGroup[index],
     ...patch,
+    ...(patch.translations
+      ? { translations: mergeProductTranslations(currentGroup[index]?.translations, patch.translations) }
+      : {}),
   };
   if (!isValidProduct(next)) {
     throw new Error("Datos del producto no válidos");
@@ -213,7 +339,10 @@ export function removeMenuProduct(
 
 function hasPreservedMetadata(before: RcMenuProduct, after: RcMenuProduct): boolean {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
-  for (const key of ["name", "description", "price", "available", "imageUrl"]) {
+  if (!isSafeTranslationChange(before.translations, after.translations)) {
+    return false;
+  }
+  for (const key of ["name", "description", "price", "available", "imageUrl", "translations"]) {
     keys.delete(key);
   }
   for (const key of keys) {
@@ -259,7 +388,7 @@ export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown)
           !["kitchen", "bar"].includes(String(product.station)) ||
           typeof product.description !== "string" ||
           typeof product.imageUrl !== "string" ||
-          !isObject(product.translations) ||
+          !safeNewTranslations(product.translations) ||
           Object.keys(product).some((key) =>
             !["id", "name", "description", "price", "available", "imageUrl", "station", "translations"].includes(key))) {
           return false;
