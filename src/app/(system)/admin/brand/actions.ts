@@ -1,3 +1,5 @@
+import { BRAND_SLOTS } from "@/config/brand-slots";
+
 "use server";
 
 import {
@@ -50,20 +52,7 @@ const MAX_ORIGINAL_NAME_LENGTH =
    BRAND SLOTS
    ============================================================ */
 
-const BRAND_SLOTS = [
-  "logo_primary",
-  "logo_compact",
-  "logo_light",
-  "logo_dark",
-  "favicon",
-  "open_graph",
-  "social_square",
-  "hero_primary",
-  "campaign_primary",
-  "food_featured_1",
-  "food_featured_2",
-  "food_featured_3",
-] as const;
+
 
 export type BrandSlot =
   (typeof BRAND_SLOTS)[number];
