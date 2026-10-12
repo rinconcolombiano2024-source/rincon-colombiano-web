@@ -70,7 +70,7 @@ export function isValidProduct(value: unknown): value is RcMenuProduct {
     Number.isFinite(product.price) &&
     product.price >= 0 &&
     product.price <= 9999 &&
-    Math.round(product.price * 100) === product.price * 100 &&
+    Math.abs(product.price * 100 - Math.round(product.price * 100)) < 0.000001 &&
     typeof product.available === "boolean" &&
     (product.description === undefined ||
       (typeof product.description === "string" && product.description.length <= 3000)) &&
