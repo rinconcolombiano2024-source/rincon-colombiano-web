@@ -32,6 +32,10 @@ export const BRAND_SLOTS = [
   "open_graph",
   "social_square",
   "hero_primary",
+  "campaign_primary",
+  "food_featured_1",
+  "food_featured_2",
+  "food_featured_3",
 ] as const;
 
 
