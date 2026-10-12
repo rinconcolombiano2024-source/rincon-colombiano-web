@@ -17,6 +17,9 @@ const forbidden = [
   "This area will be powered from the private admin panel",
   "identidad estable dentro del sistema",
   "stable system identity",
+  "El sistema de fidelización formará parte",
+  "The loyalty system will live inside",
+  "Program lojalnościowy jest projektowany",
   "centrum relacji z klientem jest nasza własna strona",
   "La arquitectura incluye reservas",
   "Reservation architecture is included",
@@ -35,6 +38,9 @@ for (const phrase of [
   "Restauracja",
   "Restaurante",
   "Restaurant",
+  "los puntos y recompensas todavía no están activos",
+  "Points and rewards are not active yet",
+  "Punkty i nagrody nie są jeszcze aktywne",
 ]) {
   assert.ok(home.includes(phrase), `Expected localized customer copy: ${phrase}`);
 }
