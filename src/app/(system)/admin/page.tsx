@@ -239,16 +239,16 @@ const ADMIN_MODULES = [
       "SEO",
 
     title:
-      "SEO de la página de inicio",
+      "SEO local e internacional",
 
     description:
-      "Edita título y descripción de Google en español, polaco e inglés. Las demás páginas continúan en configuración técnica.",
+      "Gestiona metadatos de Google del inicio, menú y sede Czapelska en polaco, español e inglés.",
 
     status:
       "active",
 
     href:
-      "/admin/home",
+      "/admin/seo",
   },
 
   {
