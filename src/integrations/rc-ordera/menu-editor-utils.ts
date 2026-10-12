@@ -12,6 +12,8 @@ export interface RcMenuProduct {
   readonly available: boolean;
   readonly description?: string;
   readonly imageUrl?: string;
+  readonly station?: string;
+  readonly translations?: unknown;
   readonly [key: string]: unknown;
 }
 
