@@ -271,6 +271,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState<string | null>(null);
+  const [pendingReload, setPendingReload] = useState(false);
 
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -323,11 +325,13 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
-  async function reload() {
-    if (original && draft && JSON.stringify(original) !== JSON.stringify(draft) &&
-      !window.confirm("Tienes cambios sin guardar. ¿Descartarlos y recargar RC ORDERA?")) {
+  async function reload(force = false) {
+    if (!force && original && draft && JSON.stringify(original) !== JSON.stringify(draft)) {
+      setPendingReload(true);
       return;
     }
+    setPendingReload(false);
+    setPendingRemoval(null);
     setBusy(true);
     setErrorMessage("");
     try {
@@ -375,10 +379,11 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     if (!draft || !original || busy || !connected) {
       return;
     }
-    const confirmation = window.confirm(
-      `¿Retirar «${product.name}» del menú? Aún no se enviará a RC ORDERA hasta pulsar Guardar. Descarga primero el respaldo JSON.`,
-    );
-    if (!confirmation) {
+    setPendingRemoval(product.id);
+  }
+
+  function confirmRemoval(product: RcMenuProduct): void {
+    if (!draft || !original || busy || !connected || pendingRemoval !== product.id) {
       return;
     }
     try {
@@ -388,6 +393,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       }
       setDraft(candidate);
       setProductId("");
+      setPendingRemoval(null);
       setMessage("Producto retirado del borrador local. Confirma con Guardar en RC ORDERA.");
       setErrorMessage("");
     } catch (error) {
@@ -522,6 +528,21 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               className="min-h-11 rounded-full border border-[#123d73] px-5 text-sm font-bold text-[#123d73] disabled:opacity-50">
               Recargar desde RC ORDERA
             </button>
+            {pendingReload ? (
+              <div className="w-full rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="alert">
+                <p className="font-bold">Hay cambios sin guardar. Recargar los descartará.</p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <button type="button" disabled={busy} onClick={() => void reload(true)}
+                    className="min-h-11 rounded-full bg-amber-800 px-5 font-bold text-white">
+                    Sí, descartar borrador y recargar
+                  </button>
+                  <button type="button" onClick={() => setPendingReload(false)}
+                    className="min-h-11 rounded-full border px-5 font-bold">
+                    Seguir editando
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <button type="button" disabled={busy} onClick={() => void logout()}
               className="min-h-11 rounded-full border px-5 text-sm font-bold disabled:opacity-50">
               Desconectar
@@ -571,6 +592,22 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                   Retirar «{selected.name}» del menú
                 </button>
               </div>
+              {pendingRemoval === selected.id ? (
+                <div role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-950">
+                  <p className="font-bold">¿Confirmas retirar «{selected.name}»?</p>
+                  <p className="mt-2">Primero descarga una copia del menú. No se eliminará de RC ORDERA hasta guardar.</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <button type="button" disabled={busy} onClick={() => confirmRemoval(selected)}
+                      className="min-h-11 rounded-full bg-red-800 px-5 font-bold text-white">
+                      Confirmar retirada
+                    </button>
+                    <button type="button" onClick={() => setPendingRemoval(null)}
+                      className="min-h-11 rounded-full border px-5 font-bold">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </>
           ) : <p className="mt-5 text-sm text-[#62594f]">No hay productos en esta categoría.</p>}
           <details className="mt-7 rounded-2xl border border-[#e4dccf] bg-white p-5">
