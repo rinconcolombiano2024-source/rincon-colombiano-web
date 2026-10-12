@@ -2274,6 +2274,7 @@ export default async function HomePage({
     primaryBrandLogo,
     heroBrandImage,
     publishedHero,
+    publishedCampaign,
   ] =
     await Promise.all([
       getRcOrderaPublicCatalog(
@@ -2286,6 +2287,11 @@ export default async function HomePage({
 
       getPublishedCmsTextContent(
         "home_hero",
+        locale,
+      ),
+
+      getPublishedCmsTextContent(
+        "home_campaign",
         locale,
       ),
     ]);
@@ -2341,6 +2347,26 @@ export default async function HomePage({
           },
         }
       : baseCopy;
+
+  /**
+   * Una campaña únicamente aparece si un publicador autorizado
+   * la publicó como promoción y los textos tienen longitud segura.
+   * El resto de la web funciona sin datos CMS ni promociones.
+   */
+  const activeCampaign =
+    publishedCampaign?.kind === "promotion" &&
+    publishedCampaign.title.trim().length > 0 &&
+    publishedCampaign.title.length <= 120 &&
+    publishedCampaign.body.trim().length > 0 &&
+    publishedCampaign.body.length <= 500
+      ? publishedCampaign
+      : null;
+
+  const campaignLabels = {
+    pl: { eyebrow: "Prosto z Kolumbii", action: "Zobacz menu" },
+    es: { eyebrow: "Especial Rincón Colombiano", action: "Ver el menú" },
+    en: { eyebrow: "Rincón Colombiano special", action: "Explore the menu" },
+  } as const;
 
   const orderHref =
     buildRcOrderaOrderUrl(
@@ -3375,6 +3401,36 @@ export default async function HomePage({
           </div>
         </div>
 
+
+        {activeCampaign ? (
+          <section
+            id="campaign"
+            aria-labelledby="campaign-title"
+            className="bg-[#f7c600] py-10 sm:py-14"
+          >
+            <div className="site-container">
+              <div className="grid items-center gap-6 rounded-[2rem] bg-[#123d73] p-7 text-white shadow-xl sm:p-10 lg:grid-cols-[1fr_auto]">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.17em] text-[#f7c600]">
+                    {campaignLabels[locale].eyebrow}
+                  </p>
+                  <h2 id="campaign-title" className="mt-3 font-serif text-2xl font-bold sm:text-4xl">
+                    {activeCampaign.title}
+                  </h2>
+                  <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-7 text-white/85 sm:text-base">
+                    {activeCampaign.body}
+                  </p>
+                </div>
+                <Link
+                  href={`/${locale}/menu`}
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#f7c600] px-7 text-sm font-black text-[#12100e] shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  {campaignLabels[locale].action} →
+                </Link>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* ==================================================
             SERVICES
