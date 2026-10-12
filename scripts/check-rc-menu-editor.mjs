@@ -56,6 +56,7 @@ assert.equal(normalizeMenu({
   B: [{ id: "x", name: "Duplicate", price: 10, available: true }],
 }), null, "duplicate product IDs blocked");
 
+assert.ok(normalizeMenu({ "Precios": [{ id: "p", name: "Precio en céntimos", price: 0.29, available: true }] }), "decimal currency precision");
 assert.equal(validProductImageUrl("https://example.com/image.jpg"), true);
 assert.equal(validProductImageUrl(["java", "script:alert(1)"].join("")), false);
 assert.equal(validProductImageUrl("http://example.com"), false);
