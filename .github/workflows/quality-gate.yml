@@ -55,6 +55,9 @@ jobs:
       - name: Verify editable home and SEO content
         run: node --experimental-strip-types scripts/check-home-editor.mjs
 
+      - name: Prevent misleading customer and loyalty copy
+        run: node scripts/check-commercial-copy.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
