@@ -249,8 +249,7 @@ begin
     v_asset_id;
 
 end;
-$function$
-
+$function$;
 
 revoke all on function public.web_brand_register_asset(text,text,text,text,bigint,text,text,uuid) from public, anon, authenticated;
 grant execute on function public.web_brand_register_asset(text,text,text,text,bigint,text,text,uuid) to service_role;
