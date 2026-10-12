@@ -27,6 +27,11 @@ const socialLinks = {
 };
 
 const locales = ["pl", "es", "en"];
+const socialNavigationLabels = {
+  pl: "Media społecznościowe Rincón Colombiano",
+  es: "Redes sociales de Rincón Colombiano",
+  en: "Rincón Colombiano social media",
+};
 
 let errors = 0;
 
@@ -84,7 +89,7 @@ async function checkPage(locale) {
 
     report(
       section.includes(
-        'aria-label="Redes sociales de Rincón Colombiano"'
+        `aria-label="${socialNavigationLabels[locale]}"`
       ),
       `${path} contiene navegación social`
     );
@@ -114,6 +119,19 @@ async function checkPage(locale) {
       false,
       `${path}: ${String(error)}`
     );
+  }
+}
+
+async function checkMenuPage(locale) {
+  const path = `/${locale}/menu`;
+
+  try {
+    const result = await request(path);
+    report(result.status === 200, `${path} responde HTTP 200`);
+    report(result.body.includes("Rincón Colombiano"), `${path} muestra la marca`);
+    report(/<main\b/i.test(result.body), `${path} tiene contenido principal`);
+  } catch (error) {
+    report(false, `${path}: ${String(error)}`);
   }
 }
 
@@ -158,6 +176,7 @@ async function main() {
 
   for (const locale of locales) {
     await checkPage(locale);
+    await checkMenuPage(locale);
   }
 
   await checkInfrastructure();
