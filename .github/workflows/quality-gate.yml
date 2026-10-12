@@ -61,6 +61,9 @@ jobs:
       - name: Prevent misleading customer and loyalty copy
         run: node scripts/check-commercial-copy.mjs
 
+      - name: Block unsafe Vercel staging targets
+        run: node scripts/test-vercel-preview.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
