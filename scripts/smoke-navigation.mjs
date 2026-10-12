@@ -76,7 +76,7 @@ function hasNoindex(html) {
 
 function localHref(href, sourcePath) {
   const value = href.replaceAll("&amp;", "&").trim();
-  if (!value) return null;
+  if (!value) { return null; }
   if (/^(?:javascript|data|vbscript):/i.test(value)) {
     throw new Error(`Unsafe link from ${sourcePath}: ${value.slice(0, 100)}`);
   }
@@ -160,7 +160,7 @@ async function audit() {
     assert.ok(anchors.length > 0, `Indexed ${path} renders no links`);
     for (const attr of anchors) {
       const href = attr.get("href");
-      if (!href) continue;
+      if (!href) { continue; }
       const local = localHref(href, path);
       if (!local) continue;
       if (!links.has(local.path)) {
