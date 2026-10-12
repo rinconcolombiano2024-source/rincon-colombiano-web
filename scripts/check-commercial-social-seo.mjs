@@ -18,7 +18,9 @@ test("public menu never exposes internal catalog/connection technology copy", ()
     "Ostateczną dostępność potwierdzisz",
     "Confirma su disponibilidad",
     "Final availability is confirmed",
-  ]) assert.ok(menu.includes(phrase), `Missing PL/ES/EN text: ${phrase}`);
+  ]) {
+    assert.ok(menu.includes(phrase), `Missing PL/ES/EN text: ${phrase}`);
+  }
   assert.match(menu, /getRcOrderaPublicCatalog/);
   assert.match(menu, /buildRcOrderaOrderUrl/);
 });
@@ -31,7 +33,9 @@ test("home speaks as a Colombian restaurant in all three languages", () => {
     "Cocina, cultura y tradición colombiana",
     "Kolumbijska kuchnia, gościnność",
     "Colombian cuisine, warm hospitality",
-  ]) assert.ok(home.includes(text), `Missing customer copy: ${text}`);
+  ]) {
+    assert.ok(home.includes(text), `Missing customer copy: ${text}`);
+  }
   assert.doesNotMatch(home, /"[^"\n]*technologia z Warszawy[^"\n]*"/);
   assert.doesNotMatch(home, /"[^"\n]*tecnología colombiana desde Varsovia[^"\n]*"/);
   assert.match(home, /buildRcOrderaOrderUrl/);
@@ -45,12 +49,16 @@ test("Rincón AI answers do not promise an unfinished AI integration", () => {
     /La capa completa de IA/,
     /The full AI layer grounded/,
     /Pełne odpowiedzi AI/,
-  ]) assert.doesNotMatch(assistant, bad);
+  ]) {
+    assert.doesNotMatch(assistant, bad);
+  }
   for (const good of [
     "programa de puntos y recompensas todavía no está activo",
     "points and rewards programme isn't active yet",
     "Program punktów i nagród nie jest jeszcze aktywny",
-  ]) assert.ok(assistant.includes(good));
+  ]) {
+    assert.ok(assistant.includes(good));
+  }
   assert.match(assistant, /copy\.allergyAnswer/);
   assert.match(assistant, /copy\.safety/);
 });
