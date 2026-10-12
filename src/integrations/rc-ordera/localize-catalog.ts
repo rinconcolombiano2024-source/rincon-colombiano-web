@@ -21,7 +21,7 @@ export function localizeRcOrderaProduct(
   return {
     ...product,
     name,
-    description: translated.description,
+    description: translated?.description ?? "",
   };
 }
 
