@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdminIdentity } from "@/lib/admin/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SEO_EDITABLE_ROUTES } from "@/config/seo-cms";
+import { buildRoutePath } from "@/config/routes";
 import { saveContentDraft, publishContentDraft } from "@/app/(system)/admin/content/actions";
 
 export const dynamic = "force-dynamic";
@@ -172,6 +173,8 @@ export default async function SeoAdminPage({
                 row.content_key === route.key && row.locale === locale);
               const current = draft && published?.source_revision === draft.revision;
               const kindMismatch = draft && draft.kind !== "page";
+              const pagePath = buildRoutePath(route.route, locale,
+                route.route === "location" ? { slug: "czapelska" } : {});
               return (
                 <section key={route.key} className="rounded-[2rem] border border-[#e4dccf] bg-white p-6 shadow-sm">
                   <h2 className="font-serif text-xl font-bold">{route.label}</h2>
@@ -219,6 +222,30 @@ export default async function SeoAdminPage({
                     </form>
                   )}
 
+                  {draft && !kindMismatch ? (
+                    <aside
+                      aria-label={`Vista previa del resultado de búsqueda para ${route.label}`}
+                      className="mt-6 rounded-2xl border border-[#e4e8f1] bg-[#f8faff] p-5"
+                    >
+                      <p className="text-xs font-black uppercase tracking-wider text-[#62594f]">
+                        Vista previa del borrador guardado
+                      </p>
+                      <p className="mt-3 break-all text-xs text-[#37513b]">
+                        rinconcolombiano.pl{pagePath}
+                      </p>
+                      <p className="mt-1 break-words text-lg font-medium leading-6 text-[#123d73]">
+                        {draft.document.title}
+                      </p>
+                      <p className="mt-2 break-words text-sm leading-6 text-[#484f55]">
+                        {draft.document.body}
+                      </p>
+                      <p className="mt-3 text-xs leading-5 text-[#62594f]">
+                        Simulación editorial: Google puede mostrar otro texto.
+                        Esto no publica el borrador ni modifica las URL canónicas.
+                      </p>
+                    </aside>
+                  ) : null}
+
                   {canPublish && draft && !current && !kindMismatch ? (
                     <form action={publishContentDraft} className="mt-5 border-t pt-5">
                       <input type="hidden" name="returnTo" value="seo" />
@@ -230,11 +257,7 @@ export default async function SeoAdminPage({
                       </button>
                     </form>
                   ) : null}
-                  <Link href={route.route === "location"
-                    ? locale === "pl" ? "/pl/lokale/czapelska"
-                      : locale === "es" ? "/es/restaurantes/czapelska"
-                        : "/en/locations/czapelska"
-                    : route.route === "menu" ? `/${locale}/menu` : `/${locale}`}
+                  <Link href={pagePath}
                     className="mt-5 inline-block text-sm font-bold text-[#123d73] underline underline-offset-4">
                     Ver página real ↗
                   </Link>

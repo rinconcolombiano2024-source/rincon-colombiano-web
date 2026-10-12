@@ -37,6 +37,16 @@ const localeBrandStripLabels = {
   es: "Restaurante",
   en: "Restaurant",
 };
+const serviceActionLabels = {
+  pl: "Zapytaj o szczegóły",
+  es: "Consultar servicio",
+  en: "Enquire now",
+};
+const legalFooterLabels = {
+  pl: "Zasady",
+  es: "Información legal",
+  en: "Legal",
+};
 
 const socialNavigationLabels = {
   pl: "Media społecznościowe Rincón Colombiano",
@@ -133,6 +143,21 @@ async function checkPage(locale) {
       html.includes(localeBrandStripLabels[locale]),
       `${path} muestra la banda de servicios localizada`
     );
+    const services =
+      html.match(/<section\b[^>]*id="services"[\s\S]*?<\/section>/i)?.[0] ?? "";
+    report(
+      (services.match(/href="#contact"/g) ?? []).length >= 7,
+      `${path} permite solicitar los siete servicios desde tarjetas reales`
+    );
+    report(
+      services.includes('href="#menu"') && services.includes(serviceActionLabels[locale]),
+      `${path} ofrece CTA de menú y textos comerciales del idioma`
+    );
+    report(
+      html.includes(legalFooterLabels[locale]),
+      `${path} incluye navegación legal localizada`
+    );
+
     report(
       !html.includes("La web de Rincón Colombiano será el centro de contacto") &&
       !html.includes("The Rincón Colombiano website is becoming") &&
