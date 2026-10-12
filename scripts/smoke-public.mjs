@@ -170,6 +170,16 @@ async function checkInfrastructure() {
       sitemap.body.includes("<urlset"),
       "sitemap.xml disponible"
     );
+    for (const lang of ["pl-PL", "es", "en", "x-default"]) {
+      report(
+        sitemap.body.includes(`hreflang="${lang}"`),
+        `sitemap anuncia solo alternates equivalentes: ${lang}`
+      );
+    }
+    report(
+      !/brzeska/i.test(sitemap.body),
+      "sitemap no indexa la sede Brzeska mientras no abra"
+    );
   } catch (error) {
     report(false, `sitemap.xml: ${error}`);
   }
