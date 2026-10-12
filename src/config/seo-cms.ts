@@ -8,7 +8,7 @@
 export const SEO_EDITABLE_ROUTES = [
   { key: "home_seo", label: "Inicio — restaurante colombiano", href: "/pl", route: "home" },
   { key: "menu_seo", label: "Menú real — RC ORDERA", href: "/pl/menu", route: "menu" },
-  { key: "location_czapelska_seo", label: "Sede abierta — Czapelska 33", href: "/pl/restauracje/czapelska", route: "location" },
+  { key: "location_czapelska_seo", label: "Sede abierta — Czapelska 33", href: "/pl/lokale/czapelska", route: "location" },
 ] as const;
 
 export type SeoCmsKey = (typeof SEO_EDITABLE_ROUTES)[number]["key"];
