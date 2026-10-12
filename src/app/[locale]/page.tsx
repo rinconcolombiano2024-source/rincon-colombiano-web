@@ -2677,7 +2677,7 @@ export default async function HomePage({
                   uppercase
                 "
               >
-                Warszawa
+                {locale === "pl" ? "Warszawa" : locale === "es" ? "Varsovia" : "Warsaw"}
               </span>
             </span>
           </a>
@@ -3378,7 +3378,7 @@ export default async function HomePage({
                               text-white
                             "
                           >
-                            Community
+                            {locale === "pl" ? "Społeczność" : locale === "es" ? "Comunidad" : "Community"}
                           </strong>
                         </div>
                       </div>
@@ -4215,7 +4215,7 @@ export default async function HomePage({
                             }
                           `}
                         >
-                          Story
+                          {locale === "pl" ? "Nasza historia" : locale === "es" ? "Nuestra historia" : "Our story"}
                         </p>
 
                         <h3
@@ -5647,7 +5647,7 @@ export default async function HomePage({
                       font-black
                     "
                   >
-                    Email
+                    {locale === "pl" ? "E-mail" : locale === "es" ? "Correo electrónico" : "Email"}
                   </a>
                 ) : null}
               </div>
@@ -5672,7 +5672,7 @@ export default async function HomePage({
                   uppercase
                 "
               >
-                Careers
+                {locale === "pl" ? "Praca" : locale === "es" ? "Trabaja con nosotros" : "Careers"}
               </p>
 
               <h2
@@ -5925,7 +5925,7 @@ export default async function HomePage({
                   text-white
                 "
               >
-                Info
+                {locale === "pl" ? "Informacje" : locale === "es" ? "Información" : "Information"}
               </strong>
 
               <a href="#locations">
