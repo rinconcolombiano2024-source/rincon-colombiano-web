@@ -94,4 +94,5 @@ jobs:
 
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
           node scripts/smoke-public.mjs http://127.0.0.1:3100
+          node scripts/smoke-navigation.mjs http://127.0.0.1:3100
 
