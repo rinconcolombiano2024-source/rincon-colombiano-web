@@ -17,6 +17,16 @@ CÓMO ABRIR
 5. Iniciar sesión con una cuenta autorizada de Rincón Admin.
 6. Para cambiar menú/productos, el editor requiere una segunda sesión
    con la cuenta propietaria de RC ORDERA.
+7. La barra de accesos rápidos incluye CEO, Menú y productos, Editar web,
+   SEO, Publicidad, Fotografías y Contenidos. No permite abrir direcciones
+   arbitrarias: cada botón apunta a una ruta administrativa oficial.
+8. Si cambias productos desde el editor, aplica cada formulario al borrador
+   y luego pulsa «Guardar en RC ORDERA». Un cambio sin guardar no se envía.
+   El editor avisa si intentas cerrar o recargar la pestaña con un borrador
+   modificado; no confíes en el aviso para navegación interna del sitio.
+9. Mientras se sube una foto de producto el selector de otros productos
+   queda bloqueado; espera a finalizar para cambiar de producto.
+10. Antes de modificar el menú descarga la copia de seguridad JSON.
 
 IMPORTANTE SOBRE EL LANZAMIENTO
 El dominio rinconcolombiano.pl puede continuar sirviendo la antigua web
