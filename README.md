@@ -228,10 +228,31 @@ administrar estos objetos temporales, sin borrar imágenes en uso.
 - Conservar ID, categorías, orden, traducciones, modificadores,
   estaciones y otros metadatos de RC ORDERA.
 - Recargar si hay conflicto de revisión; no sobrescribir a ciegas.
-- No se pueden crear o eliminar productos desde este módulo todavía.
+- Se pueden crear productos y retirar un producto por guardado, sin borrar categorías.
+- Se admiten hasta 3 productos nuevos por guardado para facilitar revisión.
+- Se requiere confirmación antes de retirar productos; el cambio permanece en
+  borrador hasta que el propietario ejecuta «Guardar en RC ORDERA».
+- Productos nuevos reciben ID seguro, estación de cocina/bar y campos iniciales
+  de traducción en ES/PL/EN. Los textos PL/EN necesitan revisión editorial.
 - No se modifica la base de datos ni los pedidos durante el build/CI.
 
 Pruebas: `node --experimental-strip-types scripts/check-rc-menu-editor.mjs`.
 La validación end-to-end de login propietario y guardado real debe
 hacerse en un entorno controlado con una cuenta RC ORDERA autorizada
 antes de considerarlo completamente certificado.
+
+
+## Seguridad adicional del editor (octubre 2026)
+
+La capa de validación del menú previene suplantación o reutilización
+de IDs, inserciones en categorías desconocidas, cambios de estación
+de productos existentes, pérdidas de traducciones y ediciones masivas
+accidentales. El editor nunca persiste cambios automáticamente:
+el propietario guarda explícitamente y `menu_revision` comprueba
+escrituras concurrentes dentro de RC ORDERA.
+
+**Prueba manual obligatoria antes de depender del editor en producción:**
+respaldar el menú, crear un producto de prueba con autorización
+propietaria, comprobar su aparición en RC ORDERA, la fotografía
+subida, la sincronización del catálogo y retirar el producto de prueba.
+Una compilación verde no sustituye esta prueba real.
