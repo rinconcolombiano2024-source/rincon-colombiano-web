@@ -355,6 +355,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingRemoval, setPendingRemoval] = useState<string | null>(null);
+  const [pendingLogout, setPendingLogout] = useState(false);
   const [pendingReload, setPendingReload] = useState(false);
   // ProductCard holds controlled input state; a successful server
   // refresh must replace its inputs even when the selected ID is unchanged.
@@ -402,10 +403,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
-  async function logout() {
-    if (unappliedChanges && !window.confirm("Hay cambios del producto sin aplicar. ¿Desconectar y descartarlos?")) {
+  async function logout(force = false) {
+    if (unappliedChanges && !force) {
+      setPendingLogout(true);
       return;
     }
+    setPendingLogout(false);
     setUnappliedChanges(false);
     setBusy(true);
     try {
@@ -686,6 +689,23 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               className="min-h-11 rounded-full border px-5 text-sm font-bold disabled:opacity-50">
               Desconectar
             </button>
+            {pendingLogout && unappliedChanges ? (
+              <div role="alert" className="w-full rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-bold">Hay datos escritos que aún no has aplicado al borrador.</p>
+                <p className="mt-2">Desconectar ahora descartará esos datos del formulario.</p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <button type="button" disabled={busy}
+                    onClick={() => void logout(true)}
+                    className="min-h-11 rounded-full bg-red-800 px-5 font-bold text-white">
+                    Sí, desconectar y descartar
+                  </button>
+                  <button type="button" onClick={() => setPendingLogout(false)}
+                    className="min-h-11 rounded-full border px-5 font-bold">
+                    Seguir editando
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[#e4dccf] bg-[#fff8e4] p-4">
             <p className="text-sm font-bold">
