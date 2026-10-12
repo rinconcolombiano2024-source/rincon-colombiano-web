@@ -17,14 +17,25 @@ const messages = {
 } as const;
 
 /**
- * Vista de lectura administrativa; no escribir con la anon key.
- * El editor de productos requerirá Auth y RPCs de escritura auditables
- * en RC ORDERA antes de habilitarse.
+ * Separate public catalog visibility from owner-only write operations.
+ * The editorial product module requires its own RC ORDERA authentication,
+ * without exposing a service key or modifying live menus on page load.
  */
 export default async function AdminMenuPage() {
   const admin = await requireAdminIdentity();
   const result = await loadRcOrderaPublicCatalog("czapelska");
   const catalog = result.catalog;
+  const publishedProducts = catalog?.categories.flatMap((group) => group.products) ?? [];
+  const translationCoverage = ([
+    { locale: "pl", label: "Polski" },
+    { locale: "es", label: "Español" },
+    { locale: "en", label: "English" },
+  ] as const).map(({ locale, label }) => ({
+    locale,
+    label,
+    completed: publishedProducts.filter((product) =>
+      Boolean(product.translations?.[locale]?.name.trim())).length,
+  }));
   const integration = getRcOrderaServerConfig();
   const restaurantId = getRcOrderaRestaurantId("czapelska");
   const canEditMenu = admin.role === "owner" || admin.role === "editor";
@@ -75,6 +86,38 @@ export default async function AdminMenuPage() {
             </a>
           </div>
         </section>
+
+        {catalog ? (
+          <section aria-labelledby="ordera-translation-coverage" className="mt-6 rounded-3xl border border-[#e4dccf] bg-white p-6 sm:p-8">
+            <h2 id="ordera-translation-coverage" className="font-serif text-2xl font-bold">
+              Cobertura de idiomas del menú
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-[#62594f]">
+              Estos valores reflejan nombres traducidos realmente presentes en el catálogo público
+              de RC ORDERA, no traducciones automáticas. Completa los idiomas pendientes desde
+              el editor de productos y guarda con la cuenta propietaria.
+            </p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              {translationCoverage.map(({ locale, label, completed }) => (
+                <div key={locale} className="rounded-2xl border border-[#e4dccf] bg-[#faf9f6] p-5">
+                  <p className="text-sm font-black text-[#123d73]">{label}</p>
+                  <p className="mt-2 font-serif text-3xl font-bold">
+                    {completed} <span className="text-base font-medium text-[#62594f]">/ {publishedProducts.length}</span>
+                  </p>
+                  <progress
+                    aria-label={`Productos con nombre en ${label}`}
+                    value={completed}
+                    max={Math.max(1, publishedProducts.length)}
+                    className="mt-4 h-3 w-full accent-[#123d73]"
+                  />
+                  <p className="mt-2 text-xs text-[#62594f]">
+                    {Math.max(0, publishedProducts.length - completed)} traducciones pendientes
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {catalog ? (
           <section aria-labelledby="catalog-title" className="mt-6">
