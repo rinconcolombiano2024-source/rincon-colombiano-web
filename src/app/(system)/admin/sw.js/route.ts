@@ -22,7 +22,7 @@ export function GET(): Response {
     headers: {
       "Content-Type": "application/javascript; charset=utf-8",
       "Cache-Control": "no-store",
-      "Service-Worker-Allowed": "/admin/",
+      "Service-Worker-Allowed": "/admin",
       "X-Content-Type-Options": "nosniff",
     },
   });

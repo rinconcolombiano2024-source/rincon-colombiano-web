@@ -119,6 +119,26 @@ const ADMIN_MODULES = [
 
   {
     key:
+      "gallery",
+
+    eyebrow:
+      "FOTOGRAFÍAS",
+
+    title:
+      "Fotos de portada y platos",
+
+    description:
+      "Sube y publica la fotografía principal, campaña y tres imágenes gastronómicas con validación de archivos.",
+
+    status:
+      "active",
+
+    href:
+      "/admin/brand",
+  },
+
+  {
+    key:
       "media",
 
     eyebrow:

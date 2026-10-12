@@ -1,3 +1,5 @@
+import { BRAND_SLOTS } from "@/config/brand-slots";
+
 import "server-only";
 
 import {
@@ -23,16 +25,7 @@ const BRAND_FETCH_TIMEOUT_MS =
    BRAND SLOTS
    ============================================================ */
 
-export const BRAND_SLOTS = [
-  "logo_primary",
-  "logo_compact",
-  "logo_light",
-  "logo_dark",
-  "favicon",
-  "open_graph",
-  "social_square",
-  "hero_primary",
-] as const;
+
 
 
 export type BrandSlot =

@@ -1,5 +1,7 @@
 "use server";
 
+import { BRAND_SLOTS } from "@/config/brand-slots";
+
 import {
   createHash,
   randomUUID,
@@ -50,16 +52,7 @@ const MAX_ORIGINAL_NAME_LENGTH =
    BRAND SLOTS
    ============================================================ */
 
-const BRAND_SLOTS = [
-  "logo_primary",
-  "logo_compact",
-  "logo_light",
-  "logo_dark",
-  "favicon",
-  "open_graph",
-  "social_square",
-  "hero_primary",
-] as const;
+
 
 export type BrandSlot =
   (typeof BRAND_SLOTS)[number];
@@ -472,6 +465,14 @@ function getDefaultAltText(
 
     case "hero_primary":
       return "Rincón Colombiano — restaurante colombiano en Varsovia";
+
+    case "campaign_primary":
+      return "Campaña especial de Rincón Colombiano";
+
+    case "food_featured_1":
+    case "food_featured_2":
+    case "food_featured_3":
+      return "Plato colombiano preparado en Rincón Colombiano";
 
     case "logo_primary":
     case "logo_compact":
