@@ -151,7 +151,7 @@ export default async function CeoOperationsPage() {
           </h2>
           <p className="mt-3 text-sm leading-7">
             {readyCount} de {gates.length} controles preparados.
-            No cambiar el DNS del restaurante ni activar cobros online mientras queden
+            No cambiar el DNS del restaurante mientras queden
             comprobaciones críticas pendientes.
           </p>
           <p className="mt-2 text-xs leading-6">
@@ -179,39 +179,6 @@ export default async function CeoOperationsPage() {
               </article>
             ))}
           </div>
-        </section>
-
-        <section aria-labelledby="sumup-readiness" className="mt-9 rounded-[2rem] border border-amber-300 bg-amber-50 p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-amber-400 bg-white px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">
-              No activo
-            </span>
-            <span className="text-xs font-bold text-amber-900">Preparación de pagos digitales</span>
-          </div>
-          <h2 id="sumup-readiness" className="mt-4 font-serif text-2xl font-bold text-amber-950">
-            SumUp · Cobros por internet
-          </h2>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-amber-950">
-            RC ORDERA conserva el control de los pedidos, importes y su historial financiero.
-            Se está preparando el adaptador de SumUp Hosted Checkout, pero todavía
-            <strong> no hay un flujo de pago SumUp habilitado para clientes</strong>.
-            No se aceptará un retorno del navegador como prueba de cobro:
-            la confirmación exige verificación con SumUp y conciliación de cada pedido.
-          </p>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-amber-950">
-            El mercado de repartidores y restaurantes actualmente modela liquidaciones con
-            Stripe Connect. SumUp requiere comprobar por separado la distribución,
-            los reembolsos, las comisiones y la conciliación antes de sustituir ese proceso.
-            Este panel no cambia métodos de pago ni activa cargos reales.
-          </p>
-          <a
-            href="https://github.com/rinconcolombiano2024-source/rincon-colombiano-pedidosapp/blob/main/docs/SUMUP-HOSTED-SAFE-ADAPTER.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 inline-flex min-h-11 items-center rounded-full border border-amber-800 bg-white px-5 text-sm font-bold text-amber-950 underline underline-offset-4"
-          >
-            Ver controles técnicos de SumUp ↗
-          </a>
         </section>
 
         <section className="mt-9 grid gap-5 rounded-[2rem] border border-[#e4dccf] bg-white p-6 sm:grid-cols-2 sm:p-8">
