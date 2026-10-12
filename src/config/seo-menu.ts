@@ -1,6 +1,7 @@
 import type { AppLocale } from "@/i18n/config";
 import { buildCanonicalUrl, type JsonLdObject } from "@/config/seo";
 import type { RcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
+import { localizeRcOrderaCategories } from "@/integrations/rc-ordera/localize-catalog";
 
 /**
  * Real, read-only Menu schema built exclusively from the public RC ORDERA
@@ -17,7 +18,7 @@ export function buildVerifiedMenuJsonLd(
     return null;
   }
 
-  const sections = catalog.categories
+  const sections = localizeRcOrderaCategories(catalog.categories, locale)
     .slice(0, 30)
     .map((category) => {
       const items = category.products
