@@ -68,3 +68,15 @@ for (const route of [
   assert.ok(contentActions.includes(route), `Missing publication revalidation: ${route}`);
 }
 console.log("PASS: server validates published commercial CMS documents and refreshes edited SEO routes");
+
+const seoAdminUi = await readFile("src/app/(system)/admin/seo/page.tsx", "utf8");
+assert.match(seoAdminUi, /Vista previa del borrador guardado/,
+  "CEO needs a saved-draft search snippet preview before publishing");
+assert.match(seoAdminUi, /buildRoutePath\(route.route, locale,/,
+  "SEO links must use canonical localized route patterns, not hardcoded guessed paths");
+assert.match(seoAdminUi, /Google puede mostrar otro texto/,
+  "A simulated snippet must not imply Google display is guaranteed");
+const homeMarkup = await readFile("src/app/[locale]/page.tsx", "utf8");
+assert.match(homeMarkup, /href=\{service.eyebrow === "08" \? "#menu" : "#contact"\}/,
+  "Commercial service cards must connect to a working menu or contact anchor");
+console.log("PASS: CEO gets safe snippet previews and service cards have real destination anchors");
