@@ -47,7 +47,14 @@ import {
 
 import {
   getPublishedCmsTextContent,
+  getPublishedCmsTextBatch,
 } from "@/lib/cms/public-content";
+
+import {
+  HOME_EDITABLE_KEYS,
+  HOME_EDITABLE_SECTIONS,
+  validHomeCmsCopy,
+} from "@/config/home-cms";
 
 
 import FoodGallery from "@/components/commercial/FoodGallery";
@@ -2141,20 +2148,26 @@ export async function generateMetadata({
   const [
     openGraphImage,
     primaryBrandLogo,
+    seoDraft,
   ] =
     await Promise.all([
       getBrandOpenGraphImage(),
       getPrimaryBrandLogo(),
+      getPublishedCmsTextContent("home_seo", rawLocale),
     ]);
 
   const socialImage =
     openGraphImage ??
     primaryBrandLogo;
 
+  const seoCopy = seoDraft && validHomeCmsCopy("home_seo", seoDraft)
+    ? seoDraft : null;
+
   return buildRouteMetadata(
     "home",
     rawLocale,
     {
+      ...(seoCopy ? { title: seoCopy.title, description: seoCopy.body } : {}),
       ...(
         socialImage
           ? {
@@ -2276,8 +2289,7 @@ export default async function HomePage({
     rcOrderaCatalog,
     primaryBrandLogo,
     heroBrandImage,
-    publishedHero,
-    publishedCampaign,
+    publishedCopy,
     publishedCampaignImage,
   ] =
     await Promise.all([
@@ -2289,13 +2301,8 @@ export default async function HomePage({
 
       getBrandHeroImage(),
 
-      getPublishedCmsTextContent(
-        "home_hero",
-        locale,
-      ),
-
-      getPublishedCmsTextContent(
-        "home_campaign",
+      getPublishedCmsTextBatch(
+        [...HOME_EDITABLE_KEYS, "home_campaign"],
         locale,
       ),
 
@@ -2316,8 +2323,11 @@ export default async function HomePage({
    * Que el CMS permita artículos largos no significa que
    * debamos permitir 50.000 caracteres dentro del encabezado.
    */
+  const publishedHero = publishedCopy.get("home_hero");
+  const publishedCampaign = publishedCopy.get("home_campaign");
   const validPublishedHero =
     publishedHero &&
+    validHomeCmsCopy("home_hero", publishedHero) &&
     publishedHero.title.length <=
       160 &&
     publishedHero.body.length <=
@@ -2338,23 +2348,35 @@ export default async function HomePage({
    *
    * la página sigue funcionando normalmente.
    */
-  const copy:
-    HomeCopy =
-    validPublishedHero
+  const section = publishedCopy.get("home_services");
+  const validSection = section && validHomeCmsCopy("home_services", section)
+    ? section : null;
+
+  const serviceKeys = HOME_EDITABLE_SECTIONS.slice(2, 10);
+  const editorialServices = baseCopy.services.items.map((item, index) => {
+    const key = serviceKeys[index]?.key;
+    const published = key ? publishedCopy.get(key) : null;
+    return published && key && validHomeCmsCopy(key, published)
+      ? { ...item, title: published.title, description: published.body }
+      : item;
+  });
+
+  const copy: HomeCopy = {
+    ...baseCopy,
+    hero: validPublishedHero
       ? {
-          ...baseCopy,
-
-          hero: {
-            ...baseCopy.hero,
-
-            title:
-              validPublishedHero.title,
-
-            description:
-              validPublishedHero.body,
-          },
+          ...baseCopy.hero,
+          title: validPublishedHero.title,
+          description: validPublishedHero.body,
         }
-      : baseCopy;
+      : baseCopy.hero,
+    services: {
+      ...baseCopy.services,
+      title: validSection?.title ?? baseCopy.services.title,
+      description: validSection?.body ?? baseCopy.services.description,
+      items: editorialServices,
+    },
+  };
 
   /**
    * Una campaña únicamente aparece si un publicador autorizado
