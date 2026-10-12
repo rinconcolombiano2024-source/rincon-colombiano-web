@@ -59,6 +59,26 @@ interface AdminModule {
 const ADMIN_MODULES = [
   {
     key:
+      "home",
+
+    eyebrow:
+      "WEB Y SEO",
+
+    title:
+      "Editar inicio, servicios y Google",
+
+    description:
+      "Cambia los titulares, textos comerciales y SEO de inicio en español, polaco e inglés, sin código.",
+
+    status:
+      "active",
+
+    href:
+      "/admin/home",
+  },
+
+  {
+    key:
       "operations",
 
     eyebrow:
