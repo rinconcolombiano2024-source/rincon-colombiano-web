@@ -48,6 +48,12 @@ const legalFooterLabels = {
   en: "Legal",
 };
 
+const smallCommercialLabels = {
+  pl: ["Społeczność", "Nasza historia", "Praca", "Informacje", "Warszawa", "E-mail"],
+  es: ["Comunidad", "Nuestra historia", "Trabaja con nosotros", "Información", "Varsovia", "Correo electrónico"],
+  en: ["Community", "Our story", "Careers", "Information", "Warsaw", "Email"],
+};
+
 const socialNavigationLabels = {
   pl: "Media społecznościowe Rincón Colombiano",
   es: "Redes sociales de Rincón Colombiano",
@@ -120,6 +126,13 @@ async function checkPage(locale) {
       report(
         section.includes(`href="${href}"`),
         `${path} enlace ${name}`
+      );
+    }
+
+    for (const label of smallCommercialLabels[locale]) {
+      report(
+        html.includes(label),
+        `${path} muestra la microcopia comercial localizada: ${label}`
       );
     }
 
