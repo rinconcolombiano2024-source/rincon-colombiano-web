@@ -49,3 +49,22 @@ assert.equal(validPublishedSeo("location_brzeska_seo", {
 assert.equal(validPublishedSeo("home_seo", {
   kind: "page", title: "a".repeat(71), body: "ok",
 }), false, "SEO titles have strict length caps");
+
+const contentActions = await readFile("src/app/(system)/admin/content/actions.ts", "utf8");
+assert.match(contentActions, /function isValidManagedDocument\(/,
+  "Managed SEO/content CMS must use server-side validation");
+assert.match(contentActions, /validPublishedSeo\(key, doc\)/,
+  "SEO titles and descriptions must be validated by allowlisted route");
+assert.match(contentActions, /validHomeCmsCopy\(key, doc\)/,
+  "Home text length limits must not rely on HTML maxLength only");
+assert.match(contentActions, /if \(!isValidManagedDocument\(contentKey, rawKind, title, body\)\)/,
+  "Malicious CMS POST must not bypass commercial-editor bounds");
+assert.match(contentActions, /if \(!isValidManagedDocument\(managedKey,/,
+  "Legacy drafts must be validated before publication");
+for (const route of [
+  "/pl/menu", "/es/restaurantes/czapelska", "/en/locations/czapelska",
+  "/admin/home", "/admin/seo",
+]) {
+  assert.ok(contentActions.includes(route), `Missing publication revalidation: ${route}`);
+}
+console.log("PASS: server validates published commercial CMS documents and refreshes edited SEO routes");
