@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdminIdentity } from "@/lib/admin/auth";
-import { buildRcOrderaOrderUrl, getRcOrderaPublicAppUrl } from "@/integrations/rc-ordera/config";
+import { buildRcOrderaOrderUrl, getRcOrderaPublicAppUrl, getRcOrderaRestaurantId, getRcOrderaServerConfig } from "@/integrations/rc-ordera/config";
+import RcOrderaMenuManager from "@/components/admin/RcOrderaMenuManager";
 import { loadRcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,12 @@ export default async function AdminMenuPage() {
   const admin = await requireAdminIdentity();
   const result = await loadRcOrderaPublicCatalog("czapelska");
   const catalog = result.catalog;
+  const integration = getRcOrderaServerConfig();
+  const restaurantId = getRcOrderaRestaurantId("czapelska");
+  const canEditMenu = admin.role === "owner" || admin.role === "editor";
+  const editorConfig = integration && restaurantId && canEditMenu
+    ? { supabaseUrl: integration.supabaseUrl, anonKey: integration.anonKey, restaurantId }
+    : null;
 
   return (
     <main className="min-h-screen bg-[#f4f1eb] text-[#12100e]">
@@ -43,8 +50,8 @@ export default async function AdminMenuPage() {
           <p className="text-xs font-black uppercase tracking-widest text-[#f7c600]">RC ORDERA · integración</p>
           <h1 className="mt-3 font-serif text-3xl font-bold sm:text-4xl">Menú y disponibilidad</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-white/85">
-            Consulta el catálogo publicado para los clientes. Es una vista de solo lectura;
-            los precios y productos se editan en el sistema autorizado de RC ORDERA.
+            Consulta el catálogo público y conecta tu cuenta propietaria de RC ORDERA
+            para actualizar productos, precios, fotos y disponibilidad desde este panel.
           </p>
           <p className="mt-4 text-xs text-white/70">Sesión: {admin.email}</p>
         </header>
@@ -95,14 +102,18 @@ export default async function AdminMenuPage() {
           </section>
         ) : null}
 
-        <section className="mt-6 rounded-3xl border border-[#ead6a0] bg-[#fff8e4] p-6 text-sm leading-7">
-          <h2 className="font-serif text-xl font-bold">Próxima fase: editor del menú</h2>
-          <p className="mt-2">
-            Para modificar precios, imágenes y disponibilidad desde esta web
-            debemos establecer operaciones de escritura autenticadas y auditadas
-            en RC ORDERA. Nunca usaremos la clave pública para modificar pedidos.
-          </p>
-        </section>
+        {editorConfig ? (
+          <RcOrderaMenuManager config={editorConfig} />
+        ) : (
+          <section className="mt-6 rounded-3xl border border-[#ead6a0] bg-[#fff8e4] p-6 text-sm leading-7">
+            <h2 className="font-serif text-xl font-bold">Edición directa del menú</h2>
+            <p className="mt-2">
+              {!canEditMenu
+                ? "Tu rol de publicación puede consultar este catálogo, pero no editar los productos."
+                : "Para activar el editor conecta RC_ORDERA_SUPABASE_URL y RC_ORDERA_SUPABASE_ANON_KEY en el servidor de esta web. La edición exige iniciar sesión también con la cuenta propietaria de RC ORDERA."}
+            </p>
+          </section>
+        )}
       </div>
     </main>
   );

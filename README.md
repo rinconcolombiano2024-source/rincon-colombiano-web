@@ -173,3 +173,65 @@ en Supabase **Web** antes de subir esas imágenes.
 **Límite de alcance:** son cinco espacios para fotografías editoriales
 de la web; no reemplazan una biblioteca ilimitada de archivos ni el
 editor autenticado de las imágenes de productos en RC ORDERA.
+
+
+## Editor de productos RC ORDERA desde Rincón Admin
+
+La ruta protegida `/admin/menu` incluye un editor de productos ya
+existentes, con precio, nombre, descripción, disponibilidad e imágenes.
+No utiliza una copia del menú: consulta `app_settings` en el proyecto
+Supabase de RC ORDERA (sede Czapelska), aplica cambios inmutables y
+guarda mediante su RPC existente `save_current_restaurant_menu`.
+
+**Autorización en dos niveles:**
+
+1. El servidor web exige iniciar sesión como propietario/editor de
+   Rincón Admin. Una cuenta `publisher` sólo puede consultar el menú.
+2. Dentro del editor se autentica **por separado** el propietario
+   del restaurante en Supabase de RC ORDERA. El usuario autenticado
+   debe coincidir con el ID de la sede. La RLS de `app_settings` sólo
+   permite leer su propia fila y la RPC comprueba el rol de propietario.
+3. Nunca se utiliza `service_role` para escribir en RC ORDERA ni se
+   transmiten credenciales de una instancia Supabase a la otra. La
+   sesión RC ORDERA vive sólo en memoria: sin localStorage persistente.
+4. Los guardados incluyen `menu_revision` optimista para impedir que
+   otro dispositivo sobrescriba cambios. La función RC ORDERA también
+   rechaza el borrado accidental de todo el menú.
+
+La edición requiere en el despliegue de Next.js (variables de entorno
+**sólo de servidor**, no `NEXT_PUBLIC_`):
+
+```env
+RC_ORDERA_SUPABASE_URL=https://<proyecto-rc-ordera>.supabase.co
+RC_ORDERA_SUPABASE_ANON_KEY=<clave-publica-rc-ordera>
+```
+
+La clave publicable/anon no concede autorización por sí sola; los
+permisos se validan con la sesión real RC ORDERA y sus RPC/RLS.
+
+### Subida de fotografías de productos
+
+Usa el bucket preexistente `restaurant-media` de RC ORDERA.
+Valida firma binaria PNG, JPG o WebP, máximo 2 MiB. El archivo se
+guarda bajo `<owner_id>/products/...` según la política de Storage
+del propietario. La URL se incorpora al borrador; queda efectivamente
+asociada al producto al pulsar «Guardar en RC ORDERA».
+
+Al subir una foto y luego abandonar la edición puede quedar un
+archivo todavía no referenciado; un proceso de limpieza deberá
+administrar estos objetos temporales, sin borrar imágenes en uso.
+
+### Respaldo y cambios seguros
+
+- Descargar copia JSON con revisión antes de empezar.
+- Actualizar sólo campos comerciales de productos existentes.
+- Conservar ID, categorías, orden, traducciones, modificadores,
+  estaciones y otros metadatos de RC ORDERA.
+- Recargar si hay conflicto de revisión; no sobrescribir a ciegas.
+- No se pueden crear o eliminar productos desde este módulo todavía.
+- No se modifica la base de datos ni los pedidos durante el build/CI.
+
+Pruebas: `node --experimental-strip-types scripts/check-rc-menu-editor.mjs`.
+La validación end-to-end de login propietario y guardado real debe
+hacerse en un entorno controlado con una cuenta RC ORDERA autorizada
+antes de considerarlo completamente certificado.

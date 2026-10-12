@@ -182,7 +182,7 @@ const ADMIN_MODULES = [
       "Menú y disponibilidad",
 
     description:
-      "Consulta segura del catálogo y su estado en RC ORDERA (solo lectura).",
+      "Consulta el catálogo y edita productos y fotografías con la cuenta propietaria autorizada de RC ORDERA.",
 
     status:
       "active",
