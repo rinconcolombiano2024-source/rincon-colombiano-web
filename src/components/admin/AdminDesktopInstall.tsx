@@ -32,7 +32,7 @@ export default function AdminDesktopInstall() {
 
     if ("serviceWorker" in navigator && window.isSecureContext) {
       void navigator.serviceWorker.register("/admin/sw.js", {
-        scope: "/admin/",
+        scope: "/admin",
         updateViaCache: "none",
       }).catch(() => {
         // Sin worker, el panel sigue disponible mediante navegador.
