@@ -148,3 +148,28 @@ sin ese proceso de seguridad.
 **Nota importante:** pasar CI no publica automáticamente este nuevo
 sitio en `rinconcolombiano.pl`; el dominio y las variables de Vercel
 se deberán verificar antes de sustituir la web pública existente.
+
+
+## Galería comercial de fotografías
+
+`/admin/brand` permite ahora subir, revisar y publicar imágenes en
+los slots `hero_primary`, `campaign_primary`,
+`food_featured_1`, `food_featured_2` y `food_featured_3`
+además de los logotipos, favicons y recursos Open Graph.
+
+Un administrador autorizado sube una imagen PNG/JPEG/WebP/AVIF
+validada por firma binaria y límite de tamaño. El panel la deja como
+borrador hasta que se publique. La web pública muestra únicamente
+recursos publicados: la foto de campaña aparece junto al anuncio, y
+las tres fotos de platos forman una galería responsive y localizada.
+Sin fotos publicadas no se generan falsos platos ni espacios vacíos.
+
+La migración `supabase/migrations/202610120002_web_brand_commercial_slots.sql`
+corrige un problema real de la base de datos: `hero_primary` ya
+estaba declarado en el código pero no permitido por el CHECK SQL ni
+por la RPC `web_brand_register_asset`. Se requiere su aplicación
+en Supabase **Web** antes de subir esas imágenes.
+
+**Límite de alcance:** son cinco espacios para fotografías editoriales
+de la web; no reemplazan una biblioteca ilimitada de archivos ni el
+editor autenticado de las imágenes de productos en RC ORDERA.
