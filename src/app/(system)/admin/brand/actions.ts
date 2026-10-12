@@ -1,6 +1,6 @@
-import { BRAND_SLOTS } from "@/config/brand-slots";
-
 "use server";
+
+import { BRAND_SLOTS } from "@/config/brand-slots";
 
 import {
   createHash,
