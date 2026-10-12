@@ -1,0 +1,58 @@
+name: Verify Vercel Staging (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: "HTTPS preview domain assigned to Rincón Colombiano on Vercel (*.vercel.app)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify-staging:
+    name: Live HTML, SEO and administrator release audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Check staging URL safety offline
+        run: node scripts/test-vercel-preview.mjs
+
+      - name: Validate destination before network access
+        id: target
+        env:
+          PREVIEW_URL: ${{ inputs.preview_url }}
+        run: node scripts/validate-vercel-preview.mjs
+
+      - name: Check deployed admin PWA and private route redirects
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-admin-pwa.mjs "$SITE_ORIGIN"
+
+      - name: Check real public PL ES EN pages, social and metadata
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-public.mjs "$SITE_ORIGIN"
+
+      - name: Crawl deployed sitemap, canonical routes, public links and anchors
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-navigation.mjs "$SITE_ORIGIN"
+
+      - name: Deployment-verification limitations
+        run: |
+          echo "This read-only smoke verifies HTTP-visible behaviour in a Vercel preview."
+          echo "It does NOT deploy code, change the commercial DNS, authenticate an admin,"
+          echo "or perform RC ORDERA orders, cash transfers, fiscal receipts or refunds."
+          echo "Manual Windows/mobile design and owner-auth end-to-end acceptance are required."
