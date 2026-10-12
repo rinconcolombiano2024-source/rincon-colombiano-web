@@ -300,8 +300,9 @@ export default async function MarketingAdminPage({
           <div>
             <h2 className="font-serif text-2xl font-bold">Fotografías e identidad</h2>
             <p className="mt-3 text-sm leading-7 text-[#62594f]">
-              Puedes subir fotografías principales, imágenes para redes, logotipos
-              y favicons desde la administración de marca ya existente.
+              Puedes subir fotografías principales, imágenes de campañas,
+              tres fotografías gastronómicas, logotipos y favicons desde
+              la administración de marca. Los cambios se publican por separado.
               La campaña usa textos del CMS y no acepta HTML arbitrario.
             </p>
             <Link href="/admin/brand" className="mt-4 inline-block text-sm font-bold text-[#123d73] underline underline-offset-4">
