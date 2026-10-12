@@ -62,6 +62,30 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Smoke test admin PWA and protected menu
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- --hostname 127.0.0.1 --port 3100 > /tmp/rc-next.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3100/admin/manifest.webmanifest > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" != "true" ]; then
+            cat /tmp/rc-next.log
+            exit 1
+          fi
+
+          node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
+
       - name: Upload temporary lockfile for repository commit
         if: ${{ always() && steps.lockfile.outputs.generated == 'true' }}
         uses: actions/upload-artifact@v4

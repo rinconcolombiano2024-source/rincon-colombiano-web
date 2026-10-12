@@ -146,6 +146,20 @@ export async function proxy(
       .pathname;
 
   /**
+   * Assets públicos de instalación sin información de usuario.
+   * Evitamos un getClaims() de Supabase por cada icono/manifest
+   * (menor CPU, menos consultas y mejor experiencia de instalación).
+   * TODAS las páginas /admin permanecen protegidas por Auth/RPC.
+   */
+  if (
+    pathname === "/admin/manifest.webmanifest" ||
+    pathname === "/admin/sw.js" ||
+    /^\/admin\/icons\/(?:192|512)$/.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
+  /**
    * The administration area keeps its own
    * authentication/session lifecycle and must
    * never enter the public locale routing.

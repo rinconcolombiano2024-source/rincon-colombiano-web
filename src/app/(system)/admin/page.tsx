@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AdminDesktopInstall from "@/components/admin/AdminDesktopInstall";
 
 import {
   requireAdminIdentity,
@@ -138,13 +139,16 @@ const ADMIN_MODULES = [
       "RC ORDERA",
 
     title:
-      "Menú y pedidos",
+      "Menú y disponibilidad",
 
     description:
-      "Integración del catálogo, disponibilidad y pedidos directamente con RC ORDERA.",
+      "Consulta segura del catálogo y su estado en RC ORDERA (solo lectura).",
 
     status:
-      "planned",
+      "active",
+
+    href:
+      "/admin/menu",
   },
 
   {
@@ -738,6 +742,8 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
+
+        <AdminDesktopInstall />
 
         {/* ==================================================
             ACTIVE MODULE
