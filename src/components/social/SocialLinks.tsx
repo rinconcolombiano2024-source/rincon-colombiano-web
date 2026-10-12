@@ -1,6 +1,7 @@
 
 import type { CSSProperties } from "react";
 import { siteConfig } from "@/config/site";
+import type { AppLocale } from "@/i18n/config";
 
 type Platform = "whatsapp" | "instagram" | "tiktok" | "facebook";
 
@@ -64,10 +65,26 @@ function SocialIcon({ platform }: { platform: Platform }) {
   );
 }
 
-export function SocialLinks() {
+const socialA11yCopy: Record<AppLocale, { navigation: string; open: string }> = {
+  pl: {
+    navigation: "Media społecznościowe Rincón Colombiano",
+    open: "Otwórz",
+  },
+  es: {
+    navigation: "Redes sociales de Rincón Colombiano",
+    open: "Abrir",
+  },
+  en: {
+    navigation: "Rincón Colombiano social media",
+    open: "Open",
+  },
+};
+
+export function SocialLinks({ locale }: { locale: AppLocale }) {
+  const copy = socialA11yCopy[locale];
   return (
     <nav
-      aria-label="Redes sociales de Rincón Colombiano"
+      aria-label={copy.navigation}
       className="flex flex-wrap items-center gap-3"
     >
       {items.filter((item) => {
@@ -83,7 +100,7 @@ export function SocialLinks() {
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Abrir ${item.name} de Rincón Colombiano`}
+          aria-label={`${copy.open} ${item.name} · Rincón Colombiano`}
           title={item.name}
           style={{ "--social-color": item.color } as CSSProperties}
           className="
