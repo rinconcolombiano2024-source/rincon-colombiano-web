@@ -43,6 +43,10 @@ const BRAND_SLOTS = [
   "open_graph",
   "social_square",
   "hero_primary",
+  "campaign_primary",
+  "food_featured_1",
+  "food_featured_2",
+  "food_featured_3",
 ] as const;
 
 
@@ -238,6 +242,26 @@ hero_primary: {
 
   description:
     "Imagen principal visible en la portada de Rincón Colombiano. Se administra independientemente del logo y de Open Graph.",
+},
+
+campaign_primary: {
+  title: "Foto de campaña comercial",
+  description: "Fotografía opcional del banner de publicidad; debe tener derechos comerciales y texto alternativo descriptivo.",
+},
+
+food_featured_1: {
+  title: "Fotografía gastronómica 1",
+  description: "Primer plato destacado en la galería comercial de la portada.",
+},
+
+food_featured_2: {
+  title: "Fotografía gastronómica 2",
+  description: "Segundo plato destacado en la galería comercial de la portada.",
+},
+
+food_featured_3: {
+  title: "Fotografía gastronómica 3",
+  description: "Tercer plato destacado en la galería comercial de la portada.",
 },
 };
 
