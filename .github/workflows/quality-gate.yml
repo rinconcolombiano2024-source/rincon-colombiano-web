@@ -64,6 +64,9 @@ jobs:
       - name: Guard Rincón AI mobile safe positioning
         run: node scripts/check-rincon-ai-mobile.mjs
 
+      - name: Keep web payment provider credentials in RC ORDERA
+        run: node scripts/check-web-payments-boundary.mjs
+
       - name: Block unsafe Vercel staging targets
         run: node scripts/test-vercel-preview.mjs
 
