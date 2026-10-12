@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   detectProductImageMime,
@@ -190,10 +190,7 @@ function ProductCard({
  * No shared secret/service_role; no cross-project token substitution.
  */
 export default function RcOrderaMenuManager({ config }: { readonly config: EditorConfig }) {
-  const client = useMemo(
-    () => createEphemeralClient(config),
-    [config.supabaseUrl, config.anonKey],
-  );
+  const [client] = useState(() => createEphemeralClient(config));
   const [connected, setConnected] = useState(false);
   const [original, setOriginal] = useState<RcEditableMenu | null>(null);
   const [draft, setDraft] = useState<RcEditableMenu | null>(null);
