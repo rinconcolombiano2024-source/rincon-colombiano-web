@@ -99,6 +99,26 @@ const ADMIN_MODULES = [
 
   {
     key:
+      "marketing",
+
+    eyebrow:
+      "PUBLICIDAD",
+
+    title:
+      "Campañas y promociones",
+
+    description:
+      "Crea y publica banners comerciales en polaco, español e inglés desde el CMS seguro.",
+
+    status:
+      "active",
+
+    href:
+      "/admin/marketing",
+  },
+
+  {
+    key:
       "media",
 
     eyebrow:
