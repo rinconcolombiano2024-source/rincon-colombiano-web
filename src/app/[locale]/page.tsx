@@ -3562,7 +3562,9 @@ export default async function HomePage({
                       }
                       className={`
                         group
+                        flex
                         min-h-56
+                        flex-col
                         rounded-3xl
                         sm:min-h-64
                         border
@@ -3612,6 +3614,44 @@ export default async function HomePage({
                             .description
                         }
                       </p>
+                      <a
+                        href={service.eyebrow === "08" ? "#menu" : "#contact"}
+                        aria-label={`${locale === "pl"
+                          ? "Zapytaj o usługę"
+                          : locale === "es"
+                            ? "Consultar servicio"
+                            : "Ask about this service"}: ${service.title}`}
+                        className="
+                          mt-auto
+                          inline-flex
+                          min-h-11
+                          items-center
+                          self-start
+                          rounded-full
+                          pt-5
+                          text-sm
+                          font-black
+                          text-[#123d73]
+                          underline
+                          underline-offset-4
+                          transition
+                          hover:text-[#c92d39]
+                          focus-visible:outline-2
+                          focus-visible:outline-offset-2
+                        "
+                      >
+                        {service.eyebrow === "08"
+                          ? locale === "pl"
+                            ? "Zobacz menu →"
+                            : locale === "es"
+                              ? "Ver menú →"
+                              : "View menu →"
+                          : locale === "pl"
+                            ? "Zapytaj o szczegóły →"
+                            : locale === "es"
+                              ? "Consultar servicio →"
+                              : "Enquire now →"}
+                      </a>
                     </article>
                   ),
                 )}
@@ -5893,7 +5933,7 @@ export default async function HomePage({
               </a>
 
               <a href="#legal">
-                Legal
+                {locale === "pl" ? "Zasady" : locale === "es" ? "Información legal" : "Legal"}
               </a>
 
               <a href="#contact">
