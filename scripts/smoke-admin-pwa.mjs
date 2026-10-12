@@ -72,4 +72,6 @@ await check("Catálogo admin protegido sin sesión", async () => {
 });
 
 console.log(`Smoke admin PWA: ${errors} error(es)`);
-if (errors > 0) process.exitCode = 1;
+if (errors > 0) {
+  process.exitCode = 1;
+}
