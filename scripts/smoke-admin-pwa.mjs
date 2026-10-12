@@ -32,6 +32,7 @@ await check("Manifiesto de administración", async () => {
   assert.equal(manifest.id, "/admin");
   assert.equal(manifest.start_url, "/admin");
   assert.equal(manifest.scope, "/admin");
+  assert.ok(manifest.start_url.startsWith(manifest.scope), "The installed entrypoint must be controlled by the SW scope");
   assert.equal(manifest.display, "standalone");
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });
@@ -55,6 +56,7 @@ await check("Worker no almacena sesiones privadas", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /javascript/);
   assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(response.headers.get("service-worker-allowed"), "/admin");
   const body = await response.text();
   assert.match(body, /event\.respondWith\(fetch\(event\.request\)\)/);
   assert.doesNotMatch(body, /caches\.open|localStorage/);
