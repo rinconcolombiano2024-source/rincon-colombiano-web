@@ -3417,17 +3417,17 @@ export default async function HomePage({
               uppercase
             "
           >
-            <span>Restaurant</span>
-            <span>•</span>
-            <span>Catering</span>
-            <span>•</span>
-            <span>Events</span>
-            <span>•</span>
-            <span>Community</span>
-            <span>•</span>
-            <span>Rewards</span>
-            <span>•</span>
-            <span>Rincón AI</span>
+            {(locale === "pl"
+              ? ["Restauracja", "Catering", "Wydarzenia", "Społeczność", "Promocje", "Rincón AI"]
+              : locale === "es"
+                ? ["Restaurante", "Catering", "Eventos", "Comunidad", "Promociones", "Rincón AI"]
+                : ["Restaurant", "Catering", "Events", "Community", "Offers", "Rincón AI"]
+            ).map((label, index) => (
+              <span key={label} className="inline-flex items-center gap-6">
+                {index > 0 ? <span aria-hidden="true">•</span> : null}
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -3555,8 +3555,10 @@ export default async function HomePage({
                     service,
                   ) => (
                     <article
+                      // CMS titles are editable and may accidentally repeat.
+                      // Stable editorial positions prevent duplicate React keys.
                       key={
-                        service.title
+                        service.eyebrow
                       }
                       className={`
                         group
