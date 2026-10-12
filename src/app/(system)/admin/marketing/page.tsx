@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { requireAdminIdentity } from "@/lib/admin/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { unpublishHomeCampaign } from "./actions";
 import {
   publishContentDraft,
   saveContentDraft,
@@ -115,7 +116,12 @@ async function loadCampaigns(): Promise<{
  * revisions optimistas + Auth/RLS + publicación transaccional.
  * Evita un segundo modelo de datos y nuevos permisos inseguros.
  */
-export default async function MarketingAdminPage() {
+export default async function MarketingAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const query = await searchParams;
   const admin = await requireAdminIdentity();
   const data = await loadCampaigns();
   const canEdit = admin.role === "owner" || admin.role === "editor";
@@ -153,6 +159,18 @@ export default async function MarketingAdminPage() {
             Responsable: {admin.email} · Rol: {admin.role}
           </p>
         </header>
+
+        {query.status === "unpublished" ? (
+          <p role="status" className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-900">
+            La campaña publicada fue retirada. El cambio puede tardar hasta cinco minutos en reflejarse en toda la caché pública.
+          </p>
+        ) : query.status ? (
+          <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-900">
+            No fue posible retirar la campaña: {query.status === "conflict"
+              ? "la versión cambió; recarga la página y verifica los datos"
+              : "comprueba tus permisos y la configuración del CMS"}.
+          </p>
+        ) : null}
 
         {!data.ready ? (
           <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">
@@ -241,6 +259,16 @@ export default async function MarketingAdminPage() {
                       <input type="hidden" name="expectedRevision" value={draft.revision} />
                       <button type="submit" className="inline-flex min-h-11 items-center rounded-full bg-[#f7c600] px-5 text-sm font-black text-[#12100e]">
                         Publicar versión {draft.revision}
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {published && canPublish ? (
+                    <form action={unpublishHomeCampaign} className="mt-4">
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="expectedRevision" value={published.sourceRevision} />
+                      <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-full border border-red-300 px-5 text-sm font-black text-red-800 transition hover:bg-red-50">
+                        Retirar campaña publicada
                       </button>
                     </form>
                   ) : null}
