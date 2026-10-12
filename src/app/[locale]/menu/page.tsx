@@ -34,6 +34,7 @@ import {
   getRcOrderaPublicCatalog,
   type RcOrderaPublicCatalog,
 } from "@/integrations/rc-ordera/public-catalog";
+import { localizeRcOrderaCategories } from "@/integrations/rc-ordera/localize-catalog";
 
 
 /* ============================================================
@@ -656,8 +657,7 @@ export default async function MenuPage({
 
   const categories =
     catalog
-      ? catalog
-          .categories
+      ? localizeRcOrderaCategories(catalog.categories, locale)
           .map(
             (
               category,
