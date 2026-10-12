@@ -49,9 +49,9 @@ const legalFooterLabels = {
 };
 
 const smallCommercialLabels = {
-  pl: ["Społeczność", "Nasza historia", "Praca", "Informacje", "Warszawa", "E-mail"],
-  es: ["Comunidad", "Nuestra historia", "Trabaja con nosotros", "Información", "Varsovia", "Correo electrónico"],
-  en: ["Community", "Our story", "Careers", "Information", "Warsaw", "Email"],
+  pl: ["Społeczność", "Nasza historia", "Praca", "Informacje", "Warszawa"],
+  es: ["Comunidad", "Nuestra historia", "Trabaja con nosotros", "Información", "Varsovia"],
+  en: ["Community", "Our story", "Careers", "Information", "Warsaw"],
 };
 
 const socialNavigationLabels = {
