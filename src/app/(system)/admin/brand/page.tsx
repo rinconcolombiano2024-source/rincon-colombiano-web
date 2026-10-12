@@ -13,6 +13,12 @@ import {
 } from "@/lib/admin/auth";
 
 import {
+  canUploadBrand,
+  canPublishBrand,
+  canRetireBrand,
+} from "@/lib/admin/brand-permissions";
+
+import {
   createSupabaseAdminClient,
 } from "@/lib/supabase/admin";
 
@@ -286,6 +292,9 @@ const ERROR_MESSAGES:
   > = {
   configuration:
     "La infraestructura administrativa de Supabase todavía no está configurada.",
+
+  forbidden:
+    "Tu rol no permite realizar esta operación sobre imágenes. Solicita acceso al administrador propietario.",
 
   "invalid-slot":
     "El tipo de recurso seleccionado no es válido.",
@@ -969,6 +978,10 @@ export default async function BrandAdminPage({
 }: BrandPageProps) {
   const admin =
     await requireAdminIdentity();
+
+  const mayUpload = canUploadBrand(admin.role);
+  const mayPublish = canPublishBrand(admin.role);
+  const mayRetire = canRetireBrand(admin.role);
 
   const resolvedSearchParams =
     await searchParams;
@@ -1676,6 +1689,12 @@ const errorKey =
           </div>
 
 
+          {!mayUpload ? (
+            <p className="mx-6 mt-5 rounded-xl border border-[#e4dccf] bg-[#faf9f6] p-4 text-sm text-[#62594f] sm:mx-8">
+              Tu rol permite revisar o publicar recursos, pero no subir nuevas fotografías.
+            </p>
+          ) : null}
+
           <form
             action={
               uploadBrandAsset
@@ -1687,7 +1706,7 @@ const errorKey =
           >
             <fieldset
               disabled={
-                !infrastructureReady
+                !infrastructureReady || !mayUpload
               }
               className="
                 grid
@@ -2343,6 +2362,8 @@ const errorKey =
 
 
                           {
+                            mayPublish &&
+                            mayRetire &&
                             !isPublished &&
                             !isRetired
                               ? (

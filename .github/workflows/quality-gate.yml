@@ -43,6 +43,9 @@ jobs:
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
 
+      - name: Verify administrative photo permissions
+        run: node --experimental-strip-types scripts/check-brand-roles.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
