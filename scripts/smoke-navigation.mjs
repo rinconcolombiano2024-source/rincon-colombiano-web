@@ -162,7 +162,7 @@ async function audit() {
       const href = attr.get("href");
       if (!href) { continue; }
       const local = localHref(href, path);
-      if (!local) continue;
+      if (!local) { continue; }
       if (!links.has(local.path)) {
         links.set(local.path, []);
       }
