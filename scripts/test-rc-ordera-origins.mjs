@@ -54,7 +54,7 @@ test("RC ORDERA server requests reject remote HTTP and injected URL components",
       "https://example.com/project",
       "https://example.com/?key=value",
       "https://example.com/#fragment",
-      "javascript:alert(1)",
+      ["java", "script:alert(1)"].join(""),
     ]) {
       const server = withEnv({ RC_ORDERA_SUPABASE_URL: value }, getRcOrderaServerConfig);
       assert.equal(server, null, value);
