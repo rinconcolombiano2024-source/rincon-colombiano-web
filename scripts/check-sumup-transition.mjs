@@ -16,7 +16,7 @@ test("CEO never claims SumUp is live before reconciled payments exist", () => {
   assert.match(operations, /No activo/);
   assert.match(operations, /no hay un flujo de pago SumUp habilitado/);
   assert.doesNotMatch(operations, /desactivar SumUp/);
-  assert.match(operations, /no activar cobros online/);
+  assert.match(operations, /ni activar cobros online/);
 });
 
 test("web remains marketing only: payment secrets and ledgers belong to RC ORDERA", () => {
