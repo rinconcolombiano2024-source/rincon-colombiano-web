@@ -31,7 +31,7 @@ await check("Manifiesto de administración", async () => {
   const manifest = await response.json();
   assert.equal(manifest.id, "/admin");
   assert.equal(manifest.start_url, "/admin");
-  assert.equal(manifest.scope, "/admin/");
+  assert.equal(manifest.scope, "/admin");
   assert.equal(manifest.display, "standalone");
   assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ["192x192", "512x512"]);
 });
