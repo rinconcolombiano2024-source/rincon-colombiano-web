@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
   addMenuProduct, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision,
+  getProductTranslation,
   normalizeMenu, updateProduct, validProductImageUrl,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
@@ -41,6 +43,50 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const translated = updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", {
+  translations: {
+    pl: { name: "Kolumbijska bandeja paisa", description: "Kolumbijskie danie" },
+    en: { name: "Colombian bandeja paisa", description: "Traditional mixed plate" },
+    es: { name: "Bandeja paisa", description: "Plato tradicional de Colombia" },
+  },
+});
+assert.equal(isSafeMenuRevision(menu, translated), true, "language edits may pass without changing stations");
+assert.equal(getProductTranslation(translated["PLATOS PRINCIPALES"][0], "pl").name,
+  "Kolumbijska bandeja paisa", "Polish translation is saved into draft");
+assert.equal(getProductTranslation(menu["PLATOS PRINCIPALES"][0], "pl").name,
+  "Bandeja", "original menu remains intact");
+assert.equal(translated["PLATOS PRINCIPALES"][0].modifiers[0],
+  "extra-arepa", "existing modifiers are not lost");
+assert.equal(getProductTranslation(menu["PLATOS PRINCIPALES"][0], "es").name,
+  "", "missing Spanish translation is not fabricated");
+
+const withFutureFields = normalizeMenu({
+  MAIN: [{ ...original["PLATOS PRINCIPALES"][0], translations: {
+    pl: { name: "Bandeja", description: "Tradycyjna", specialIngredient: "sos" },
+    fr: { name: "Plateau", description: "Traditionnel" },
+  } }],
+});
+assert.ok(withFutureFields);
+const preserved = updateProduct(withFutureFields, "MAIN", "prod-bandeja", {
+  translations: { pl: { name: "Bandeja paisa z Kolumbii", description: "Tradycyjna" } },
+});
+assert.equal(isSafeMenuRevision(withFutureFields, preserved), true);
+assert.equal(preserved.MAIN[0].translations.pl.specialIngredient, "sos");
+assert.equal(preserved.MAIN[0].translations.fr.name, "Plateau");
+const tampered = {
+  ...preserved,
+  MAIN: [{ ...preserved.MAIN[0], translations: {
+    ...preserved.MAIN[0].translations,
+    fr: { name: "Malicious", description: "Overwritten" },
+  } }],
+};
+assert.equal(isSafeMenuRevision(withFutureFields, tampered), false,
+  "edits to unsupported languages remain forbidden");
+assert.throws(() => updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", {
+  translations: { pl: { name: "x".repeat(161), description: "" } },
+}), /demasiado/);
+
+
 assert.equal(isSafeMenuRevision(menu, { BEBIDAS: [] }), false);
 assert.equal(isSafeMenuRevision(menu, {
   ...changed,
@@ -65,6 +111,16 @@ const createFields = (id, name) => ({
 const firstAdded = addMenuProduct(menu, "BEBIDAS",
   createFields(makeId("000000000001"), "Limonada colombiana"));
 assert.equal(firstAdded.BEBIDAS.length, 2);
+const withTranslatedNew = updateProduct(firstAdded, "BEBIDAS",
+  makeId("000000000001"), {
+    translations: {
+      pl: { name: "Kolumbijska lemoniada", description: "Cytryna i woda" },
+      en: { name: "Colombian lemonade", description: "Refreshing citrus" },
+    },
+  });
+assert.equal(isSafeMenuRevision(menu, withTranslatedNew), true,
+  "new products may be translated before the first save");
+
 assert.equal(isSafeMenuRevision(menu, firstAdded), true, "one creation is safe");
 assert.equal(menu.BEBIDAS.length, 1, "source menu remains unchanged");
 const secondAdded = addMenuProduct(firstAdded, "BEBIDAS",
@@ -117,5 +173,38 @@ assert.equal(detectProductImageMime(new Uint8Array([
   82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80,
 ])), "image/webp");
 assert.equal(detectProductImageMime(new Uint8Array(16)), null);
+
+const catalogProduct = {
+  id: "dish-1", category: "MAIN", name: "Bandeja paisa",
+  description: "Descripción en español", price: 60,
+  available: true, imageUrl: null, station: "kitchen",
+  translations: {
+    pl: { name: "Kolumbijska bandeja paisa", description: "Tradycyjne danie" },
+    en: { name: "Colombian platter", description: "" },
+  },
+};
+assert.equal(localizeRcOrderaProduct(catalogProduct, "pl").name,
+  "Kolumbijska bandeja paisa", "Polish dish label is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "pl").description,
+  "Tradycyjne danie", "Polish description is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "en").name,
+  "Colombian platter", "English dish label is displayed");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "en").description,
+  "", "Missing English description is not silently replaced with Spanish text");
+assert.equal(localizeRcOrderaProduct(catalogProduct, "es").name,
+  "Bandeja paisa", "No Spanish translation => use original name");
+assert.equal(catalogProduct.name, "Bandeja paisa",
+  "Localization never mutates the source product");
+const localizedCategories = localizeRcOrderaCategories([
+  { name: "PLATOS", products: [catalogProduct] },
+], "pl");
+assert.equal(localizedCategories[0].products[0].name, "Kolumbijska bandeja paisa");
+assert.equal(localizedCategories[0].products[0].price, 60,
+  "Published original prices must survive localization");
+assert.equal(localizeRcOrderaProduct({
+  ...catalogProduct,
+  translations: { pl: { name: " ", description: "Fake" } },
+}, "pl").name, "Bandeja paisa", "Blank translations never override real dish names");
+
 
 console.log("PASS: menu editing preserves product IDs/metadata, validates prices and image signatures");

@@ -6,6 +6,7 @@ import {
   addMenuProduct,
   removeMenuProduct,
   detectProductImageMime,
+  getProductTranslation,
   isSafeMenuRevision,
   menuProductCount,
   normalizeMenu,
@@ -14,6 +15,9 @@ import {
   type RcEditableMenu,
   type RcMenuProduct,
   type RcProductUpdate,
+  type RcProductTranslation,
+  type RcProductTranslationUpdates,
+  type RcTranslationLocale,
 } from "@/integrations/rc-ordera/menu-editor-utils";
 
 type EditorConfig = {
@@ -90,6 +94,11 @@ function ProductCard({
   const [price, setPrice] = useState(String(product.price));
   const [available, setAvailable] = useState(product.available);
   const [imageUrl, setImageUrl] = useState(product.imageUrl ?? "");
+  const [translations, setTranslations] = useState<Record<RcTranslationLocale, RcProductTranslation>>({
+    pl: getProductTranslation(product, "pl"),
+    es: getProductTranslation(product, "es"),
+    en: getProductTranslation(product, "en"),
+  });
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
 
@@ -104,12 +113,27 @@ function ProductCard({
       setUploadMessage("Revisa nombre, precio, descripción y dirección HTTPS de la fotografía.");
       return;
     }
+    const translationUpdates: RcProductTranslationUpdates = {};
+    for (const locale of ["pl", "es", "en"] as const) {
+      const oldValue = getProductTranslation(product, locale);
+      const next = translations[locale];
+      if (next.name.length > 160 || next.description.length > 3000) {
+        setUploadMessage("Las traducciones deben respetar los límites de nombre y descripción.");
+        return;
+      }
+      if (oldValue.name !== next.name || oldValue.description !== next.description) {
+        translationUpdates[locale] = next;
+      }
+    }
     onApply({
       name: name.trim(),
       description,
       price: value,
       available,
       imageUrl: imageUrl.trim(),
+      ...(Object.keys(translationUpdates).length > 0
+        ? { translations: translationUpdates }
+        : {}),
     });
     setUploadMessage("Cambios aplicados al borrador. Falta publicar con «Guardar en RC ORDERA».");
   }
@@ -151,6 +175,48 @@ function ProductCard({
           onChange={(event) => setDescription(event.target.value)}
           className="mt-2 w-full rounded-xl border px-3 py-2 text-sm" />
       </div>
+      <details className="rounded-xl border border-[#d9dfe9] bg-white p-4 sm:col-span-2">
+        <summary className="cursor-pointer text-sm font-black text-[#123d73]">
+          Traducciones de producto · Polski / Español / English
+        </summary>
+        <p className="mt-3 text-xs leading-6 text-[#62594f]">
+          Edita los nombres y descripciones que utiliza RC ORDERA en cada idioma.
+          Los textos vacíos permanecen vacíos; no inventamos traducciones automáticas.
+          Las traducciones no se publican hasta guardar el menú con la cuenta propietaria.
+        </p>
+        <div className="mt-4 grid gap-4">
+          {([
+            { key: "pl", title: "Polski (Polonia)" },
+            { key: "es", title: "Español (Colombia)" },
+            { key: "en", title: "English (international)" },
+          ] as const).map(({ key, title }) => (
+            <fieldset key={key} className="rounded-lg border border-[#e4dccf] p-4">
+              <legend className="px-2 text-sm font-black">{title}</legend>
+              <label className="mt-2 block text-xs font-bold" htmlFor={`ordera-translation-name-${key}`}>
+                Nombre del plato
+              </label>
+              <input id={`ordera-translation-name-${key}`}
+                value={translations[key].name} maxLength={160} disabled={busy || uploading}
+                onChange={(event) => setTranslations((current) => ({
+                  ...current,
+                  [key]: { ...current[key], name: event.target.value },
+                }))}
+                className="mt-2 min-h-11 w-full rounded-xl border px-3 py-2 text-sm" />
+              <label className="mt-3 block text-xs font-bold" htmlFor={`ordera-translation-description-${key}`}>
+                Descripción traducida
+              </label>
+              <textarea id={`ordera-translation-description-${key}`} rows={2}
+                maxLength={3000} disabled={busy || uploading}
+                value={translations[key].description}
+                onChange={(event) => setTranslations((current) => ({
+                  ...current,
+                  [key]: { ...current[key], description: event.target.value },
+                }))}
+                className="mt-2 w-full rounded-xl border px-3 py-2 text-sm" />
+            </fieldset>
+          ))}
+        </div>
+      </details>
       <div className="sm:col-span-2">
         <label className="block text-sm font-bold" htmlFor="ordera-product-image">URL HTTPS de fotografía</label>
         <input id="ordera-product-image" type="url" maxLength={1600} value={imageUrl} disabled={busy || uploading}

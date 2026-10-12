@@ -86,6 +86,16 @@ export type RcOrderaCatalogSource =
    ============================================================ */
 
 export interface RcOrderaPublicProduct {
+  /**
+   * Optional editorial translations returned by RC ORDERA public RPC.
+   * The public menu never fabricates them when the RPC omits translation
+   * fields or the restaurant editor has not provided a language.
+   */
+  readonly translations?: Readonly<Partial<Record<"pl" | "es" | "en", {
+    readonly name: string;
+    readonly description: string;
+  }>>>;
+
   readonly id:
     string | null;
 
@@ -492,6 +502,26 @@ function normalizeProduct(
       "preparation_station",
     );
 
+  const publicTranslations: Partial<Record<"pl" | "es" | "en", {
+    name: string;
+    description: string;
+  }>> = {};
+  const rawTranslations = readObject(value, "translations");
+  for (const locale of ["pl", "es", "en"] as const) {
+    const translation = rawTranslations[locale];
+    if (!isJsonObject(translation)) {
+      continue;
+    }
+    const title = readString(translation, "name");
+    const details = readString(translation, "description");
+    if (title && title.length <= 160) {
+      publicTranslations[locale] = {
+        name: title,
+        description: normalizeDescription(details),
+      };
+    }
+  }
+
   return {
     id,
 
@@ -517,6 +547,10 @@ function normalizeProduct(
     imageUrl,
 
     station,
+
+    ...(Object.keys(publicTranslations).length > 0
+      ? { translations: publicTranslations }
+      : {}),
   };
 }
 
