@@ -48,10 +48,11 @@ function validTranslationEntry(value: unknown): value is RcProductTranslation {
   if (!isObject(value)) {
     return false;
   }
-  return typeof value.name === "string" &&
-    value.name.length <= 160 &&
-    typeof value.description === "string" &&
-    value.description.length <= 3000;
+  const entry = value as { readonly name?: unknown; readonly description?: unknown };
+  return typeof entry.name === "string" &&
+    entry.name.length <= 160 &&
+    typeof entry.description === "string" &&
+    entry.description.length <= 3000;
 }
 
 export function getProductTranslation(
@@ -121,11 +122,12 @@ function isSafeTranslationChange(before: unknown, after: unknown): boolean {
     if (!isObject(original)) {
       return false;
     }
-    const keys = new Set([...Object.keys(original), ...Object.keys(changed)]);
+    const changedFields = changed as unknown as Record<string, unknown>;
+    const keys = new Set([...Object.keys(original), ...Object.keys(changedFields)]);
     keys.delete("name");
     keys.delete("description");
     for (const key of keys) {
-      if (JSON.stringify(original[key]) !== JSON.stringify(changed[key])) {
+      if (JSON.stringify(original[key]) !== JSON.stringify(changedFields[key])) {
         return false;
       }
     }
