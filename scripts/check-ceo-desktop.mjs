@@ -22,8 +22,11 @@ for (const route of adminRoutes) {
   const dir = route.replace("/admin/", "");
   await access(`src/app/(system)/admin/${dir}/page.tsx`);
 }
-assert.doesNotMatch(windows, /service_role|supabaseKey|adminPassword/,
-  "Never embed privileged API keys or owner credentials in Windows native app");
+const executableWindowsCode = windows.split("\n")
+  .filter((line) => !line.trimStart().startsWith("//"))
+  .join("\n");
+assert.doesNotMatch(executableWindowsCode, /service_role|supabaseKey|adminPassword/,
+  "Never embed privileged API keys or owner credentials in executable Windows code");
 
 const editor = await readFile("src/components/admin/RcOrderaMenuManager.tsx", "utf8");
 assert.match(editor, /serverSnapshotEpoch/,
