@@ -10,7 +10,9 @@ import {
 
 import {
   buildMenuMetadata,
+  serializeJsonLd,
 } from "@/config/seo";
+import { buildVerifiedMenuJsonLd } from "@/config/seo-menu";
 
 import {
   buildRoutePath,
@@ -682,6 +684,8 @@ export default async function MenuPage({
     categories.length >
       0;
 
+  const verifiedMenuSchema =
+    hasLiveMenu ? buildVerifiedMenuJsonLd(catalog, locale) : null;
 
   return (
     <main
@@ -692,6 +696,14 @@ export default async function MenuPage({
         text-[#12100e]
       "
     >
+      {verifiedMenuSchema ? (
+        <script type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(verifiedMenuSchema),
+          }}
+        />
+      ) : null}
+
       {/* ====================================================
           TOP BRAND BAR
           ==================================================== */}
