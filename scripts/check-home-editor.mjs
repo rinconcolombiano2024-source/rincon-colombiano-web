@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { SEO_EDITABLE_ROUTES, validPublishedSeo } from "../src/config/seo-cms.ts";
 import {
   HOME_EDITABLE_SECTIONS,
   HOME_EDITABLE_KEYS,
@@ -35,3 +36,16 @@ const widget = await readFile("src/components/rincon-ai/RinconAiWidget.tsx", "ut
 assert.match(widget, /sm:block/, "Floating AI launcher should hide expanded copy on narrow screens");
 
 console.log("PASS: 11 editable commercial/SEO areas and mobile sales copy guard");
+
+assert.deepEqual(SEO_EDITABLE_ROUTES.map((route) => route.key), [
+  "home_seo", "menu_seo", "location_czapelska_seo",
+]);
+assert.equal(validPublishedSeo("menu_seo", {
+  kind: "page", title: "Kolumbijskie jedzenie Warszawa", body: "Kuchnia kolumbijska w Warszawie",
+}), true);
+assert.equal(validPublishedSeo("location_brzeska_seo", {
+  kind: "page", title: "Brzeska", body: "Coming soon",
+}), false, "SEO editing never marks unopened Brzeska as an active location");
+assert.equal(validPublishedSeo("home_seo", {
+  kind: "page", title: "a".repeat(71), body: "ok",
+}), false, "SEO titles have strict length caps");
