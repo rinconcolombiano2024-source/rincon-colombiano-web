@@ -20,6 +20,12 @@ import {
 } from "@/lib/admin/auth";
 
 import {
+  canUploadBrand,
+  canPublishBrand,
+  canRetireBrand,
+} from "@/lib/admin/brand-permissions";
+
+import {
   createSupabaseAdminClient,
 } from "@/lib/supabase/admin";
 
@@ -579,6 +585,13 @@ export async function uploadBrandAsset(
   const adminIdentity =
     await requireAdminIdentity();
 
+  // Authorization before any service_role operation; fail closed.
+  if (!canUploadBrand(adminIdentity.role)) {
+    redirectBrand({
+      error: "forbidden",
+    });
+  }
+
 
   /* ========================================================
      ADMIN CLIENT
@@ -1018,6 +1031,13 @@ export async function publishBrandAsset(
   const adminIdentity =
     await requireAdminIdentity();
 
+  // Authorization before any service_role operation; fail closed.
+  if (!canPublishBrand(adminIdentity.role)) {
+    redirectBrand({
+      error: "forbidden",
+    });
+  }
+
   const supabaseAdmin =
     createSupabaseAdminClient();
 
@@ -1104,6 +1124,13 @@ export async function retireBrandAsset(
 ): Promise<void> {
   const adminIdentity =
     await requireAdminIdentity();
+
+  // Authorization before any service_role operation; fail closed.
+  if (!canRetireBrand(adminIdentity.role)) {
+    redirectBrand({
+      error: "forbidden",
+    });
+  }
 
   const supabaseAdmin =
     createSupabaseAdminClient();
