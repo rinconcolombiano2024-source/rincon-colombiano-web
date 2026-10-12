@@ -598,6 +598,15 @@ export async function saveContentDraft(
   );
 
 
+  // Preserve the marketing workflow when saving its campaign draft.
+  // Fixed destination: never redirect to a user-controlled URL.
+  if (
+    contentKey === "home_campaign" &&
+    readFormString(formData, "returnTo") === "marketing"
+  ) {
+    redirect("/admin/marketing?status=saved");
+  }
+
   redirectContent({
     success:
       "saved",
@@ -743,6 +752,10 @@ export async function publishContentDraft(
     "/en",
   );
 
+
+  if (readFormString(formData, "returnTo") === "marketing") {
+    redirect("/admin/marketing?status=published");
+  }
 
   redirectContent({
     success:
