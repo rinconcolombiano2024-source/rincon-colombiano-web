@@ -61,6 +61,12 @@ jobs:
       - name: Prevent misleading customer and loyalty copy
         run: node scripts/check-commercial-copy.mjs
 
+      - name: Guard Rincón AI mobile safe positioning
+        run: node scripts/check-rincon-ai-mobile.mjs
+
+      - name: Prevent premature SumUp payment claims
+        run: node scripts/check-sumup-transition.mjs
+
       - name: Block unsafe Vercel staging targets
         run: node scripts/test-vercel-preview.mjs
 

@@ -681,14 +681,16 @@ export function RinconAiWidget({
 
   return (
     <div
-      className="
+      className={`
         fixed
         right-3
-        bottom-[max(1rem,env(safe-area-inset-bottom))]
         z-50
         sm:right-6
         sm:bottom-6
-      "
+        ${isOpen
+          ? "bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          : "bottom-[max(5rem,env(safe-area-inset-bottom))]"}
+      `}
     >
       {
         isOpen
@@ -699,7 +701,7 @@ export function RinconAiWidget({
                 className="
                   mb-3
                   flex
-                  h-[min(34rem,calc(100vh-7rem))]
+                  h-[min(34rem,calc(100dvh-7rem))]
                   w-[min(24rem,calc(100vw-2rem))]
                   flex-col
                   overflow-hidden
