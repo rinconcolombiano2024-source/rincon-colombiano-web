@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   addMenuProduct,
   removeMenuProduct,
   detectProductImageMime,
   getProductTranslation,
+  hasUnappliedProductChanges,
   isSafeMenuRevision,
   menuProductCount,
   normalizeMenu,
@@ -83,11 +84,13 @@ function ProductCard({
   busy,
   onApply,
   onUpload,
+  onUnappliedChange,
 }: {
   readonly product: RcMenuProduct;
   readonly busy: boolean;
-  readonly onApply: (patch: RcProductUpdate) => void;
+  readonly onApply: (patch: RcProductUpdate) => boolean;
   readonly onUpload: (file: File) => Promise<string>;
+  readonly onUnappliedChange: (hasChanges: boolean) => void;
 }) {
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description ?? "");
@@ -101,6 +104,15 @@ function ProductCard({
   });
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+
+  // A product form has a second, unsaved layer BEFORE its values enter the
+  // RC ORDERA menu draft. Observe it so that changing product/category and
+  // clicking "Guardar" never silently discards un-applied field edits.
+  useEffect(() => {
+    onUnappliedChange(hasUnappliedProductChanges(product, {
+      name, description, priceText: price, available, imageUrl, translations,
+    }));
+  }, [product, name, description, price, available, imageUrl, translations, onUnappliedChange]);
 
   function apply(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -125,7 +137,7 @@ function ProductCard({
         translationUpdates[locale] = next;
       }
     }
-    onApply({
+    const wasApplied = onApply({
       name: name.trim(),
       description,
       price: value,
@@ -135,7 +147,12 @@ function ProductCard({
         ? { translations: translationUpdates }
         : {}),
     });
-    setUploadMessage("Cambios aplicados al borrador. Falta publicar con «Guardar en RC ORDERA».");
+    if (wasApplied) {
+      onUnappliedChange(false);
+      setUploadMessage("Cambios aplicados al borrador. Falta publicar con «Guardar en RC ORDERA».");
+    } else {
+      setUploadMessage("No se aplicaron los cambios. Consulta el error del editor.");
+    }
   }
 
   async function upload(file: File | undefined) {
@@ -342,6 +359,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   // ProductCard holds controlled input state; a successful server
   // refresh must replace its inputs even when the selected ID is unchanged.
   const [serverSnapshotEpoch, setServerSnapshotEpoch] = useState(0);
+  const [unappliedChanges, setUnappliedChanges] = useState(false);
+  const reportUnappliedChanges = useCallback((hasChanges: boolean) => {
+    setUnappliedChanges(hasChanges);
+  }, []);
+  const unappliedWarning =
+    "Primero pulsa «Aplicar al borrador» en el producto; hay datos editados sin aplicar.";
 
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -473,16 +496,18 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
-  function patchProduct(id: string, data: RcProductUpdate) {
+  function patchProduct(id: string, data: RcProductUpdate): boolean {
     if (!draft || busy) {
-      return;
+      return false;
     }
     try {
       setDraft(updateProduct(draft, category, id, data));
       setMessage("Producto cambiado en el borrador local, aún no publicado.");
       setErrorMessage("");
+      return true;
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Producto inválido");
+      return false;
     }
   }
 
@@ -681,6 +706,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 busy={busy}
                 onApply={(patch) => patchProduct(selected.id, patch)}
                 onUpload={(file) => uploadImage(file, selected.id)}
+                onUnappliedChange={reportUnappliedChanges}
               />
               <div className="mt-3 flex justify-end">
                 <button type="button" disabled={busy} onClick={() => deleteProduct(selected)}
