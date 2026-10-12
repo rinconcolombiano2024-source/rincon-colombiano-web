@@ -1,0 +1,61 @@
+name: Build Rincón CEO Windows App
+
+on:
+  push:
+    branches:
+      - main
+      - feat/ceo-desktop-windows-download-20261012
+    paths:
+      - "desktop/**"
+      - ".github/workflows/windows-ceo-desktop.yml"
+  pull_request:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/windows-ceo-desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ceo-desktop-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-desktop:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install .NET 10 LTS
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        shell: pwsh
+        run: |
+          dotnet restore desktop/RinconColombianoAdmin/RinconColombianoAdmin.csproj --runtime win-x64
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed" }
+
+      - name: Compile self-contained CEO app
+        shell: pwsh
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP "RinconCEO-win-x64"
+          dotnet publish desktop/RinconColombianoAdmin/RinconColombianoAdmin.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output $destination /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false
+          if ($LASTEXITCODE -ne 0) { throw "Windows desktop publish failed" }
+          if (-not (Test-Path (Join-Path $destination "RinconColombianoAdmin.exe"))) { throw "CEO executable missing" }
+          Copy-Item desktop/README-WINDOWS.md (Join-Path $destination "LEEME-CEO.txt")
+          (Get-FileHash (Join-Path $destination "RinconColombianoAdmin.exe") -Algorithm SHA256).Hash | Out-File -Encoding utf8 (Join-Path $destination "SHA256.txt")
+          Write-Host "Windows CEO app built successfully"
+
+      - name: Upload downloadable Windows application
+        uses: actions/upload-artifact@v4
+        with:
+          name: RinconColombiano-CEO-Windows-x64
+          path: ${{ runner.temp }}/RinconCEO-win-x64/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
