@@ -10,7 +10,7 @@ export function GET(): NextResponse {
       description: "Gestión privada de Rincón Colombiano.",
       lang: "es",
       start_url: "/admin",
-      scope: "/admin/",
+      scope: "/admin",
       display: "standalone",
       background_color: "#f4f1eb",
       theme_color: "#123d73",
