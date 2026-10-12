@@ -772,28 +772,28 @@ const homeContent:
         "Każda relacja z marką może dawać więcej.",
 
       description:
-        "Program lojalnościowy jest projektowany jako część jednego konta klienta i będzie połączony z realnymi zakupami w RC ORDERA.",
+        "Przygotowujemy program dla stałych gości. Punkty i nagrody nie są jeszcze aktywne — o zasadach poinformujemy przed uruchomieniem.",
 
       purchaseTitle:
         "Nagrody za zakupy",
 
       purchaseDescription:
-        "Kwalifikujące zakupy mogą dodawać punkty lub inne korzyści zgodnie z aktualnymi zasadami programu.",
+        "W przyszłości poinformujemy o korzyściach dostępnych dla stałych gości. Obecne zakupy nie zbierają punktów.",
 
       referralTitle:
         "Poleć znajomego",
 
       referralDescription:
-        "Po pierwszym kwalifikującym zakupie zaproszonej osoby system może przyznać nagrodę osobie polecającej zgodnie z aktualnym progiem programu.",
+        "Zaproś znajomych na kolumbijskie jedzenie. Program poleceń i jego warunki jeszcze nie obowiązują.",
 
       tokenTitle:
         "Bezpieczny QR / token",
 
       tokenDescription:
-        "Kod jest walidowany przez backend, może zostać wykorzystany tylko zgodnie z zasadami programu i nie opiera się wyłącznie na obrazie QR.",
+        "Wszystkie zasady promocji i ewentualne kody ogłosimy przed uruchomieniem programu.",
 
       action:
-        "Zobacz nagrody",
+        "Zapytaj o przyszłe oferty",
     },
 
     ai: {
@@ -931,7 +931,7 @@ const homeContent:
             "Jak działa program nagród?",
 
           answer:
-            "Nagrody będą wynikały z rzeczywistych zakupów i zweryfikowanych poleceń, a zasady pozostaną konfigurowalne.",
+            "Program jest w przygotowaniu. Obecnie nie przyznajemy punktów ani nagród za polecenia.",
         },
         {
           question:
@@ -1321,28 +1321,28 @@ const homeContent:
         "Cada relación con Rincón puede generar más valor.",
 
       description:
-        "El sistema de fidelización formará parte de una sola cuenta de cliente y se conectará con las compras reales de RC ORDERA.",
+        "Estamos preparando un programa para nuestros clientes frecuentes. Los puntos y recompensas todavía no están activos; anunciaremos sus condiciones antes del lanzamiento.",
 
       purchaseTitle:
         "Recompensas por compras",
 
       purchaseDescription:
-        "Las compras que cumplan las reglas del programa podrán generar puntos, beneficios o recompensas.",
+        "Cuando lancemos el programa, publicaremos sus beneficios. Por ahora, las compras no acumulan puntos.",
 
       referralTitle:
         "Refiere a un amigo",
 
       referralDescription:
-        "Cuando la persona referida complete su primera compra válida, el sistema podrá otorgar una recompensa al referente según el mínimo configurado del programa.",
+        "Invita a tus amigos a disfrutar nuestra comida. El programa de referidos aún no está activo.",
 
       tokenTitle:
         "QR / token seguro",
 
       tokenDescription:
-        "El código se valida en backend, tiene controles contra reutilización y no depende solamente de mostrar una imagen QR.",
+        "Las condiciones de cualquier promoción futura se anunciarán antes de habilitar códigos de recompensa.",
 
       action:
-        "Ver recompensas",
+        "Consultar próximas promociones",
     },
 
     ai: {
@@ -1353,7 +1353,7 @@ const homeContent:
         "Ayuda al cliente cuando realmente la necesita.",
 
       description:
-        "El asistente utilizará datos reales del restaurante, el menú, pedidos, reservas y recompensas, sin inventar información operativa.",
+        "Pregunta por nuestros platos, la ubicación o el catering. Para confirmar detalles de un pedido, comunícate directamente con el restaurante.",
 
       features: [
         "Menú y disponibilidad",
@@ -1480,7 +1480,7 @@ const homeContent:
             "¿Cómo funcionarán las recompensas?",
 
           answer:
-            "Se basarán en compras y referidos realmente validados, con reglas configurables desde el sistema.",
+            "Estamos preparando el programa. Todavía no se acumulan puntos ni se entregan premios por referidos.",
         },
         {
           question:
@@ -1870,28 +1870,28 @@ const homeContent:
         "Every relationship with Rincón can create more value.",
 
       description:
-        "The loyalty system will live inside one customer account and connect directly to validated RC ORDERA purchases.",
+        "We're preparing a loyalty programme for returning guests. Points and rewards are not active yet; we'll publish the rules before launch.",
 
       purchaseTitle:
         "Purchase rewards",
 
       purchaseDescription:
-        "Eligible purchases can generate points, benefits or rewards according to the current program rules.",
+        "We'll announce any future loyalty benefits when the programme launches. Purchases do not earn points yet.",
 
       referralTitle:
         "Refer a friend",
 
       referralDescription:
-        "After a referred customer completes a qualifying first purchase, the system can grant the referrer a reward according to the configured program threshold.",
+        "Bring friends and family to enjoy Colombian food. The referral rewards programme is not active yet.",
 
       tokenTitle:
         "Secure QR / token",
 
       tokenDescription:
-        "Tokens are validated by the backend, protected against improper reuse and never rely only on displaying a QR image.",
+        "We'll publish clear terms before introducing any future promotional codes or rewards.",
 
       action:
-        "Explore rewards",
+        "Ask about upcoming offers",
     },
 
     ai: {
