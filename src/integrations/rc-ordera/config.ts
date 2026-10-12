@@ -125,11 +125,18 @@ function normalizeHttpOrigin(
         value,
       );
 
+    const localDevelopment =
+      process.env.NODE_ENV !== "production" &&
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+
     if (
-      url.protocol !==
-        "https:" &&
-      url.protocol !==
-        "http:"
+      (url.protocol !== "https:" && !localDevelopment) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash ||
+      (url.pathname !== "/" && url.pathname !== "")
     ) {
       return null;
     }
@@ -151,24 +158,23 @@ function normalizePublicAppUrl(
         value,
       );
 
+    const localDevelopment =
+      process.env.NODE_ENV !== "production" &&
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+
     if (
-      url.protocol !==
-        "https:" &&
-      url.protocol !==
-        "http:"
+      (url.protocol !== "https:" && !localDevelopment) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash ||
+      (url.pathname !== "/" && url.pathname !== "")
     ) {
       return null;
     }
 
-    url.hash =
-      "";
-
-    return url
-      .toString()
-      .replace(
-        /\/$/,
-        "",
-      );
+    return url.origin;
   } catch {
     return null;
   }
