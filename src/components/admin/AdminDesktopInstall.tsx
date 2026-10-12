@@ -71,11 +71,24 @@ export default function AdminDesktopInstall() {
             : "En Chrome o Edge, usa el menú del navegador → Instalar aplicación. El panel abrirá en una ventana independiente."}
         </p>
       </div>
-      {!installed && installPrompt ? (
-        <button type="button" onClick={() => void install()} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-[#123d73] px-6 text-sm font-black text-white transition hover:bg-[#0e315d] focus-visible:outline-2 focus-visible:outline-offset-2">
-          Instalar panel
-        </button>
-      ) : null}
+      <div className="flex shrink-0 flex-col gap-3">
+        {!installed && installPrompt ? (
+          <button type="button" onClick={() => void install()} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#123d73] px-6 text-sm font-black text-white transition hover:bg-[#0e315d] focus-visible:outline-2 focus-visible:outline-offset-2">
+            Instalar panel PWA
+          </button>
+        ) : null}
+        <a
+          href="https://github.com/rinconcolombiano2024-source/rincon-colombiano-web/actions/workflows/windows-ceo-desktop.yml"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#123d73] px-6 text-sm font-bold text-[#123d73] transition hover:bg-[#f4f1eb] focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          Versiones descargables Windows ↗
+        </a>
+        <p className="max-w-52 text-xs text-[#756b61]">
+          GitHub Actions → última compilación → Artifacts → archivo Windows x64.
+        </p>
+      </div>
     </section>
   );
 }
