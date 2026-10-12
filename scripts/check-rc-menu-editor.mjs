@@ -45,7 +45,7 @@ assert.equal(isSafeMenuRevision(menu, { BEBIDAS: [] }), false);
 assert.equal(isSafeMenuRevision(menu, {
   ...changed,
   BEBIDAS: [],
-}), false, "dropping products prohibited");
+}), true, "one intentional deletion from a category is allowed");
 
 const malicious = {
   ...changed,
