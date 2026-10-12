@@ -114,6 +114,12 @@ async function checkPage(locale) {
       html.includes("Rincón Colombiano"),
       `${path} identifica la marca`
     );
+    report(
+      !html.includes("La web de Rincón Colombiano será el centro de contacto") &&
+      !html.includes("The Rincón Colombiano website is becoming") &&
+      !html.includes("Strona Rincón Colombiano jest centralnym"),
+      `${path} no muestra texto técnico de desarrollo al cliente`
+    );
   } catch (error) {
     report(
       false,
@@ -163,6 +169,16 @@ async function checkInfrastructure() {
       sitemap.status === 200 &&
       sitemap.body.includes("<urlset"),
       "sitemap.xml disponible"
+    );
+    for (const lang of ["pl-PL", "es", "en", "x-default"]) {
+      report(
+        sitemap.body.includes(`hreflang="${lang}"`),
+        `sitemap anuncia solo alternates equivalentes: ${lang}`
+      );
+    }
+    report(
+      !/brzeska/i.test(sitemap.body),
+      "sitemap no indexa la sede Brzeska mientras no abra"
     );
   } catch (error) {
     report(false, `sitemap.xml: ${error}`);

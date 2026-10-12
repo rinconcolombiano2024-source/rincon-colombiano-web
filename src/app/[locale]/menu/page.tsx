@@ -10,7 +10,12 @@ import {
 
 import {
   buildMenuMetadata,
+  buildRouteMetadata,
+  serializeJsonLd,
 } from "@/config/seo";
+import { validPublishedSeo } from "@/config/seo-cms";
+import { getPublishedCmsTextContent } from "@/lib/cms/public-content";
+import { buildVerifiedMenuJsonLd } from "@/config/seo-menu";
 
 import {
   buildRoutePath,
@@ -508,6 +513,13 @@ export async function generateMetadata({
     return {};
   }
 
+  const published = await getPublishedCmsTextContent("menu_seo", rawLocale);
+  if (published && validPublishedSeo("menu_seo", published)) {
+    return buildRouteMetadata("menu", rawLocale, {
+      title: published.title,
+      description: published.body,
+    });
+  }
   return buildMenuMetadata(
     rawLocale,
   );
@@ -682,6 +694,8 @@ export default async function MenuPage({
     categories.length >
       0;
 
+  const verifiedMenuSchema =
+    hasLiveMenu ? buildVerifiedMenuJsonLd(catalog, locale) : null;
 
   return (
     <main
@@ -692,6 +706,14 @@ export default async function MenuPage({
         text-[#12100e]
       "
     >
+      {verifiedMenuSchema ? (
+        <script type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(verifiedMenuSchema),
+          }}
+        />
+      ) : null}
+
       {/* ====================================================
           TOP BRAND BAR
           ==================================================== */}

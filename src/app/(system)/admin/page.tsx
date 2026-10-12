@@ -59,6 +59,26 @@ interface AdminModule {
 const ADMIN_MODULES = [
   {
     key:
+      "home",
+
+    eyebrow:
+      "WEB Y SEO",
+
+    title:
+      "Editar inicio, servicios y Google",
+
+    description:
+      "Cambia los titulares, textos comerciales y SEO de inicio en español, polaco e inglés, sin código.",
+
+    status:
+      "active",
+
+    href:
+      "/admin/home",
+  },
+
+  {
+    key:
       "operations",
 
     eyebrow:
@@ -219,13 +239,16 @@ const ADMIN_MODULES = [
       "SEO",
 
     title:
-      "Posicionamiento",
+      "SEO local e internacional",
 
     description:
-      "Páginas locales, metadatos, indexación, contenido gastronómico y crecimiento orgánico.",
+      "Gestiona metadatos de Google del inicio, menú y sede Czapelska en polaco, español e inglés.",
 
     status:
-      "planned",
+      "active",
+
+    href:
+      "/admin/seo",
   },
 
   {

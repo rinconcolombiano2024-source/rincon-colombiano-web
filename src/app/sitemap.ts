@@ -4,6 +4,7 @@ import type {
 
 import {
   SEO_PRODUCTION_ORIGIN,
+  seoLocaleConfig,
 } from "@/config/seo";
 
 import {
@@ -74,6 +75,26 @@ function buildProductionUrl(
 }
 
 
+/**
+ * Every sitemap hreflang alternate must point to an equivalent
+ * actually published page, never planned routes or unopened sites.
+ * This is also used for location pages, but ONLY when status=open.
+ */
+function buildSitemapAlternates(
+  routeKey: RouteKey,
+  params: Readonly<Record<string, string | number>> = {},
+): { languages: Record<string, string> } {
+  const languages: Record<string, string> = {};
+  for (const language of SUPPORTED_LOCALES) {
+    languages[seoLocaleConfig[language].hreflang] =
+      buildProductionUrl(buildRoutePath(routeKey, language, params));
+  }
+  languages["x-default"] =
+    buildProductionUrl(buildRoutePath(routeKey, "pl", params));
+  return { languages };
+}
+
+
 /* ============================================================
    STATIC ROUTES
    ============================================================ */
@@ -96,6 +117,7 @@ function buildStaticSitemapEntries():
                   locale,
                 ),
               ),
+            alternates: buildSitemapAlternates(routeKey),
           }),
         ),
     );
@@ -147,6 +169,7 @@ function buildRestaurantSitemapEntries():
                   },
                 ),
               ),
+            alternates: buildSitemapAlternates("location", { slug: restaurant.slug }),
           }),
         ),
     );

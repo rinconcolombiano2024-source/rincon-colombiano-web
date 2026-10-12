@@ -9,6 +9,9 @@ import {
   redirect,
 } from "next/navigation";
 
+import { validPublishedSeo } from "@/config/seo-cms";
+import { getPublishedCmsTextContent } from "@/lib/cms/public-content";
+
 import {
   buildBreadcrumbJsonLd,
   buildRestaurantJsonLd,
@@ -1034,6 +1037,15 @@ export async function generateMetadata({
     restaurant.status ===
       "open";
 
+  // Only the verified, open Czapelska location has a live SEO editor.
+  // Brzeska is coming soon and remains intentionally non-indexable.
+  const seoKey = "location_czapelska_seo";
+  const publishedSeo = indexable && restaurant.slug === "czapelska"
+    ? await getPublishedCmsTextContent(seoKey, rawLocale)
+    : null;
+  const seoCopy = publishedSeo && validPublishedSeo(seoKey, publishedSeo)
+    ? publishedSeo : null;
+
   return buildRestaurantMetadata({
     locale:
       rawLocale,
@@ -1042,12 +1054,12 @@ export async function generateMetadata({
       restaurant.slug,
 
     name:
-      getRestaurantMetadataName(
+      seoCopy?.title ?? getRestaurantMetadataName(
         restaurant,
         rawLocale,
       ),
 
-    description,
+    description: seoCopy?.body ?? description,
 
     streetAddress:
       restaurant

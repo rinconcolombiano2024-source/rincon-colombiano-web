@@ -683,8 +683,8 @@ export function RinconAiWidget({
     <div
       className="
         fixed
-        right-4
-        bottom-4
+        right-3
+        bottom-[max(1rem,env(safe-area-inset-bottom))]
         z-50
         sm:right-6
         sm:bottom-6
@@ -1118,15 +1118,17 @@ export function RinconAiWidget({
         className="
           group
           flex
-          min-h-16
+          min-h-14
           items-center
           gap-3
           rounded-full
           border
           border-black/10
           bg-white
-          p-2
-          pr-5
+          p-1
+          sm:min-h-16
+          sm:p-2
+          sm:pr-5
           shadow-2xl
           transition
           hover:-translate-y-0.5
@@ -1223,7 +1225,9 @@ export function RinconAiWidget({
 
         <span
           className="
+            hidden
             text-left
+            sm:block
           "
         >
           <span
