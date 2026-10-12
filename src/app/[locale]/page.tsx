@@ -3483,8 +3483,8 @@ export default async function HomePage({
           className="
             scroll-mt-28
             bg-white
-            py-20
-            sm:py-28
+            py-12
+            sm:py-20
           "
         >
           <div className="site-container">
@@ -3512,6 +3512,10 @@ export default async function HomePage({
                   className="
                     mt-4
                     max-w-xl
+                    text-3xl
+                    leading-tight
+                    sm:text-4xl
+                    lg:text-5xl
                   "
                 >
                   {copy.services.title}
@@ -3522,9 +3526,11 @@ export default async function HomePage({
                 className="
                   max-w-2xl
                   self-end
-                  text-lg
-                  leading-8
+                  text-base
+                  leading-7
                   text-[#62594f]
+                  sm:text-lg
+                  sm:leading-8
                 "
               >
                 {copy.services.description}
@@ -3533,9 +3539,10 @@ export default async function HomePage({
 
             <div
               className="
-                mt-12
+                mt-8
                 grid
                 gap-4
+                sm:mt-12
                 sm:grid-cols-2
                 lg:grid-cols-4
               "
@@ -3553,8 +3560,9 @@ export default async function HomePage({
                       }
                       className={`
                         group
-                        min-h-64
+                        min-h-56
                         rounded-3xl
+                        sm:min-h-64
                         border
                         border-[#e7e1d7]
                         border-t-4
