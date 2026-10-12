@@ -10,8 +10,11 @@ import {
 
 import {
   buildMenuMetadata,
+  buildRouteMetadata,
   serializeJsonLd,
 } from "@/config/seo";
+import { validPublishedSeo } from "@/config/seo-cms";
+import { getPublishedCmsTextContent } from "@/lib/cms/public-content";
 import { buildVerifiedMenuJsonLd } from "@/config/seo-menu";
 
 import {
@@ -510,6 +513,13 @@ export async function generateMetadata({
     return {};
   }
 
+  const published = await getPublishedCmsTextContent("menu_seo", rawLocale);
+  if (published && validPublishedSeo("menu_seo", published)) {
+    return buildRouteMetadata("menu", rawLocale, {
+      title: published.title,
+      description: published.body,
+    });
+  }
   return buildMenuMetadata(
     rawLocale,
   );
