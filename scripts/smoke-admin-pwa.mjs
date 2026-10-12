@@ -94,6 +94,13 @@ await check("Inicio y SEO administrativo protegidos sin sesión", async () => {
   assert.equal(destination.pathname, "/admin/login");
 });
 
+await check("Editor SEO privado protegido sin sesión", async () => {
+  const response = await get("/admin/seo");
+  assert.ok([302, 303, 307, 308].includes(response.status));
+  const destination = new URL(response.headers.get("location") ?? "", origin);
+  assert.equal(destination.pathname, "/admin/login");
+});
+
 console.log(`Smoke admin PWA: ${errors} error(es)`);
 if (errors > 0) {
   process.exitCode = 1;
