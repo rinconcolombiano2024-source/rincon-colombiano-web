@@ -403,6 +403,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function logout() {
+    if (unappliedChanges && !window.confirm("Hay cambios del producto sin aplicar. ¿Desconectar y descartarlos?")) {
+      return;
+    }
+    setUnappliedChanges(false);
     setBusy(true);
     try {
       await client.auth.signOut();
@@ -420,7 +424,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function reload(force = false) {
-    if (!force && original && draft && JSON.stringify(original) !== JSON.stringify(draft)) {
+    if (!force && (unappliedChanges ||
+      (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
       setPendingReload(true);
       return;
     }
@@ -433,6 +438,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(current.menu);
       setDraft(current.menu);
       setRevision(current.revision);
+      setUnappliedChanges(false);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
       setServerSnapshotEpoch((value) => value + 1);
@@ -451,6 +457,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     station: "kitchen" | "bar";
   }): boolean {
     if (!draft || !original || busy || !connected) {
+      return false;
+    }
+    if (unappliedChanges) {
+      setErrorMessage(unappliedWarning);
       return false;
     }
     try {
@@ -472,6 +482,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
 
   function deleteProduct(product: RcMenuProduct): void {
     if (!draft || !original || busy || !connected) {
+      return;
+    }
+    if (unappliedChanges) {
+      setErrorMessage(unappliedWarning);
       return;
     }
     setPendingRemoval(product.id);
@@ -554,6 +568,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     if (!original || !draft || revision === null || busy) {
       return;
     }
+    if (unappliedChanges) {
+      setErrorMessage(unappliedWarning);
+      return;
+    }
     if (!isSafeMenuRevision(original, draft) || menuProductCount(draft) === 0) {
       setErrorMessage("Edición bloqueada: estructura o productos inválidos. Recarga el menú.");
       return;
@@ -597,7 +615,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
 
   useEffect(() => {
-    if (!dirty && !busy) {
+    if (!dirty && !busy && !unappliedChanges) {
       return;
     }
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -607,7 +625,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     };
     window.addEventListener("beforeunload", warnBeforeUnload);
     return () => window.removeEventListener("beforeunload", warnBeforeUnload);
-  }, [dirty, busy]);
+  }, [dirty, busy, unappliedChanges]);
 
   return (
     <section aria-labelledby="ordera-edit-title" className="mt-8 rounded-[2rem] border border-[#d9dfe9] bg-white p-6 shadow-sm sm:p-8">
@@ -651,7 +669,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </button>
             {pendingReload ? (
               <div className="w-full rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="alert">
-                <p className="font-bold">Hay cambios sin guardar. Recargar los descartará.</p>
+                <p className="font-bold">Hay cambios sin aplicar o sin guardar. Recargar los descartará.</p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   <button type="button" disabled={busy} onClick={() => void reload(true)}
                     className="min-h-11 rounded-full bg-amber-800 px-5 font-bold text-white">
@@ -672,7 +690,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
           <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[#e4dccf] bg-[#fff8e4] p-4">
             <p className="text-sm font-bold">
               {menuProductCount(draft ?? {})} productos · {categories.length} categorías ·
-              {dirty ? " cambios pendientes" : " sin cambios"}
+              {unappliedChanges ? " · formulario sin aplicar" : dirty ? " cambios pendientes" : " sin cambios"}
             </p>
             <button type="button" disabled={!original || revision === null}
               onClick={() => original && revision !== null && downloadBackup(original, revision, config.restaurantId)}
@@ -684,7 +702,15 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             <div>
               <label className="block text-sm font-bold" htmlFor="ordera-category">Categoría</label>
               <select id="ordera-category" value={activeCategory} disabled={busy}
-                onChange={(event) => { setCategory(event.target.value); setProductId(""); }}
+                onChange={(event) => {
+                  if (unappliedChanges) {
+                    setErrorMessage(unappliedWarning);
+                    return;
+                  }
+                  setCategory(event.target.value);
+                  setProductId("");
+                  setPendingRemoval(null);
+                }}
                 className="mt-2 min-h-11 w-full rounded-xl border bg-white px-3 py-2 text-sm">
                 {categories.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
@@ -692,12 +718,25 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             <div>
               <label className="block text-sm font-bold" htmlFor="ordera-product">Producto</label>
               <select id="ordera-product" value={selected?.id ?? ""} disabled={busy || !selected}
-                onChange={(event) => setProductId(event.target.value)}
+                onChange={(event) => {
+                  if (unappliedChanges) {
+                    setErrorMessage(unappliedWarning);
+                    return;
+                  }
+                  setProductId(event.target.value);
+                  setPendingRemoval(null);
+                }}
                 className="mt-2 min-h-11 w-full rounded-xl border bg-white px-3 py-2 text-sm">
                 {products.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
             </div>
           </div>
+          {unappliedChanges ? (
+            <p role="alert" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-950">
+              Hay cambios del formulario todavía sin aplicar. Pulsa «Aplicar al borrador»
+              antes de seleccionar otro producto, guardar o recargar el menú.
+            </p>
+          ) : null}
           {selected ? (
             <>
               <ProductCard
@@ -744,14 +783,15 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             <AddProductForm busy={busy} onCreate={addProduct} />
           </details>
           <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-            <button type="button" disabled={!dirty || busy} onClick={() => void save()}
+            <button type="button" disabled={(!dirty && !unappliedChanges) || busy} onClick={() => void save()}
               className="inline-flex min-h-12 items-center rounded-full bg-[#f7c600] px-6 text-sm font-black text-[#12100e] disabled:cursor-not-allowed disabled:opacity-50">
               {busy ? "Guardando…" : "Guardar en RC ORDERA"}
             </button>
-            <button type="button" disabled={!dirty || busy}
+            <button type="button" disabled={(!dirty && !unappliedChanges) || busy}
               onClick={() => {
                 setDraft(original);
                 setProductId("");
+                setUnappliedChanges(false);
                 setServerSnapshotEpoch((value) => value + 1);
                 setMessage("Borrador local descartado.");
               }}
