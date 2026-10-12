@@ -611,10 +611,10 @@ const homeContent:
         "RC ORDERA",
 
       title:
-        "Zamawianie bez oddawania relacji z klientem pośrednikom.",
+        "Zamów kolumbijskie jedzenie wygodnie online.",
 
       description:
-        "Nasza strona prowadzi klienta bezpośrednio do własnego systemu zamówień Rincón Colombiano.",
+        "Wybierz ulubione dania, złóż zamówienie i sprawdź dostępne opcje odbioru lub dostawy.",
 
       action:
         "Przejdź do zamówienia",
@@ -635,14 +635,14 @@ const homeContent:
             "Zamów",
 
           description:
-            "Odbiór osobisty lub dostawa poprzez ekosystem RC ORDERA.",
+            "Wybierz odbiór osobisty lub dostawę, jeśli jest dostępna.",
         },
         {
           title:
             "Wracaj",
 
           description:
-            "Konto, historia, społeczność i program nagród budują długą relację.",
+            "Wracaj po ulubione kolumbijskie smaki i odkrywaj nasze nowości.",
         },
       ],
     },
@@ -655,7 +655,7 @@ const homeContent:
         "Smaki, z których powstał Rincón Colombiano.",
 
       description:
-        "Ceny i dostępność będą pobierane bezpośrednio z RC ORDERA, dzięki czemu strona nie będzie utrzymywać drugiej, niespójnej kopii menu.",
+        "Sprawdź aktualne menu, ceny i dostępność kolumbijskich dań oraz napojów.",
 
       action:
         "Zobacz aktualne menu",
@@ -714,7 +714,7 @@ const homeContent:
         "Rincón opowiedziany przez ludzi, jedzenie i wydarzenia.",
 
       description:
-        "Ta przestrzeń będzie zasilana z prywatnego panelu: zdjęcia, filmy, historie, wydarzenia, produkty i materiały naszej społeczności.",
+        "Poznaj historię Rincón Colombiano, smaki naszej kuchni i wydarzenia, które łączą ludzi.",
 
       labels: [
         "Nasza kuchnia",
@@ -732,7 +732,7 @@ const homeContent:
         "Nie tylko obserwujący. Prawdziwa społeczność wokół marki.",
 
       description:
-        "Budujemy własną przestrzeń społecznościową powiązaną z gastronomią, kulturą i doświadczeniem klienta.",
+        "Śledź nasze wydarzenia, zdjęcia i historie, a także dziel się radością z kolumbijskiej kuchni.",
 
       features: [
         "Profile użytkowników",
@@ -755,7 +755,7 @@ const homeContent:
         "Słuchamy klientów i pokazujemy prawdziwe doświadczenia.",
 
       description:
-        "Nie publikujemy wymyślonych ocen. Zweryfikowane opinie klientów będą mogły być moderowane i publikowane w tej sekcji.",
+        "Twoja opinia pomaga nam się rozwijać. Podziel się doświadczeniem lub napisz, co możemy poprawić.",
 
       action:
         "Zostaw opinię",
@@ -772,28 +772,28 @@ const homeContent:
         "Każda relacja z marką może dawać więcej.",
 
       description:
-        "Program lojalnościowy jest projektowany jako część jednego konta klienta i będzie połączony z realnymi zakupami w RC ORDERA.",
+        "Przygotowujemy program dla stałych gości. Punkty i nagrody nie są jeszcze aktywne — o zasadach poinformujemy przed uruchomieniem.",
 
       purchaseTitle:
         "Nagrody za zakupy",
 
       purchaseDescription:
-        "Kwalifikujące zakupy mogą dodawać punkty lub inne korzyści zgodnie z aktualnymi zasadami programu.",
+        "W przyszłości poinformujemy o korzyściach dostępnych dla stałych gości. Obecne zakupy nie zbierają punktów.",
 
       referralTitle:
         "Poleć znajomego",
 
       referralDescription:
-        "Po pierwszym kwalifikującym zakupie zaproszonej osoby system może przyznać nagrodę osobie polecającej zgodnie z aktualnym progiem programu.",
+        "Zaproś znajomych na kolumbijskie jedzenie. Program poleceń i jego warunki jeszcze nie obowiązują.",
 
       tokenTitle:
         "Bezpieczny QR / token",
 
       tokenDescription:
-        "Kod jest walidowany przez backend, może zostać wykorzystany tylko zgodnie z zasadami programu i nie opiera się wyłącznie na obrazie QR.",
+        "Wszystkie zasady promocji i ewentualne kody ogłosimy przed uruchomieniem programu.",
 
       action:
-        "Zobacz nagrody",
+        "Zapytaj o przyszłe oferty",
     },
 
     ai: {
@@ -804,7 +804,7 @@ const homeContent:
         "Pomoc klientowi wtedy, kiedy jej potrzebuje.",
 
       description:
-        "Asystent będzie korzystać z rzeczywistych danych Rincón Colombiano zamiast wymyślać informacje operacyjne.",
+        "Masz pytanie o menu, zamówienia lub catering? Zapytaj naszego asystenta albo skontaktuj się z obsługą.",
 
       features: [
         "Menu i dostępność",
@@ -852,7 +852,7 @@ const homeContent:
         "Rincón coraz bliżej naszej społeczności.",
 
       description:
-        "Każdy lokal posiada własną stabilną tożsamość w systemie, dzięki czemu menu, godziny, zamówienia i SEO mogą działać niezależnie.",
+        "Odwiedź nas przy ul. Czapelskiej 33 w Warszawie. O nowym lokalu na Pradze Północ poinformujemy po otwarciu.",
 
       open:
         "Otwarte",
@@ -872,7 +872,7 @@ const homeContent:
         "Internet prowadzi do Rincón. Rincón prowadzi dalej.",
 
       description:
-        "Instagram, TikTok, Facebook, WhatsApp i kolejne kanały pozostają ważne, ale centrum relacji z klientem jest nasza własna strona.",
+        "Odkryj nowe dania, wydarzenia i wiadomości z restauracji na naszych profilach społecznościowych.",
     },
 
     legal: {
@@ -883,7 +883,7 @@ const homeContent:
         "Prywatność, cookies i jasne zasady od początku.",
 
       description:
-        "System prawny będzie wersjonowany według kraju, języka i rodzaju usługi, zamiast opierać się na jednym niezmiennym dokumencie.",
+        "Dbamy o jasne zasady zamawiania, kontaktu i ochrony danych osobowych naszych gości.",
 
       items: [
         "Polityka prywatności",
@@ -910,7 +910,7 @@ const homeContent:
             "Czy mogę zamówić online?",
 
           answer:
-            "Tak. Strona została zaprojektowana tak, aby kierować klientów do własnego systemu RC ORDERA.",
+            "Tak. Kliknij „Zamów online”, wybierz dania i sprawdź dostępne sposoby odbioru lub dostawy.",
         },
         {
           question:
@@ -924,14 +924,14 @@ const homeContent:
             "Czy mogę zarezerwować stolik?",
 
           answer:
-            "Moduł rezerwacji jest częścią architektury i będzie połączony z kontem klienta i konkretnym lokalem.",
+            "Skontaktuj się z nami przed wizytą, aby zapytać o dostępność stolików.",
         },
         {
           question:
             "Jak działa program nagród?",
 
           answer:
-            "Nagrody będą wynikały z rzeczywistych zakupów i zweryfikowanych poleceń, a zasady pozostaną konfigurowalne.",
+            "Program jest w przygotowaniu. Obecnie nie przyznajemy punktów ani nagród za polecenia.",
         },
         {
           question:
@@ -1160,10 +1160,10 @@ const homeContent:
         "RC ORDERA",
 
       title:
-        "Pedidos propios sin regalar la relación con nuestros clientes.",
+        "Pide tus platos colombianos favoritos en línea.",
 
       description:
-        "Nuestra web lleva al cliente directamente al ecosistema de pedidos de Rincón Colombiano.",
+        "Explora el menú, elige tus platos y consulta las opciones disponibles para recoger o recibir tu pedido.",
 
       action:
         "Ir a pedir",
@@ -1184,14 +1184,14 @@ const homeContent:
             "Pide",
 
           description:
-            "Recogida o entrega mediante el ecosistema RC ORDERA.",
+            "Elige recogida en el restaurante o entrega cuando esté disponible.",
         },
         {
           title:
             "Vuelve",
 
           description:
-            "Cuenta, historial, comunidad y recompensas construyen una relación duradera.",
+            "Vuelve a disfrutar nuestros sabores y descubre las novedades de Rincón Colombiano.",
         },
       ],
     },
@@ -1263,7 +1263,7 @@ const homeContent:
         "Rincón contado por nuestra comida, nuestra gente y nuestros eventos.",
 
       description:
-        "Este espacio se alimentará desde el panel privado con fotos, videos, historias, eventos, productos y contenido de comunidad.",
+        "Descubre nuestra historia, los platos que nos representan y las celebraciones que compartimos en Varsovia.",
 
       labels: [
         "Nuestra cocina",
@@ -1281,7 +1281,7 @@ const homeContent:
         "No queremos solamente seguidores. Queremos comunidad.",
 
       description:
-        "Construimos una red propia conectada con gastronomía, cultura y experiencia del cliente.",
+        "Comparte tu pasión por la gastronomía colombiana y acompáñanos en nuestros encuentros y actividades.",
 
       features: [
         "Perfiles de usuarios",
@@ -1304,7 +1304,7 @@ const homeContent:
         "Escuchamos a nuestros clientes y mostramos experiencias reales.",
 
       description:
-        "No vamos a inventar testimonios ni puntuaciones. Las opiniones reales podrán revisarse, moderarse y publicarse desde el sistema.",
+        "Tu opinión nos ayuda a mejorar. Cuéntanos cómo fue tu visita o qué podemos hacer mejor.",
 
       action:
         "Déjanos tu opinión",
@@ -1321,28 +1321,28 @@ const homeContent:
         "Cada relación con Rincón puede generar más valor.",
 
       description:
-        "El sistema de fidelización formará parte de una sola cuenta de cliente y se conectará con las compras reales de RC ORDERA.",
+        "Estamos preparando un programa para nuestros clientes frecuentes. Los puntos y recompensas todavía no están activos; anunciaremos sus condiciones antes del lanzamiento.",
 
       purchaseTitle:
         "Recompensas por compras",
 
       purchaseDescription:
-        "Las compras que cumplan las reglas del programa podrán generar puntos, beneficios o recompensas.",
+        "Cuando lancemos el programa, publicaremos sus beneficios. Por ahora, las compras no acumulan puntos.",
 
       referralTitle:
         "Refiere a un amigo",
 
       referralDescription:
-        "Cuando la persona referida complete su primera compra válida, el sistema podrá otorgar una recompensa al referente según el mínimo configurado del programa.",
+        "Invita a tus amigos a disfrutar nuestra comida. El programa de referidos aún no está activo.",
 
       tokenTitle:
         "QR / token seguro",
 
       tokenDescription:
-        "El código se valida en backend, tiene controles contra reutilización y no depende solamente de mostrar una imagen QR.",
+        "Las condiciones de cualquier promoción futura se anunciarán antes de habilitar códigos de recompensa.",
 
       action:
-        "Ver recompensas",
+        "Consultar próximas promociones",
     },
 
     ai: {
@@ -1353,7 +1353,7 @@ const homeContent:
         "Ayuda al cliente cuando realmente la necesita.",
 
       description:
-        "El asistente utilizará datos reales del restaurante, el menú, pedidos, reservas y recompensas, sin inventar información operativa.",
+        "Pregunta por nuestros platos, la ubicación o el catering. Para confirmar detalles de un pedido, comunícate directamente con el restaurante.",
 
       features: [
         "Menú y disponibilidad",
@@ -1401,7 +1401,7 @@ const homeContent:
         "Rincón cada vez más cerca de nuestra comunidad.",
 
       description:
-        "Cada restaurante tendrá identidad estable dentro del sistema para administrar menú, horarios, pedidos y SEO de forma independiente.",
+        "Te esperamos en Czapelska 33, Varsovia. Pronto compartiremos más información sobre nuestra nueva sede.",
 
       open:
         "Abierto",
@@ -1421,7 +1421,7 @@ const homeContent:
         "Internet lleva a Rincón. Rincón lleva la relación más lejos.",
 
       description:
-        "Instagram, TikTok, Facebook y WhatsApp siguen siendo importantes, pero la relación principal con el cliente vive en nuestra propia plataforma.",
+        "Síguenos para conocer nuevos platos, eventos, promociones y momentos especiales de Rincón Colombiano.",
     },
 
     legal: {
@@ -1432,7 +1432,7 @@ const homeContent:
         "Privacidad, cookies y reglas claras desde el inicio.",
 
       description:
-        "Los documentos legales estarán versionados según país, idioma y servicio, en lugar de depender de un único documento estático.",
+        "Queremos que conozcas de forma clara nuestras condiciones de atención, pedidos y privacidad.",
 
       items: [
         "Política de privacidad",
@@ -1459,7 +1459,7 @@ const homeContent:
             "¿Puedo pedir online?",
 
           answer:
-            "Sí. La plataforma está diseñada para llevar el pedido directamente al ecosistema RC ORDERA.",
+            "Sí. Pulsa «Pedir ahora», elige tus platos y consulta las opciones de recogida o entrega disponibles.",
         },
         {
           question:
@@ -1473,14 +1473,14 @@ const homeContent:
             "¿Puedo reservar mesa?",
 
           answer:
-            "La arquitectura incluye reservas vinculadas al usuario y al restaurante correspondiente.",
+            "Escríbenos para consultar la disponibilidad de mesas antes de tu visita.",
         },
         {
           question:
             "¿Cómo funcionarán las recompensas?",
 
           answer:
-            "Se basarán en compras y referidos realmente validados, con reglas configurables desde el sistema.",
+            "Estamos preparando el programa. Todavía no se acumulan puntos ni se entregan premios por referidos.",
         },
         {
           question:
@@ -1500,7 +1500,7 @@ const homeContent:
         "¿Tienes una idea, una pregunta o un evento? Hablemos.",
 
       description:
-        "Contacto, sugerencias, colaboraciones, catering y atención al cliente tendrán procesos claros en lugar de terminar todos en un solo formulario.",
+        "Estamos aquí para ayudarte con tus pedidos, propuestas de catering, colaboraciones y celebraciones.",
 
       contactAction:
         "Contáctanos",
@@ -1709,10 +1709,10 @@ const homeContent:
         "RC ORDERA",
 
       title:
-        "Own the ordering experience and the customer relationship.",
+        "Order your favourite Colombian dishes online.",
 
       description:
-        "Our website connects customers directly with the Rincón Colombiano ordering ecosystem.",
+        "Browse the menu, choose your dishes and check the available collection or delivery options.",
 
       action:
         "Start an order",
@@ -1733,14 +1733,14 @@ const homeContent:
             "Order",
 
           description:
-            "Pickup or delivery through the RC ORDERA ecosystem.",
+            "Choose restaurant pickup or delivery when available.",
         },
         {
           title:
             "Return",
 
           description:
-            "Account history, community and rewards create a lasting relationship.",
+            "Come back for your Colombian favourites and discover what's new at Rincón Colombiano.",
         },
       ],
     },
@@ -1812,7 +1812,7 @@ const homeContent:
         "Rincón told through food, people and real experiences.",
 
       description:
-        "This area will be powered from the private admin panel with photos, video, stories, events, products and community content.",
+        "Discover the story of Rincón Colombiano, the food we love and the celebrations that bring us together.",
 
       labels: [
         "Our kitchen",
@@ -1830,7 +1830,7 @@ const homeContent:
         "Not just followers. A real community around the brand.",
 
       description:
-        "We are creating our own social space connected to food, culture and customer experience.",
+        "Join our community of Colombian food lovers and follow our stories and events in Warsaw.",
 
       features: [
         "User profiles",
@@ -1853,7 +1853,7 @@ const homeContent:
         "We listen to customers and publish real experiences.",
 
       description:
-        "We will not invent testimonials or ratings. Genuine reviews can be reviewed, moderated and published through the platform.",
+        "Your feedback helps us improve. Tell us about your visit or share an idea with our team.",
 
       action:
         "Leave a review",
@@ -1870,28 +1870,28 @@ const homeContent:
         "Every relationship with Rincón can create more value.",
 
       description:
-        "The loyalty system will live inside one customer account and connect directly to validated RC ORDERA purchases.",
+        "We're preparing a loyalty programme for returning guests. Points and rewards are not active yet; we'll publish the rules before launch.",
 
       purchaseTitle:
         "Purchase rewards",
 
       purchaseDescription:
-        "Eligible purchases can generate points, benefits or rewards according to the current program rules.",
+        "We'll announce any future loyalty benefits when the programme launches. Purchases do not earn points yet.",
 
       referralTitle:
         "Refer a friend",
 
       referralDescription:
-        "After a referred customer completes a qualifying first purchase, the system can grant the referrer a reward according to the configured program threshold.",
+        "Bring friends and family to enjoy Colombian food. The referral rewards programme is not active yet.",
 
       tokenTitle:
         "Secure QR / token",
 
       tokenDescription:
-        "Tokens are validated by the backend, protected against improper reuse and never rely only on displaying a QR image.",
+        "We'll publish clear terms before introducing any future promotional codes or rewards.",
 
       action:
-        "Explore rewards",
+        "Ask about upcoming offers",
     },
 
     ai: {
@@ -1950,7 +1950,7 @@ const homeContent:
         "Rincón closer to our community.",
 
       description:
-        "Each location has a stable system identity so menu, opening hours, ordering and SEO can evolve independently.",
+        "Visit us at Czapelska 33 in Warsaw. We'll share updates about our next location when it's ready to open.",
 
       open:
         "Open",
@@ -1970,7 +1970,7 @@ const homeContent:
         "The internet leads to Rincón. Rincón takes the relationship further.",
 
       description:
-        "Instagram, TikTok, Facebook and WhatsApp remain important, while our website becomes the primary home of the customer relationship.",
+        "Follow us for Colombian dishes, events, special offers and a little taste of home.",
     },
 
     legal: {
@@ -1981,7 +1981,7 @@ const homeContent:
         "Privacy, cookies and clear rules from the beginning.",
 
       description:
-        "Legal content will be versioned by jurisdiction, language and service instead of relying on one static global document.",
+        "We want our ordering, contact and privacy information to be clear and easy to understand.",
 
       items: [
         "Privacy policy",
@@ -2008,7 +2008,7 @@ const homeContent:
             "Can I order online?",
 
           answer:
-            "Yes. The platform is designed to connect orders directly with the RC ORDERA ecosystem.",
+            "Yes. Select 'Order online', choose your dishes and check the available collection or delivery options.",
         },
         {
           question:
@@ -2022,7 +2022,7 @@ const homeContent:
             "Can I reserve a table?",
 
           answer:
-            "Reservation architecture is included and will connect each booking to the customer and location.",
+            "Contact us before visiting to ask about table availability.",
         },
         {
           question:
@@ -2058,7 +2058,7 @@ const homeContent:
         "Work with us",
 
       careersDescription:
-        "We are building food, brand and technology. We want people who want to grow with Rincón Colombiano.",
+        "Love Colombian food and hospitality? Get in touch to learn about opportunities to work with our team.",
 
       careersAction:
         "Explore opportunities",
@@ -3417,17 +3417,17 @@ export default async function HomePage({
               uppercase
             "
           >
-            <span>Restaurant</span>
-            <span>•</span>
-            <span>Catering</span>
-            <span>•</span>
-            <span>Events</span>
-            <span>•</span>
-            <span>Community</span>
-            <span>•</span>
-            <span>Rewards</span>
-            <span>•</span>
-            <span>Rincón AI</span>
+            {(locale === "pl"
+              ? ["Restauracja", "Catering", "Wydarzenia", "Społeczność", "Promocje", "Rincón AI"]
+              : locale === "es"
+                ? ["Restaurante", "Catering", "Eventos", "Comunidad", "Promociones", "Rincón AI"]
+                : ["Restaurant", "Catering", "Events", "Community", "Offers", "Rincón AI"]
+            ).map((label, index) => (
+              <span key={label} className="inline-flex items-center gap-6">
+                {index > 0 ? <span aria-hidden="true">•</span> : null}
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -3555,8 +3555,10 @@ export default async function HomePage({
                     service,
                   ) => (
                     <article
+                      // CMS titles are editable and may accidentally repeat.
+                      // Stable editorial positions prevent duplicate React keys.
                       key={
-                        service.title
+                        service.eyebrow
                       }
                       className={`
                         group

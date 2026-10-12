@@ -27,6 +27,17 @@ const socialLinks = {
 };
 
 const locales = ["pl", "es", "en"];
+const orderingHeadings = {
+  pl: "Zamów kolumbijskie jedzenie wygodnie online.",
+  es: "Pide tus platos colombianos favoritos en línea.",
+  en: "Order your favourite Colombian dishes online.",
+};
+const localeBrandStripLabels = {
+  pl: "Restauracja",
+  es: "Restaurante",
+  en: "Restaurant",
+};
+
 const socialNavigationLabels = {
   pl: "Media społecznościowe Rincón Colombiano",
   es: "Redes sociales de Rincón Colombiano",
@@ -113,6 +124,14 @@ async function checkPage(locale) {
     report(
       html.includes("Rincón Colombiano"),
       `${path} identifica la marca`
+    );
+    report(
+      html.includes(orderingHeadings[locale]),
+      `${path} contiene título comercial correcto del flujo de pedidos`
+    );
+    report(
+      html.includes(localeBrandStripLabels[locale]),
+      `${path} muestra la banda de servicios localizada`
     );
     report(
       !html.includes("La web de Rincón Colombiano será el centro de contacto") &&
