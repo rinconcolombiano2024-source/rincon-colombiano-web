@@ -741,3 +741,76 @@ export async function getPublishedCmsTextContent(
 
   return result.content;
 }
+
+
+/**
+ * One read for all public-home editorial blocks instead of 10+ concurrent
+ * Supabase REST requests on every page view. Read-only anon access remains
+ * restricted by the existing web_cms_published RLS. No secret is used.
+ */
+export async function getPublishedCmsTextBatch(
+  keys: readonly string[],
+  locale: AppLocale,
+): Promise<ReadonlyMap<string, PublishedCmsTextContent>> {
+  const empty = new Map<string, PublishedCmsTextContent>();
+  const requested = [...new Set(keys)];
+  if (requested.length === 0 || requested.length > 20 ||
+    requested.some((key) => !isValidContentKey(key))) {
+    return empty;
+  }
+  const config = getSupabasePublicConfig();
+  if (!config) {
+    return empty;
+  }
+
+  let url: URL;
+  try {
+    url = new URL("/rest/v1/web_cms_published", config.url);
+  } catch {
+    return empty;
+  }
+  url.searchParams.set("select", "content_key,locale,kind,document,source_revision,published_at");
+  url.searchParams.set("locale", `eq.${locale}`);
+  url.searchParams.set("content_key", `in.(${requested.join(",")})`);
+  url.searchParams.set("limit", String(requested.length));
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(CMS_FETCH_TIMEOUT_MS),
+      next: {
+        revalidate: CMS_CACHE_SECONDS,
+        tags: ["web-cms", "web-cms:home"],
+      },
+    });
+
+    if (!response.ok) {
+      return empty;
+    }
+    const rows: unknown = await response.json();
+    if (!Array.isArray(rows)) {
+      return empty;
+    }
+    const accepted = new Set(requested);
+    for (const row of rows.slice(0, requested.length)) {
+      if (!isRecord(row) || typeof row["content_key"] !== "string" ||
+        !accepted.has(row["content_key"])) {
+        continue;
+      }
+      const key = row["content_key"];
+      const normalized = normalizePublishedContent(row, key, locale);
+      if (normalized) {
+        empty.set(key, normalized);
+      }
+    }
+    return empty;
+  } catch {
+    // A temporary CMS outage must never take the restaurant home offline.
+    return empty;
+  }
+}
