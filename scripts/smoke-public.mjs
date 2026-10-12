@@ -114,6 +114,12 @@ async function checkPage(locale) {
       html.includes("Rincón Colombiano"),
       `${path} identifica la marca`
     );
+    report(
+      !html.includes("La web de Rincón Colombiano será el centro de contacto") &&
+      !html.includes("The Rincón Colombiano website is becoming") &&
+      !html.includes("Strona Rincón Colombiano jest centralnym"),
+      `${path} no muestra texto técnico de desarrollo al cliente`
+    );
   } catch (error) {
     report(
       false,
