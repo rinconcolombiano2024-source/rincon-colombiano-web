@@ -462,7 +462,7 @@ const homeContent:
     },
 
     announcement:
-      "Kolumbijska gastronomia • Warszawa • Catering • Wydarzenia • RC ORDERA",
+      "Kolumbijskie smaki • Warszawa • Catering • Wydarzenia",
 
     hero: {
       eyebrow:
@@ -960,7 +960,7 @@ const homeContent:
         "Pracuj z nami",
 
       careersDescription:
-        "Budujemy markę, gastronomię i technologię. Szukamy ludzi, którzy chcą rosnąć razem z Rincón Colombiano.",
+        "Lubisz kolumbijską kuchnię i pracę z ludźmi? Poznaj nasz zespół i zapytaj o możliwości współpracy.",
 
       careersAction:
         "Zobacz możliwości",
@@ -968,7 +968,7 @@ const homeContent:
 
     footer: {
       description:
-        "Kolumbijska gastronomia, kultura, społeczność i technologia z Warszawy.",
+        "Kolumbijska kuchnia, gościnność i tradycja w sercu Warszawy.",
 
       rights:
         "Wszelkie prawa zastrzeżone.",
@@ -1011,7 +1011,7 @@ const homeContent:
     },
 
     announcement:
-      "Gastronomía colombiana • Varsovia • Catering • Eventos • RC ORDERA",
+      "Sabor colombiano • Varsovia • Catering • Eventos",
 
     hero: {
       eyebrow:
@@ -1509,7 +1509,7 @@ const homeContent:
         "Trabaja con nosotros",
 
       careersDescription:
-        "Construimos gastronomía, marca y tecnología. Queremos personas que deseen crecer junto a Rincón Colombiano.",
+        "¿Te apasionan la cocina colombiana y la hospitalidad? Escríbenos y descubre cómo formar parte de nuestro equipo.",
 
       careersAction:
         "Ver oportunidades",
@@ -1517,7 +1517,7 @@ const homeContent:
 
     footer: {
       description:
-        "Gastronomía, cultura, comunidad y tecnología colombiana desde Varsovia.",
+        "Cocina, cultura y tradición colombiana en el corazón de Varsovia.",
 
       rights:
         "Todos los derechos reservados.",
@@ -1560,7 +1560,7 @@ const homeContent:
     },
 
     announcement:
-      "Colombian food • Warsaw • Catering • Events • RC ORDERA",
+      "Colombian flavours • Warsaw • Catering • Events",
 
     hero: {
       eyebrow:
@@ -2066,7 +2066,7 @@ const homeContent:
 
     footer: {
       description:
-        "Colombian food, culture, community and technology from Warsaw.",
+        "Colombian cuisine, warm hospitality and family traditions in Warsaw.",
 
       rights:
         "All rights reserved.",
