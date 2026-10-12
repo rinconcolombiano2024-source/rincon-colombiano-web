@@ -1,5 +1,6 @@
 import type {
   Metadata,
+  Viewport,
 } from "next";
 
 import type {
@@ -43,6 +44,16 @@ export const metadata:
   description:
     "Panel privado de administración de Rincón Colombiano.",
 
+  manifest: "/admin/manifest.webmanifest",
+
+  icons: {
+    icon: [
+      { url: "/admin/icons/192", sizes: "192x192", type: "image/png" },
+      { url: "/admin/icons/512", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/admin/icons/192", sizes: "192x192", type: "image/png" }],
+  },
+
   robots: {
     index:
       false,
@@ -66,6 +77,12 @@ export const metadata:
   },
 };
 
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#123d73",
+};
 
 /* ============================================================
    TYPES
