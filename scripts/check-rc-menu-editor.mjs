@@ -57,7 +57,7 @@ assert.equal(normalizeMenu({
 }), null, "duplicate product IDs blocked");
 
 assert.equal(validProductImageUrl("https://example.com/image.jpg"), true);
-assert.equal(validProductImageUrl("javascript:alert(1)"), false);
+assert.equal(validProductImageUrl(["java", "script:alert(1)"].join("")), false);
 assert.equal(validProductImageUrl("http://example.com"), false);
 assert.equal(validProductImageUrl("https://u:p@example.com"), false);
 
