@@ -71,6 +71,13 @@ await check("Catálogo admin protegido sin sesión", async () => {
   assert.equal(destination.pathname, "/admin/login");
 });
 
+await check("Marketing administrativo protegido sin sesión", async () => {
+  const response = await get("/admin/marketing");
+  assert.ok([302, 303, 307, 308].includes(response.status));
+  const destination = new URL(response.headers.get("location") ?? "", origin);
+  assert.equal(destination.pathname, "/admin/login");
+});
+
 console.log(`Smoke admin PWA: ${errors} error(es)`);
 if (errors > 0) {
   process.exitCode = 1;
