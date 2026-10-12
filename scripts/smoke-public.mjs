@@ -144,7 +144,7 @@ async function checkPage(locale) {
       `${path} muestra la banda de servicios localizada`
     );
     const services =
-      html.match(/<section\\b[^>]*id="services"[\\s\\S]*?<\\/section>/i)?.[0] ?? "";
+      html.match(/<section\b[^>]*id="services"[\s\S]*?<\/section>/i)?.[0] ?? "";
     report(
       (services.match(/href="#contact"/g) ?? []).length >= 7,
       `${path} permite solicitar los siete servicios desde tarjetas reales`
