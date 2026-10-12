@@ -15,7 +15,7 @@ test("public menu never exposes internal catalog/connection technology copy", ()
     "Aktualne menu restauracji",
     "Menú actual del restaurante",
     "Today's restaurant menu",
-    "Dostępność potwierdzisz",
+    "Ostateczną dostępność potwierdzisz",
     "Confirma su disponibilidad",
     "Final availability is confirmed",
   ]) assert.ok(menu.includes(phrase), `Missing PL/ES/EN text: ${phrase}`);
