@@ -67,13 +67,14 @@ jobs:
         shell: pwsh
         run: |
           $destination = Join-Path $env:RUNNER_TEMP "RinconCEO-staging-win-x64"
+          if (-not $env:GITHUB_SHA -or $env:GITHUB_SHA.Length -ne 40 -or $env:GITHUB_SHA -match '[^0-9a-fA-F]') { throw "GitHub SHA invalid for staging release parity" }
           dotnet publish desktop/RinconColombianoAdmin/RinconColombianoAdmin.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output $destination /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:DefineConstants=RC_CEO_STAGING /p:AssemblyName=RinconColombianoCEOStaging /p:InformationalVersion=$env:GITHUB_SHA /p:IncludeSourceRevisionInInformationalVersion=false
-          if ($env:GITHUB_SHA -notmatch '^[0-9a-fA-F]{40}
+          if ($LASTEXITCODE -ne 0) { throw "Windows CEO staging publish failed" }
           $exe = Join-Path $destination "RinconColombianoCEOStaging.exe"
           if (-not (Test-Path $exe)) { throw "CEO staging executable missing" }
           Copy-Item desktop/README-WINDOWS.md (Join-Path $destination "LEEME-CEO-PRUEBAS.txt")
           (Get-FileHash $exe -Algorithm SHA256).Hash | Out-File -Encoding utf8 (Join-Path $destination "SHA256.txt")
-          Write-Host "Isolated Vercel staging CEO executable built. No domain change."
+          Write-Host "Isolated Vercel staging CEO executable built with exact Git revision. No domain change."
 
       - name: Upload separately labeled staging CEO application
         uses: actions/upload-artifact@v4
