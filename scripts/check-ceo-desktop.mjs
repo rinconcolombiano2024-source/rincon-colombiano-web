@@ -28,6 +28,51 @@ const executableWindowsCode = windows.split("\n")
 assert.doesNotMatch(executableWindowsCode, /service_role|supabaseKey|adminPassword/,
   "Never embed privileged API keys or owner credentials in executable Windows code");
 
+// The public domain is deliberately LAST. Verify the Windows test build
+// can run separately, with no configurable or shared CEO login origin.
+const windowsBuild = await readFile(".github/workflows/windows-ceo-desktop.yml", "utf8");
+const windowsInstructions = await readFile("desktop/README-WINDOWS.md", "utf8");
+const officialBranch = windows.indexOf("#else", windows.indexOf("#if RC_CEO_STAGING"));
+const guardEnd = windows.indexOf("#endif", officialBranch);
+assert.ok(officialBranch > 0 && guardEnd > officialBranch,
+  "Staging/production origins must be selected only at compile time");
+const stagingOrigin = windows.slice(windows.indexOf("#if RC_CEO_STAGING"), officialBranch);
+const productionOrigin = windows.slice(officialBranch, guardEnd);
+assert.match(stagingOrigin, /https:\/\/rincon-colombiano-web\.vercel\.app/,
+  "Staging must be pinned to the exact Rincón Colombiano Web Vercel project alias");
+assert.match(productionOrigin, /https:\/\/rinconcolombiano\.pl/,
+  "Production executable must remain pinned to the real commercial domain");
+assert.doesNotMatch(windows, /Environment\.GetEnvironmentVariable|args\[\d+\]|CommandLineArgs/,
+  "Do not allow attackers to redirect the owner login by changing user-supplied URLs");
+assert.match(stagingOrigin, /AppMode = " \[PRUEBAS · VERCEL\]"/,
+  "Staging title needs an unmistakable visual warning");
+assert.match(stagingOrigin, /ProfileDirectory = "CEODesktopStaging"/);
+assert.match(productionOrigin, /ProfileDirectory = "CEODesktop"/);
+assert.match(windows, /"RinconColombiano", ProfileDirectory, "WebView2"/,
+  "No shared local auth cookies between staging and production apps");
+assert.match(windows, /AllowAutoRedirect = false/,
+  "No following redirects to SumUp or impersonated CEO login pages");
+assert.match(windows, /IsPublishedOfficialAdminAsync\(/,
+  "The environment-specific /admin manifest must be verified before opening the CEO login");
+
+for (const [filename, expected] of [
+  ["RinconColombiano-CEO-Windows-x64", "RinconColombianoAdmin.exe"],
+  ["RinconColombiano-CEO-Windows-STAGING-x64", "RinconColombianoCEOStaging.exe"],
+]) {
+  assert.ok(windowsBuild.includes(filename) && windowsBuild.includes(expected),
+    `Missing build or download for ${filename}`);
+}
+assert.match(windowsBuild, /DefineConstants=RC_CEO_STAGING/,
+  "Staging build must compile the immutable staging branch");
+assert.match(windowsBuild, /PublishSingleFile=true/,
+  "Native CEO distributions must remain self-contained");
+assert.match(windowsBuild, /Get-FileHash[\s\S]*?SHA256/,
+  "Owner should receive a checksum for Windows binary verification");
+assert.match(windowsInstructions, /BASES DE DATOS y cuentas de PRUEBA/,
+  "Require isolated backend data before mutating test menus/payments");
+assert.match(windowsInstructions, /NO CAMBIAR el DNS de SumUp/,
+  "Windows test deployment must not force a premature DNS cutover");
+
 const editor = await readFile("src/components/admin/RcOrderaMenuManager.tsx", "utf8");
 assert.match(editor, /serverSnapshotEpoch/,
   "Form state must reset when a remote menu snapshot is refreshed");
