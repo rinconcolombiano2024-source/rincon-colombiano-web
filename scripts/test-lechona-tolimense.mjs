@@ -79,7 +79,7 @@ test("incorrect name in an individual locale translation is also corrected", () 
 
 test("localized menu keeps exact product identifiers and avoids duplicates", () => {
   const original = [{ name: "Típicos", products: [product, {
-    ...product, id: "another-id", name: "Tamal Tolimense",
+    ...product, id: "another-id", name: "Tamal Tolimense", translations: undefined,
   }] }];
   for (const locale of ["pl", "es", "en"]) {
     const result = localizeRcOrderaCategories(original, locale);
