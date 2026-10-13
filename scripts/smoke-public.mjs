@@ -187,6 +187,44 @@ async function checkPage(locale) {
   }
 }
 
+const contactRoutes = {
+  pl: "/pl/kontakt",
+  es: "/es/contacto",
+  en: "/en/contact",
+};
+const policyContactLabels = {
+  pl: "Pytania o zasady? Skontaktuj się z nami",
+  es: "¿Preguntas sobre nuestras políticas? Contáctanos",
+  en: "Questions about our policies? Contact us",
+};
+
+async function checkContactAndLegal(locale) {
+  const path = contactRoutes[locale];
+  try {
+    const response = await fetch(new URL(path, origin), {
+      redirect: "manual",
+      signal: AbortSignal.timeout(15000),
+    });
+    const destination = new URL(response.headers.get("location") ?? "", origin);
+    report(
+      [302, 303, 307, 308].includes(response.status) &&
+      destination.origin === new URL(origin).origin &&
+      destination.pathname === `/${locale}` &&
+      destination.hash === "#contact",
+      `${path} lleva a contacto real y localizado, sin formulario vacío`
+    );
+
+    const { body: html, status } = await request(`/${locale}`);
+    const legal = html.match(/<section\b[^>]*id="legal"[\s\S]*?<\/section>/i)?.[0] ?? "";
+    report(status === 200 && legal.includes('href="#contact"'),
+      `/${locale} facilita consulta real de privacidad y condiciones`);
+    report(legal.includes(policyContactLabels[locale]),
+      `/${locale} comunica cómo consultar políticas en su idioma`);
+  } catch (error) {
+    report(false, `${path}: ${String(error)}`);
+  }
+}
+
 async function checkMenuPage(locale) {
   const path = `/${locale}/menu`;
 
@@ -253,6 +291,7 @@ async function main() {
   for (const locale of locales) {
     await checkPage(locale);
     await checkMenuPage(locale);
+    await checkContactAndLegal(locale);
   }
 
   await checkInfrastructure();
