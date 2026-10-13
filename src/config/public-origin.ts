@@ -11,7 +11,9 @@ export function parsePublicHttpOrigin(
   allowLocalHttp = false,
 ): string | null {
   const candidate = input?.trim();
-  if (!candidate || candidate.length > 2048) return null;
+  if (!candidate || candidate.length > 2048) {
+    return null;
+  }
 
   try {
     const url = new URL(candidate);
