@@ -292,7 +292,7 @@ const serviceShortcuts = {
 async function checkServiceShortcuts(locale) {
   const home = await request(`/${locale}`);
   const pageIds = new Set(
-    [...home.body.matchAll(/\\bid="([^"]+)"/g)].map((match) => match[1]),
+    [...home.body.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]),
   );
   for (const [segment, anchor] of serviceShortcuts[locale]) {
     const path = `/${locale}/${segment}`;
