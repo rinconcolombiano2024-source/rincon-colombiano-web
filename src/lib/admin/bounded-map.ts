@@ -16,7 +16,8 @@ export async function mapWithConcurrencyLimit<T, U>(
   async function worker(): Promise<void> {
     while (cursor < source.length) {
       const current = cursor++;
-      result[current] = await mapper(source[current], current);
+      // The cursor is strictly less than source.length at this point.
+      result[current] = await mapper(source[current]!, current);
     }
   }
   await Promise.all(
