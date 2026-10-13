@@ -35,6 +35,11 @@ jobs:
           PREVIEW_URL: ${{ inputs.preview_url }}
         run: node scripts/validate-vercel-preview.mjs
 
+      - name: Verify the deployed Vercel URL is running exactly this reviewed GitHub revision
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-deployment-revision.mjs "$SITE_ORIGIN" "$GITHUB_SHA"
+
       - name: Check deployed admin PWA and private route redirects
         env:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
