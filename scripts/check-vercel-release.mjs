@@ -5,6 +5,8 @@ const read = (path) => readFileSync(path, "utf8");
 const quality = read(".github/workflows/quality-gate.yml");
 const staging = read(".github/workflows/vercel-staging-gate.yml");
 const deployment = read(".github/workflows/vercel-preview-deploy.yml");
+const alias = read(".github/workflows/audit-vercel-live-alias.yml");
+const revisionSmoke = read("scripts/smoke-deployment-revision.mjs");
 const publicSmoke = read("scripts/smoke-public.mjs");
 const navigationSmoke = read("scripts/smoke-navigation.mjs");
 const robots = read("src/app/robots.ts");
@@ -47,4 +49,21 @@ assert.doesNotMatch(deployment, /upload-artifact/, "Avoid upload of secrets in b
 assert.match(deployment, /smoke-admin-pwa\.mjs/);
 assert.match(deployment, /smoke-public\.mjs "\$SITE_ORIGIN" --preview/);
 assert.match(deployment, /smoke-navigation\.mjs "\$SITE_ORIGIN" --preview/);
-console.log("PASS: production indexable, staging noindex, deploy manual only, secrets protected, no DNS/real payment operations");
+for (const workflow of [deployment, staging, alias]) {
+  assert.match(workflow, /smoke-deployment-revision\.mjs/,
+    "A deployed site MUST serve the reviewed git SHA before acceptance");
+}
+assert.match(quality, /smoke-deployment-revision\.mjs http:\/\/127\.0\.0\.1:3100/,
+  "Production builds must publish a testable release revision");
+assert.match(quality, /smoke-deployment-revision\.mjs http:\/\/127\.0\.0\.1:3101/,
+  "Preview builds must publish a testable release revision");
+assert.match(alias, /workflow_dispatch:/, "Live Vercel alias audit is manual only");
+assert.match(alias, /https:\/\/rincon-colombiano-web\.vercel\.app/,
+  "Audit the actual advertised web repository alias");
+assert.doesNotMatch(alias, /secrets\.|--prod\b|vercel (?:deploy|promote)|dns\s+/,
+  "Stale alias audit must remain entirely read-only and credential free");
+assert.match(revisionSmoke, /redirect:\s*"manual"/,
+  "Do not silently follow redirects to another host when checking a release");
+assert.match(revisionSmoke, /STALE DEPLOYMENT/,
+  "Never mark an older Vercel alias as published");
+console.log("PASS: safe deployment gates enforce reviewed SHA on live alias, staging and preview builds");

@@ -88,6 +88,9 @@ jobs:
       - name: Verify production-safe manual release workflow
         run: node scripts/check-vercel-release.mjs
 
+      - name: Enforce safe deploy-revision metadata
+        run: node --experimental-strip-types scripts/test-release-fingerprint.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -119,6 +122,7 @@ jobs:
             exit 1
           fi
 
+          node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3100 "$GITHUB_SHA"
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
           node scripts/smoke-public.mjs http://127.0.0.1:3100
           node scripts/smoke-navigation.mjs http://127.0.0.1:3100
@@ -169,6 +173,7 @@ jobs:
             exit 1
           fi
 
+          node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3101 "$GITHUB_SHA"
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3101
           node scripts/smoke-public.mjs http://127.0.0.1:3101 --preview
           node scripts/smoke-navigation.mjs http://127.0.0.1:3101 --preview

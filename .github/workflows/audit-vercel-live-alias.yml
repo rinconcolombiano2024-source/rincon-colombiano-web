@@ -1,0 +1,43 @@
+name: Audit Live Vercel Alias Before Domain Switch (manual)
+
+# GET-only verification of currently advertised project alias. It does
+# not deploy, promote releases, change DNS, send orders or modify payments.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-alias:
+    name: Prove current Vercel alias serves reviewed GitHub main
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the exact reviewed main revision
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Validate allowed Vercel target offline
+        run: node scripts/test-vercel-preview.mjs
+
+      - name: Check advertised live alias against this main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/smoke-deployment-revision.mjs \
+            https://rincon-colombiano-web.vercel.app "$GITHUB_SHA"
+
+      - name: Record positive audit without claiming domain cutover
+        shell: bash
+        run: |
+          echo "### Rincón Colombiano Web — Git revision matched on Vercel" >> "$GITHUB_STEP_SUMMARY"
+          echo "Expected and serving SHA: \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Project alias: https://rincon-colombiano-web.vercel.app" >> "$GITHUB_STEP_SUMMARY"
+          echo "The production domain rinconcolombiano.pl remains a separate DNS and owner-acceptance gate." >> "$GITHUB_STEP_SUMMARY"
+          echo "This audit does not certify RC ORDERA live sales, SumUp payment migration or Windows installation." >> "$GITHUB_STEP_SUMMARY"

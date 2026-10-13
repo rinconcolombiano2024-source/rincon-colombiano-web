@@ -8,6 +8,17 @@
 - **RC ORDERA:** servicio de pedidos independiente, con su aplicación actual. Este repositorio solo lee el catálogo público y redirige a la app de pedidos; el editor de menú necesita autorización explícita adicional del propietario RC ORDERA.
 - **Rincón Colombiano CEO:** PWA + wrapper Windows para el panel /admin. El wrapper Windows abre el dominio HTTPS **oficial**, no un preview aleatorio; por tanto, la aplicación no validará la nueva administración hasta que el dominio oficial publique Next.js.
 
+## 1A. Demostrar qué código está realmente publicado en Vercel
+
+El repositorio anuncia la URL pública de Vercel **https://rincon-colombiano-web.vercel.app/**. En la inspección pública del 13-10-2026 esta URL todavía mostraba «Lechona» en la portada, aunque la última rama `main` ya había corregido el nombre a «Lechona Tolimense». Por tanto, **un enlace de Vercel activo no demuestra que los cambios actuales estén publicados**.
+
+Para eliminar esta incertidumbre, `/release.json` devuelve únicamente `{"project":"rincon-colombiano-web","revision":"<SHA público de Git>"}`. Si Vercel no dispone del SHA legítimo, devuelve `revision:null`. Las respuestas son `no-store`; no incluyen variables privadas, claves, usuarios ni pedidos.
+
+1. En **GitHub → Actions** seleccionar [Audit Live Vercel Alias Before Domain Switch (manual)](../.github/workflows/audit-vercel-live-alias.yml) y ejecutarlo sobre `main`. Es de solo lectura, sin secretos ni cambios de DNS y verifica estrictamente la versión anunciada en el perfil público del repositorio.
+2. Si falla con 404 en `/release.json` o `STALE DEPLOYMENT`, la URL Vercel todavía sirve una versión antigua o no auditable. **No sustituir SumUp**. Si el proveedor devuelve `Deployment rate limited`, resolver la cuota y desplegar `main` antes de repetir la verificación.
+3. Los workflows de preview y staging también comprueban la **misma revisión Git** que está siendo evaluada. Una compilación verde, un Deployment antiguo que figura `success` o una URL `.vercel.app` accesible no son evidencias suficientes de que está publicado el último commit.
+4. Un resultado positivo solo confirma coincidencia del commit en el sitio consultado. Aún se deben comprobar RC ORDERA, pagos, panel CEO, teléfonos, consentimiento/cookies, documentos legales y planes de reversión. **La publicación en `rinconcolombiano.pl` necesita un corte separado aprobado por el propietario.**
+
 ## 2. Preparar preview en Vercel (SIN cortar dominio)
 
 ### Qué corregimos en el release gate (13 octubre de 2026)
