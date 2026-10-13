@@ -10,6 +10,8 @@
  * node scripts/smoke-public.mjs https://rinconcolombiano.pl
  */
 
+const previewMode = process.argv.includes("--preview");
+
 const origin = (
   process.argv[2] ??
   "https://rinconcolombiano.pl"
@@ -207,11 +209,12 @@ async function checkInfrastructure() {
       "robots.txt responde correctamente"
     );
 
+    const blocksAllCrawlers = /^Disallow:\s*\/\s*$/im.test(robots.body);
     report(
-      !/^Disallow:\s*\/\s*$/im.test(
-        robots.body
-      ),
-      "robots.txt no bloquea todo el sitio"
+      previewMode ? blocksAllCrawlers : !blocksAllCrawlers,
+      previewMode
+        ? "Preview no expone sus páginas a buscadores"
+        : "Producción permite indexar páginas públicas"
     );
   } catch (error) {
     report(false, `robots.txt: ${error}`);
