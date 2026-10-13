@@ -16,6 +16,7 @@ const runtimeOrigin = new URL(
   (process.argv[2] ?? "http://127.0.0.1:3100").replace(/\/+$/, ""),
 );
 const officialOrigin = "https://rinconcolombiano.pl";
+const previewMode = process.argv.includes("--preview");
 const LIMIT = 90;
 const LOCALES = ["pl", "es", "en"];
 const fetchedPages = new Map();
@@ -117,7 +118,10 @@ function assertPublicPage(path, response, inSitemap) {
       `Rendered document language must match ${path}`);
   }
   if (inSitemap) {
-    assert.ok(!hasNoindex(response.body), `Indexed page ${path} unexpectedly contains noindex`);
+    assert.equal(hasNoindex(response.body), previewMode,
+      previewMode
+        ? `Preview route ${path} MUST remain noindex`
+        : `Indexed production page ${path} unexpectedly contains noindex`);
     assert.equal(canonicalFor(response.body), officialOrigin + path,
       `Indexed page ${path} must use the production canonical URL`);
     assert.ok(titleFor(response.body).trim().length >= 8,
