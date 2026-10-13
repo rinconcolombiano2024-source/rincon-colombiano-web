@@ -17,7 +17,7 @@ export interface LaunchSignals {
 }
 
 export interface LaunchGate {
-  readonly id: "domain" | "catalog" | "brand" | "photos" | "campaigns" | "orders";
+  readonly id: "domain" | "catalog" | "brand" | "photos" | "campaigns" | "sumup" | "orders";
   readonly title: string;
   readonly description: string;
   readonly state: GateState;
@@ -79,6 +79,12 @@ export function evaluateLaunchReadiness(signals: LaunchSignals): readonly Launch
       state: ["pl", "es", "en"].every((locale) => languages.has(locale))
         ? "ready" : "attention",
       href: "/admin/marketing",
+    },
+    {
+      id: "sumup",
+      title: "SumUp · Cobros online de Rincón Colombiano",
+      description: "RC ORDERA contiene un adaptador de pago alojado, pero el cobro no está certificado. Faltan configurar claves y comercio en Supabase de RC ORDERA, aplicar y validar el libro contable en staging, desplegar Edge Functions y probar captura, devolución y conciliación reales. No cambiar a SumUp hasta aprobar estas pruebas; la web no guarda ni solicita claves de pago.",
+      state: "blocked",
     },
     {
       id: "orders",

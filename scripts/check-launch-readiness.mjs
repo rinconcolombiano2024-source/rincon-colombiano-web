@@ -8,13 +8,14 @@ const empty = evaluateLaunchReadiness({
   publishedBrandSlots: [],
   publishedCampaignLocales: [],
 });
-assert.equal(empty.length, 6);
+assert.equal(empty.length, 7);
 assert.equal(isLaunchCertified(empty), false);
 assert.equal(empty.find((gate) => gate.id === "domain")?.state, "blocked");
 assert.equal(empty.find((gate) => gate.id === "catalog")?.state, "blocked");
 assert.equal(empty.find((gate) => gate.id === "brand")?.state, "attention");
 assert.equal(empty.find((gate) => gate.id === "campaigns")?.state, "attention");
 assert.equal(empty.find((gate) => gate.id === "orders")?.state, "blocked");
+assert.equal(empty.find((gate) => gate.id === "sumup")?.state, "blocked");
 
 const fullAutomation = evaluateLaunchReadiness({
   officialDomain: "ready",
@@ -27,6 +28,7 @@ const fullAutomation = evaluateLaunchReadiness({
   publishedCampaignLocales: ["pl", "es", "en"],
 });
 assert.equal(fullAutomation.filter((gate) => gate.state === "ready").length, 5);
+assert.equal(fullAutomation.find((gate) => gate.id === "sumup")?.state, "blocked");
 assert.equal(isLaunchCertified(fullAutomation), false,
   "Automated readiness may never certify payments without true E2E tests");
 

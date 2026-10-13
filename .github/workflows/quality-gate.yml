@@ -61,6 +61,9 @@ jobs:
       - name: Verify CEO launch gate honesty
         run: node --experimental-strip-types scripts/check-launch-readiness.mjs
 
+      - name: Bound CEO Supabase diagnostics concurrency
+        run: node --experimental-strip-types scripts/check-ceo-probe-bounds.mjs
+
       - name: Verify editable home and SEO content
         run: node --experimental-strip-types scripts/check-home-editor.mjs
 
