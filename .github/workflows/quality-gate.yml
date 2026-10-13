@@ -55,6 +55,9 @@ jobs:
       - name: Protect RC ORDERA menu shape and product images
         run: node --experimental-strip-types scripts/check-rc-menu-editor.mjs
 
+      - name: Reject invented free prices and invalid availability in public RC ORDERA catalog
+        run: node --experimental-strip-types scripts/test-rc-ordera-catalog-safety.mjs
+
       - name: Preserve Lechona Tolimense name in PL ES EN while keeping RC ORDERA IDs prices and stations
         run: node --experimental-strip-types scripts/test-lechona-tolimense.mjs
 
