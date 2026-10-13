@@ -32,6 +32,15 @@ assert.doesNotMatch(executableWindowsCode, /service_role|supabaseKey|adminPasswo
 // can run separately, with no configurable or shared CEO login origin.
 const windowsBuild = await readFile(".github/workflows/windows-ceo-desktop.yml", "utf8");
 const windowsInstructions = await readFile("desktop/README-WINDOWS.md", "utf8");
+
+// Staging embeds the exact GITHUB_SHA and must match /release.json.
+// Changes limited to React, SEO or CMS also change the deployed commit,
+// so a desktop-only workflow path filter would strand owners with a stale exe.
+const pushTriggers = windowsBuild.split(/\n  pull_request:/u)[0];
+assert.match(pushTriggers, /\n  push:\s*\n    branches:\s*\n      - main\b/u,
+  "Rebuild CEO Windows artifacts after every main branch revision");
+assert.doesNotMatch(pushTriggers, /\n    (?:paths|paths-ignore):/u,
+  "A path filter on main would break immutable CEO staging SHA parity");
 const officialBranch = windows.indexOf("#else", windows.indexOf("#if RC_CEO_STAGING"));
 const guardEnd = windows.indexOf("#endif", officialBranch);
 assert.ok(officialBranch > 0 && guardEnd > officialBranch,

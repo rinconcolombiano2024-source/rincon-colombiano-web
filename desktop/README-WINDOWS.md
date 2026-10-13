@@ -115,5 +115,11 @@ La carpeta desktop/RinconColombianoAdmin incluye el código fuente.
 El workflow .github/workflows/windows-ceo-desktop.yml construye DOS
 distribuciones portables: una para el dominio comercial y otra de pruebas
 para el alias oficial de Vercel, con nombres, perfiles y SHA256 separados.
-El artefacto generado se conserva durante 30 días; guardar una copia
-en una versión (Release) firmada antes de distribución general.
+El workflow se ejecuta automáticamente con CADA actualización de main,
+aunque sólo se modifiquen textos, imágenes, CMS, SEO o la web pública.
+Esto es necesario porque el ejecutable de PRUEBAS contiene el SHA exacto
+del commit: un ZIP anterior no coincide con /release.json después de
+desplegar una revisión nueva. Descargar el ZIP del último workflow exitoso
+de main, no el de una rama antigua o de una PR. Los ZIP se conservan 30
+días; guardar una copia en una versión (Release) firmada antes de
+distribución general.

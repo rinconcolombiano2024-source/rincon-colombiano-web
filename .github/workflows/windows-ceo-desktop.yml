@@ -1,13 +1,13 @@
 name: Build Rincón CEO Windows App
 
 on:
+  # El ejecutable STAGING incorpora GITHUB_SHA y exige paridad con
+  # /release.json. Compilar en CADA push a main evita distribuir un CEO
+  # con revision vieja cuando cambian solo paginas, SEO o CMS.
   push:
     branches:
       - main
       - feat/ceo-desktop-windows-download-20261012
-    paths:
-      - "desktop/**"
-      - ".github/workflows/windows-ceo-desktop.yml"
   pull_request:
     paths:
       - "desktop/**"
