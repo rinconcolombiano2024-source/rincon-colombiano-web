@@ -227,6 +227,32 @@ async function checkContactAndLegal(locale) {
   }
 }
 
+const orderRoutes = {
+  pl: "/pl/zamow",
+  es: "/es/pedir",
+  en: "/en/order",
+};
+
+async function checkOrderShortcut(locale) {
+  const path = orderRoutes[locale];
+  try {
+    const response = await fetch(new URL(path, origin), {
+      redirect: "manual",
+      signal: AbortSignal.timeout(15000),
+    });
+    const destination = new URL(response.headers.get("location") ?? "", origin);
+    report(
+      [302, 303, 307, 308].includes(response.status) &&
+      destination.origin === "https://rincon-colombiano-pedidosapp.vercel.app" &&
+      destination.pathname === "/cliente.html" &&
+      destination.searchParams.has("store"),
+      `${path} lleva al restaurante real de RC ORDERA sin alterar pedidos`
+    );
+  } catch (error) {
+    report(false, `${path}: ${String(error)}`);
+  }
+}
+
 async function checkMenuPage(locale) {
   const path = `/${locale}/menu`;
 
@@ -294,6 +320,7 @@ async function main() {
     await checkPage(locale);
     await checkMenuPage(locale);
     await checkContactAndLegal(locale);
+    await checkOrderShortcut(locale);
   }
 
   await checkInfrastructure();
