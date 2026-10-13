@@ -61,9 +61,9 @@ assert.ok(
   "Editable service titles must not be React list keys",
 );
 
-assert.ok(home.includes('comingSoon: "Wkrótce"') &&
-  home.includes('comingSoon: "Próximamente"') &&
-  home.includes('comingSoon: "Coming soon"'),
+assert.ok(/comingSoon:\\s*"Wkrótce"/.test(home) &&
+  /comingSoon:\\s*"Próximamente"/.test(home) &&
+  /comingSoon:\\s*"Coming soon"/.test(home),
   "Future Brzeska location must have a localized non-open status in all three languages");
 
 console.log("PASS: PL/ES/EN commercial copy avoids technical promises and editable cards use stable keys");
