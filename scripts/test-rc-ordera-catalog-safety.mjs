@@ -76,7 +76,10 @@ test("block script, private hosts, credentials and invalid product image sources
     "https://example.local/photo.jpg", "https://169.254.169.254/latest",
     "https://127.0.0.1/secret", "https://192.168.10.1/food.jpg",
     "https://10.10.10.1/food.jpg", "https://172.16.0.3/image.jpg",
-    "https://[::1]/image.jpg", "https://cdn.example.com:8443/photo.jpg",
+    "https://[::1]/image.jpg", "https://[fd00::1]/image.jpg",
+    "https://[fe80::1]/image.jpg", "https://0.0.0.0/image.png",
+    "https://203.0.113.4/photo.png", "https://printer/image.png",
+    "https://cdn.example.com:8443/photo.jpg",
     `https://example.com/${"a".repeat(1700)}`,
   ]) {
     assert.equal(parsePublicProductImageUrl(invalid), null, JSON.stringify(invalid));
