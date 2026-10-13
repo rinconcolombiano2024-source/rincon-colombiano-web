@@ -13,10 +13,10 @@ const pending=mapWithConcurrencyLimit(tasks,2,async (value)=>{
 });
 for(let round=0;round<70;round++){
   const queued=waiting.splice(0);
-  for(const resolve of queued)resolve();
+  for (const resolve of queued) { resolve(); }
   await Promise.resolve();
   await Promise.resolve();
-  if(!waiting.length && active===0)break;
+  if (!waiting.length && active===0) { break; }
 }
 const results=await pending;
 assert.deepEqual(results,tasks.map(x=>x*3));
