@@ -72,7 +72,7 @@ export function parsePublicProductImageUrl(value: unknown): string | null {
       !hostname || url.username || url.password ||
       (url.port !== "" && url.port !== "443") ||
       !hostname.includes(".") ||
-      /^\\d{1,3}(?:\\.\\d{1,3}){3}$/u.test(hostname) ||
+      /^\d{1,3}(?:\.\d{1,3}){3}$/u.test(hostname) ||
       (hostname.startsWith("[") && hostname.endsWith("]")) ||
       hostname === "localhost" ||
       hostname.endsWith(".localhost") ||
