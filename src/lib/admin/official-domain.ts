@@ -65,11 +65,22 @@ export async function checkOfficialDomainRevision(
       return "not-published";
     }
 
-    const rightManifest = manifest["id"] === "/admin" &&
-      manifest["start_url"] === "/admin" &&
-      manifest["scope"] === "/admin";
-    const rightRevision = release["project"] === "rincon-colombiano-web" &&
-      release["revision"] === expectedRevision.toLowerCase();
+    // These casts describe property names only; every value still requires
+    // an explicit runtime check before the release can be marked ready.
+    const manifestData = manifest as {
+      readonly id?: unknown;
+      readonly start_url?: unknown;
+      readonly scope?: unknown;
+    };
+    const releaseData = release as {
+      readonly project?: unknown;
+      readonly revision?: unknown;
+    };
+    const rightManifest = manifestData.id === "/admin" &&
+      manifestData.start_url === "/admin" &&
+      manifestData.scope === "/admin";
+    const rightRevision = releaseData.project === "rincon-colombiano-web" &&
+      releaseData.revision === expectedRevision.toLowerCase();
 
     return rightManifest && rightRevision ? "ready" : "not-published";
   } catch {
