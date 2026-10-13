@@ -5,6 +5,7 @@ import { evaluateLaunchReadiness, isLaunchCertified, type LaunchSignals, type La
 import { loadPublishedBrandAsset } from "@/lib/brand/public-brand";
 import { loadPublishedCmsTextContent } from "@/lib/cms/public-content";
 import { loadRcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
+import { mapWithConcurrencyLimit } from "@/lib/admin/bounded-map";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -56,34 +57,39 @@ const brandSlots = [
 const languages = ["pl", "es", "en"] as const;
 
 async function collectLaunchSignals(): Promise<LaunchSignals> {
-  const [domain, catalog, publishedImages, campaigns] = await Promise.all([
+  const [domain, catalog, campaignAndBrand] = await Promise.all([
     checkOfficialDomain(),
     loadRcOrderaPublicCatalog("czapelska").catch(() => null),
-    Promise.all(brandSlots.map(async (slot) => {
-      try {
-        const image = await loadPublishedBrandAsset(slot);
-        return image.status === "ready" && image.asset !== null ? slot : null;
-      } catch {
-        return null;
-      }
-    })),
-    Promise.all(languages.map(async (locale) => {
-      try {
-        const campaign = await loadPublishedCmsTextContent("home_campaign", locale);
-        return campaign.status === "ready" &&
-          campaign.content?.kind === "promotion" ? locale : null;
-      } catch {
-        return null;
-      }
-    })),
+    // CEO monitoring is read-only; deliberately cap its Supabase fan-out.
+    // The public site and real orders are never delayed by these diagnostics.
+    (async () => {
+      const brand = await mapWithConcurrencyLimit(brandSlots, 2, async (slot) => {
+        try {
+          const image = await loadPublishedBrandAsset(slot);
+          return image.status === "ready" && image.asset !== null ? slot : null;
+        } catch {
+          return null;
+        }
+      });
+      const campaigns = await mapWithConcurrencyLimit(languages, 2, async (locale) => {
+        try {
+          const campaign = await loadPublishedCmsTextContent("home_campaign", locale);
+          return campaign.status === "ready" &&
+            campaign.content?.kind === "promotion" ? locale : null;
+        } catch {
+          return null;
+        }
+      });
+      return { brand, campaigns };
+    })(),
   ]);
 
   return {
     officialDomain: domain,
     rcOrderaStatus: catalog?.status ?? "unavailable",
     productCount: catalog?.catalog?.productCount ?? 0,
-    publishedBrandSlots: publishedImages.filter((slot): slot is NonNullable<typeof slot> => slot !== null),
-    publishedCampaignLocales: campaigns.filter((locale): locale is NonNullable<typeof locale> => locale !== null),
+    publishedBrandSlots: campaignAndBrand.brand.filter((slot): slot is NonNullable<typeof slot> => slot !== null),
+    publishedCampaignLocales: campaignAndBrand.campaigns.filter((locale): locale is NonNullable<typeof locale> => locale !== null),
   };
 }
 
