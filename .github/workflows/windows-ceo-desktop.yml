@@ -84,19 +84,3 @@ jobs:
           if-no-files-found: error
           retention-days: 30
           compression-level: 6
-) { throw "GitHub SHA missing for release parity" }
-          if ($LASTEXITCODE -ne 0) { throw "Windows CEO staging publish failed" }
-          $exe = Join-Path $destination "RinconColombianoCEOStaging.exe"
-          if (-not (Test-Path $exe)) { throw "CEO staging executable missing" }
-          Copy-Item desktop/README-WINDOWS.md (Join-Path $destination "LEEME-CEO-PRUEBAS.txt")
-          (Get-FileHash $exe -Algorithm SHA256).Hash | Out-File -Encoding utf8 (Join-Path $destination "SHA256.txt")
-          Write-Host "Isolated Vercel staging CEO executable built. No domain change."
-
-      - name: Upload separately labeled staging CEO application
-        uses: actions/upload-artifact@v4
-        with:
-          name: RinconColombiano-CEO-Windows-STAGING-x64
-          path: ${{ runner.temp }}/RinconCEO-staging-win-x64/
-          if-no-files-found: error
-          retention-days: 30
-          compression-level: 6
