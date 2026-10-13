@@ -625,6 +625,21 @@ function isOrderRoute(
 }
 
 
+/**
+ * The existing homepage already contains the public contact surface and
+ * genuine WhatsApp/email CTAs. Honor registered /pl/kontakt, /es/contacto
+ * and /en/contact URLs without creating a misleading, nonfunctional form.
+ */
+function isContactRoute(
+  locale: AppLocale,
+  slugSegments: readonly string[],
+): boolean {
+  const contactPath = buildRoutePath("contact", locale);
+  const expectedSegments = getDecodedRouteSegments(contactPath).slice(1);
+  return routeSegmentsMatch(slugSegments, expectedSegments);
+}
+
+
 function getRestaurantFromRoute(
   locale:
     AppLocale,
@@ -1153,6 +1168,10 @@ export default async function RestaurantPage({
   const locale:
     AppLocale =
     rawLocale;
+
+  if (isContactRoute(locale, slug)) {
+    redirect(`${buildRoutePath("home", locale)}#contact`);
+  }
 
   if (
     isOrderRoute(
