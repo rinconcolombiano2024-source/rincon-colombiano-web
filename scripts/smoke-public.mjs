@@ -205,7 +205,9 @@ async function checkContactAndLegal(locale) {
       redirect: "manual",
       signal: AbortSignal.timeout(15000),
     });
-    const destination = new URL(response.headers.get("location") ?? "", origin);
+    const locationHeader = response.headers.get("location") ?? "";
+    const destination = new URL(locationHeader, origin);
+    console.log(`Contact route ${path}: HTTP ${response.status}, Location=${locationHeader}`);
     report(
       [302, 303, 307, 308].includes(response.status) &&
       destination.origin === new URL(origin).origin &&
