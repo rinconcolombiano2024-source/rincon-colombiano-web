@@ -43,12 +43,12 @@ jobs:
       - name: Check real public PL ES EN pages, social and metadata
         env:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
-        run: node scripts/smoke-public.mjs "$SITE_ORIGIN"
+        run: node scripts/smoke-public.mjs "$SITE_ORIGIN" --preview
 
       - name: Crawl deployed sitemap, canonical routes, public links and anchors
         env:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
-        run: node scripts/smoke-navigation.mjs "$SITE_ORIGIN"
+        run: node scripts/smoke-navigation.mjs "$SITE_ORIGIN" --preview
 
       - name: Deployment-verification limitations
         run: |
