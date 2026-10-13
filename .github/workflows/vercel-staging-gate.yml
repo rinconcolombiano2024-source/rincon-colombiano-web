@@ -50,6 +50,11 @@ jobs:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
         run: node scripts/smoke-navigation.mjs "$SITE_ORIGIN" --preview
 
+      - name: Verify old SumUp catalogue bookmarks still work
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-sumup-catalog-migration.mjs "$SITE_ORIGIN"
+
       - name: Deployment-verification limitations
         run: |
           echo "This read-only smoke verifies HTTP-visible behaviour in a Vercel preview."

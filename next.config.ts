@@ -271,19 +271,46 @@ const nextConfig:
 
 
   /* ========================================================
-     REDIRECTS
+     LEGACY SUMUP CATALOG REDIRECTS
      ======================================================== */
 
   /**
-   * Se mantiene vacío deliberadamente.
+   * Preserve public bookmarks and indexed links from the live SumUp
+   * catalogue when Next.js eventually takes over rinconcolombiano.pl.
    *
-   * Los redirects desde URLs históricas o desde la plataforma
-   * anterior deberán incorporarse únicamente durante la
-   * migración definitiva del dominio.
+   * The full catalogue URL is permanently moved to the real PL menu.
+   * Individual legacy products/categories use TEMPORARY redirects
+   * because no verified 1:1 RC ORDERA product/price mapping exists yet.
+   * Never redirect old carts, checkout or payment/order endpoints.
    */
   async redirects() {
-
-    return [];
+    return [
+      {
+        source: "/produkty",
+        destination: "/pl/menu",
+        permanent: true,
+      },
+      {
+        source: "/product/:slug",
+        destination: "/pl/menu",
+        permanent: false,
+      },
+      {
+        source: "/produkt/:slug",
+        destination: "/pl/menu",
+        permanent: false,
+      },
+      {
+        source: "/kategoria/:slug",
+        destination: "/pl/menu",
+        permanent: false,
+      },
+      {
+        source: "/category/:slug",
+        destination: "/pl/menu",
+        permanent: false,
+      },
+    ];
   },
 };
 

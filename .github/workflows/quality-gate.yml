@@ -116,6 +116,7 @@ jobs:
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
           node scripts/smoke-public.mjs http://127.0.0.1:3100
           node scripts/smoke-navigation.mjs http://127.0.0.1:3100
+          node scripts/smoke-sumup-catalog-migration.mjs http://127.0.0.1:3100
 
   preview-seo:
     name: Verify non-indexable Vercel-style preview
@@ -165,3 +166,4 @@ jobs:
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3101
           node scripts/smoke-public.mjs http://127.0.0.1:3101 --preview
           node scripts/smoke-navigation.mjs http://127.0.0.1:3101 --preview
+          node scripts/smoke-sumup-catalog-migration.mjs http://127.0.0.1:3101
