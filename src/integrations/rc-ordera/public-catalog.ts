@@ -47,6 +47,10 @@ import {
   type RcOrderaLocationKey,
   type RcOrderaServerConfig,
 } from "@/integrations/rc-ordera/config";
+import {
+  parsePublicMenuPrice,
+  parsePublicMenuAvailability,
+} from "@/integrations/rc-ordera/public-product-safety";
 
 
 /* ============================================================
@@ -447,12 +451,12 @@ function normalizeProduct(
       "productId",
     );
 
-  const price =
-    readNumber(
-      value,
-      "price",
-    ) ??
-    0;
+  // Missing, malformed or negative prices must not become a fake
+  // free (0 zł) offer on the public restaurant website.
+  const price = parsePublicMenuPrice(readValue(value, "price"));
+  if (price === null) {
+    return null;
+  }
 
   const description =
     readString(
@@ -482,11 +486,10 @@ function normalizeProduct(
       "photo",
     );
 
-  const available =
-    readBoolean(
-      value,
-      "available",
-    );
+  const available = parsePublicMenuAvailability(
+    readValue(value, "available"),
+    Object.hasOwn(value, "available"),
+  );
 
   const station =
     readString(
@@ -534,15 +537,9 @@ function normalizeProduct(
         description,
       ),
 
-    price:
-      Math.max(
-        0,
-        price,
-      ),
+    price,
 
-    available:
-      available !==
-      false,
+    available,
 
     imageUrl,
 
