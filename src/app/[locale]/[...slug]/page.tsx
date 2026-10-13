@@ -967,44 +967,28 @@ function getActiveServices(
  */
 export function generateStaticParams():
   RestaurantStaticParam[] {
-  return SUPPORTED_LOCALES
-    .flatMap(
-      (
-        locale,
-      ) =>
-        getPublicRestaurants()
-          .map(
-            (
-              restaurant,
-            ) => {
-              const fullPath =
-                buildRoutePath(
-                  "location",
-                  locale,
-                  {
-                    slug:
-                      restaurant.slug,
-                  },
-                );
+  return SUPPORTED_LOCALES.flatMap((locale) => {
+    // Explicitly prerender every supported public catch-all route. Relying
+    // only on location slugs caused the published contact/order URLs to 404
+    // in production builds, despite being recognized by the page resolver.
+    const restaurantPaths = getPublicRestaurants().map((restaurant) => ({
+      locale,
+      slug: [
+        ...getDecodedRouteSegments(
+          buildRoutePath("location", locale, { slug: restaurant.slug }),
+        ).slice(1),
+      ],
+    }));
 
-              const segments =
-                getDecodedRouteSegments(
-                  fullPath,
-                );
+    const supportedRedirects = (["contact", "order"] as const).map((routeKey) => ({
+      locale,
+      slug: [
+        ...getDecodedRouteSegments(buildRoutePath(routeKey, locale)).slice(1),
+      ],
+    }));
 
-              return {
-                locale,
-
-                slug:
-                  [
-                    ...segments.slice(
-                      1,
-                    ),
-                  ],
-              };
-            },
-          ),
-    );
+    return [...restaurantPaths, ...supportedRedirects];
+  });
 }
 
 
