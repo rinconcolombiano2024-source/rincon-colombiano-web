@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Net;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -310,6 +311,55 @@ internal sealed class AdminWindow : Form
         }
     }
 
+#if RC_CEO_STAGING
+    /// <summary>
+    /// Reject a Vercel alias that hosts an earlier (or unknown) source commit.
+    /// GitHub Actions stamps the immutable SHA into this test binary at build
+    /// time. This is a release-integrity check, not a replacement for Auth/RLS.
+    /// </summary>
+    private async Task<bool> IsExpectedStagingRevisionAsync()
+    {
+        var expectedRevision = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion?.Trim() ?? "";
+
+        // No trust in a missing/build-default assembly version.
+        if (expectedRevision.Length != 40 ||
+            !expectedRevision.All(Uri.IsHexDigit))
+        {
+            return false;
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get, OfficialOrigin + "/release.json");
+        request.Headers.TryAddWithoutValidation("Cache-Control", "no-cache");
+        using var response = await _http.SendAsync(
+            request, HttpCompletionOption.ResponseHeadersRead);
+        if (response.StatusCode != HttpStatusCode.OK ||
+            !string.Equals(response.Content.Headers.ContentType?.MediaType,
+                "application/json", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var release = await JsonDocument.ParseAsync(stream);
+        var root = release.RootElement;
+        if (root.ValueKind != JsonValueKind.Object ||
+            !root.TryGetProperty("project", out var project) ||
+            project.ValueKind != JsonValueKind.String ||
+            project.GetString() != "rincon-colombiano-web" ||
+            !root.TryGetProperty("revision", out var revision) ||
+            revision.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        return string.Equals(revision.GetString(), expectedRevision,
+            StringComparison.OrdinalIgnoreCase);
+    }
+#endif
+
     private async Task<bool> IsPublishedOfficialAdminAsync()
     {
         using var request = new HttpRequestMessage(
@@ -333,7 +383,13 @@ internal sealed class AdminWindow : Form
                root.TryGetProperty("start_url", out var start) &&
                start.GetString() == "/admin" &&
                root.TryGetProperty("scope", out var scope) &&
-               scope.GetString() == "/admin";
+               scope.GetString() == "/admin"
+#if RC_CEO_STAGING
+               // A valid admin manifest alone is not enough: old Vercel
+               // deployments can still serve it. Require the reviewed SHA.
+               && await IsExpectedStagingRevisionAsync()
+#endif
+               ;
     }
 
     private async Task ConnectAsync()
@@ -355,6 +411,8 @@ internal sealed class AdminWindow : Form
                 Report(
                     "La administración de esta versión todavía no está disponible en " + AdminUrl.Host + ".\n\n" +
                     "La página antigua no permite iniciar Rincón Admin.\n" +
+                    "En PRUEBAS, Vercel debe mostrar exactamente el mismo commit que el ejecutable.\n" +
+                    "Si /release.json está ausente o no coincide, el acceso se bloquea.\n\n" +
                     "Cuando la versión correspondiente esté disponible y verificada, pulsa «Actualizar».\n\n" +
                     "No se han enviado credenciales ni se ha abierto otra página.",
                     error: true);
