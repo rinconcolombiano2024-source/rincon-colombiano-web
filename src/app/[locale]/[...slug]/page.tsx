@@ -625,6 +625,21 @@ function isOrderRoute(
 }
 
 
+/**
+ * The existing homepage already contains the public contact surface and
+ * genuine WhatsApp/email CTAs. Honor registered /pl/kontakt, /es/contacto
+ * and /en/contact URLs without creating a misleading, nonfunctional form.
+ */
+function isContactRoute(
+  locale: AppLocale,
+  slugSegments: readonly string[],
+): boolean {
+  const contactPath = buildRoutePath("contact", locale);
+  const expectedSegments = getDecodedRouteSegments(contactPath).slice(1);
+  return routeSegmentsMatch(slugSegments, expectedSegments);
+}
+
+
 function getRestaurantFromRoute(
   locale:
     AppLocale,
@@ -952,44 +967,28 @@ function getActiveServices(
  */
 export function generateStaticParams():
   RestaurantStaticParam[] {
-  return SUPPORTED_LOCALES
-    .flatMap(
-      (
-        locale,
-      ) =>
-        getPublicRestaurants()
-          .map(
-            (
-              restaurant,
-            ) => {
-              const fullPath =
-                buildRoutePath(
-                  "location",
-                  locale,
-                  {
-                    slug:
-                      restaurant.slug,
-                  },
-                );
+  return SUPPORTED_LOCALES.flatMap((locale) => {
+    // Explicitly prerender every supported public catch-all route. Relying
+    // only on location slugs caused the published contact/order URLs to 404
+    // in production builds, despite being recognized by the page resolver.
+    const restaurantPaths = getPublicRestaurants().map((restaurant) => ({
+      locale,
+      slug: [
+        ...getDecodedRouteSegments(
+          buildRoutePath("location", locale, { slug: restaurant.slug }),
+        ).slice(1),
+      ],
+    }));
 
-              const segments =
-                getDecodedRouteSegments(
-                  fullPath,
-                );
+    const supportedRedirects = (["contact", "order"] as const).map((routeKey) => ({
+      locale,
+      slug: [
+        ...getDecodedRouteSegments(buildRoutePath(routeKey, locale)).slice(1),
+      ],
+    }));
 
-              return {
-                locale,
-
-                slug:
-                  [
-                    ...segments.slice(
-                      1,
-                    ),
-                  ],
-              };
-            },
-          ),
-    );
+    return [...restaurantPaths, ...supportedRedirects];
+  });
 }
 
 
@@ -1153,6 +1152,10 @@ export default async function RestaurantPage({
   const locale:
     AppLocale =
     rawLocale;
+
+  if (isContactRoute(locale, slug)) {
+    redirect(`${buildRoutePath("home", locale)}#contact`);
+  }
 
   if (
     isOrderRoute(

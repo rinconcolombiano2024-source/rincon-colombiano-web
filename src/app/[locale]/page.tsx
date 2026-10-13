@@ -5396,16 +5396,46 @@ export default async function HomePage({
 
                       <span
                         className="
-                          text-[#a99e90]
+                          size-2
+                          shrink-0
+                          rounded-full
+                          bg-[#123d73]
                         "
                         aria-hidden="true"
-                      >
-                        →
-                      </span>
+                      />
                     </div>
                   ),
                 )}
             </div>
+
+            <a
+              href="#contact"
+              className="
+                mt-5
+                inline-flex
+                min-h-12
+                items-center
+                justify-center
+                rounded-full
+                bg-[#123d73]
+                px-6
+                py-3
+                text-sm
+                font-bold
+                text-white
+                transition
+                hover:bg-[#0b2b51]
+                focus-visible:outline-2
+                focus-visible:outline-offset-2
+                focus-visible:outline-[#123d73]
+              "
+            >
+              {locale === "pl"
+                ? "Pytania o zasady? Skontaktuj się z nami"
+                : locale === "es"
+                  ? "¿Preguntas sobre nuestras políticas? Contáctanos"
+                  : "Questions about our policies? Contact us"}
+            </a>
           </div>
         </section>
 
