@@ -8,7 +8,7 @@
 export function publicReleaseFingerprint(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): { readonly project: "rincon-colombiano-web"; readonly revision: string | null } {
-  const candidate = env.VERCEL_GIT_COMMIT_SHA ?? env.GITHUB_SHA;
+  const candidate = env["VERCEL_GIT_COMMIT_SHA"] ?? env["GITHUB_SHA"];
   const revision = candidate && /^[0-9a-f]{40}$/i.test(candidate)
     ? candidate.toLowerCase()
     : null;
