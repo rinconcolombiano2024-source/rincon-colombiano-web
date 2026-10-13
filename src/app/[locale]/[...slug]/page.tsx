@@ -1234,6 +1234,10 @@ export default async function RestaurantPage({
     notFound();
   }
 
+  // Show the same published official brand mark as the homepage/menu.
+  // The existing RC fallback remains if the owner has not published a logo.
+  const primaryBrandLogo = await getPrimaryBrandLogo();
+
   const copy =
     restaurantPageContent[
       locale
@@ -1446,31 +1450,31 @@ export default async function RestaurantPage({
             href={
               homeHref
             }
+            aria-label="Rincón Colombiano"
             className="
               flex
-              items-center
+              items-center min-w-0
               gap-3
               font-black
               text-[#12100e]
             "
           >
-            <span
-              className="
-                grid
-                size-11
-                place-items-center
-                rounded-2xl
-                bg-[#f7c600]
-                text-sm
-                font-black
-                shadow-sm
-              "
-              aria-hidden="true"
-            >
-              RC
-            </span>
+            {primaryBrandLogo ? (
+              <span
+                className="block h-12 w-16 shrink-0 bg-contain bg-left bg-no-repeat sm:h-14 sm:w-20"
+                style={{ backgroundImage: `url("${primaryBrandLogo.publicUrl}")` }}
+                aria-hidden="true"
+              />
+            ) : (
+              <span
+                className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#f7c600] text-sm font-black text-[#12100e]"
+                aria-hidden="true"
+              >
+                RC
+              </span>
+            )}
 
-            <span>
+            <span className="hidden min-[480px]:inline">
               Rincón Colombiano
             </span>
           </Link>
