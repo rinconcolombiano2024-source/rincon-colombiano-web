@@ -55,6 +55,9 @@ jobs:
       - name: Protect RC ORDERA menu shape and product images
         run: node --experimental-strip-types scripts/check-rc-menu-editor.mjs
 
+      - name: Preserve Lechona Tolimense name in PL ES EN while keeping RC ORDERA IDs prices and stations
+        run: node --experimental-strip-types scripts/test-lechona-tolimense.mjs
+
       - name: Protect native CEO shortcuts and restaurant owner editor
         run: node scripts/check-ceo-desktop.mjs
 
