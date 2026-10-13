@@ -36,9 +36,9 @@ export function evaluateLaunchReadiness(signals: LaunchSignals): readonly Launch
       id: "domain",
       title: "Web oficial y administración Windows",
       description: signals.officialDomain === "ready"
-        ? "El dominio oficial entrega el manifiesto de la administración nueva."
+        ? "El dominio oficial entrega el manifiesto PWA y la misma revisión Git que ejecuta este panel."
         : signals.officialDomain === "not-published"
-          ? "El dominio oficial todavía no entrega el panel Next.js. La aplicación Windows no abrirá el inicio de sesión."
+          ? "El dominio oficial no entrega el panel Next.js con la misma revisión Git y el manifiesto PWA esperado. No aprobar el corte de dominio."
           : "No fue posible verificar el dominio oficial; no es una certificación de despliegue.",
       state: signals.officialDomain === "ready" ? "ready" : "blocked",
     },

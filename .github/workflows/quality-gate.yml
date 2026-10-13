@@ -97,6 +97,9 @@ jobs:
       - name: Enforce safe deploy-revision metadata
         run: node --experimental-strip-types scripts/test-release-fingerprint.mjs
 
+      - name: Verify CEO only trusts official domain with matching deployed Git SHA
+        run: node --experimental-strip-types scripts/test-official-domain-revision.mjs
+
       - name: Typecheck
         run: npm run typecheck
 

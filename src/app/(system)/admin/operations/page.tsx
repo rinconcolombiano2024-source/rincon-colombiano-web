@@ -7,43 +7,15 @@ import { loadPublishedCmsTextContent } from "@/lib/cms/public-content";
 import { loadRcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
 import { getRcOrderaIntegrationReadiness } from "@/integrations/rc-ordera/config";
 import { mapWithConcurrencyLimit } from "@/lib/admin/bounded-map";
+import { checkOfficialDomainRevision } from "@/lib/admin/official-domain";
+import { publicReleaseFingerprint } from "@/lib/release/fingerprint";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Deliberately fixed hostname, not a user-supplied URL: no SSRF. Redirects
-// are forbidden to prevent a legacy domain from masking the wrong website.
+// The official site must serve this exact revision, not merely any manifest.
 async function checkOfficialDomain(): Promise<LaunchSignals["officialDomain"]> {
-  try {
-    const response = await fetch(
-      "https://rinconcolombiano.pl/admin/manifest.webmanifest",
-      {
-        method: "GET",
-        redirect: "manual",
-        cache: "no-store",
-        signal: AbortSignal.timeout(3500),
-        headers: { Accept: "application/manifest+json" },
-      },
-    );
-    if (response.status !== 200) {
-      return "not-published";
-    }
-    const kind = response.headers.get("content-type") ?? "";
-    if (!kind.toLowerCase().includes("application/manifest+json")) {
-      return "not-published";
-    }
-    const parsed: unknown = await response.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return "not-published";
-    }
-    const manifest = parsed as { id?: unknown; start_url?: unknown; scope?: unknown };
-    return manifest.id === "/admin" &&
-      manifest.start_url === "/admin" &&
-      manifest.scope === "/admin"
-      ? "ready" : "not-published";
-  } catch {
-    return "unavailable";
-  }
+  return checkOfficialDomainRevision(publicReleaseFingerprint().revision);
 }
 
 const brandSlots = [
