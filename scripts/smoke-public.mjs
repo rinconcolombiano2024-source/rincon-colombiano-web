@@ -183,9 +183,9 @@ async function checkPage(locale) {
       `${path} incluye navegación legal localizada`
     );
 
-    const footer = html.match(/<footer\\b[^>]*>[\\s\\S]*?<\\/footer>/i)?.[0] ?? "";
+    const footer = html.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/i)?.[0] ?? "";
     // Strip SSR React comments/HTML tags before inspecting real user text.
-    const footerText = footer.replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ");
+    const footerText = footer.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
     report(
       footerText.includes(`Brzeska 10 · ${futureLocationStatus[locale]}`),
       `${path} marks unopened Brzeska 10 as coming soon in the footer`,
