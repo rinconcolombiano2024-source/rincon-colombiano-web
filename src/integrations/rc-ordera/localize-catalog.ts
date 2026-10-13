@@ -21,7 +21,7 @@ export function localizeRcOrderaProduct(
   // corrects ONLY that exact product label in the public read view.
   // Preserve its ID, price, availability, photo, category and kitchen station.
   // Do not rename other pork dishes or write back to the RC ORDERA database.
-  const legacyLechonaName = /^(?:lech[oó]n|lechona)(?:\\s+tolimense)?$/iu;
+  const legacyLechonaName = /^(?:lech[oó]n|lechona)(?:\s+tolimense)?$/iu;
   if (legacyLechonaName.test(product.name.trim()) ||
       (name && legacyLechonaName.test(name))) {
     return {
