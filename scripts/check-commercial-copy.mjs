@@ -24,6 +24,12 @@ const forbidden = [
   "La arquitectura incluye reservas",
   "Reservation architecture is included",
   "Moduł rezerwacji jest częścią architektury",
+  "Kontakt, sugestie, współpraca, catering i sprawy klientów będą kierowane",
+  "Customer care, suggestions, collaboration, catering and business inquiries will follow",
+  "One central point for catering, businesses",
+  "Jedno miejsce do zapytań dotyczących cateringu",
+  "Internet prowadzi do Rincón. Rincón prowadzi dalej.",
+  "The internet leads to Rincón. Rincón takes the relationship further.",
 ];
 for (const phrase of forbidden) {
   assert.ok(!home.includes(phrase), `Developer-facing marketing copy is back: ${phrase}`);
@@ -41,6 +47,11 @@ for (const phrase of [
   "los puntos y recompensas todavía no están activos",
   "Points and rewards are not active yet",
   "Punkty i nagrody nie są jeszcze aktywne",
+  "Masz pytanie o menu, zamówienie, catering lub współpracę?",
+  "Questions about our menu, orders, catering or working together?",
+  "Planujesz urodziny, rodzinne spotkanie lub wydarzenie firmowe",
+  "Planning a birthday, family gathering or corporate event in Warsaw?",
+  "Brzeska 10 · {copy.locations.comingSoon}",
 ]) {
   assert.ok(home.toLocaleLowerCase().includes(phrase.toLocaleLowerCase()),
     `Expected localized customer copy: ${phrase}`);
@@ -49,5 +60,10 @@ assert.ok(
   !home.includes("key={\n                        service.title\n                      }"),
   "Editable service titles must not be React list keys",
 );
+
+assert.ok(home.includes('comingSoon: "Wkrótce"') &&
+  home.includes('comingSoon: "Próximamente"') &&
+  home.includes('comingSoon: "Coming soon"'),
+  "Future Brzeska location must have a localized non-open status in all three languages");
 
 console.log("PASS: PL/ES/EN commercial copy avoids technical promises and editable cards use stable keys");
