@@ -640,6 +640,50 @@ function isContactRoute(
 }
 
 
+/**
+ * Existing multilingual marketing sections are live on the homepage,
+ * whereas some route-registry URLs were only planned and returned 404.
+ * Redirect ONLY public informational routes with a REAL equivalent section,
+ * without publishing empty landing pages or inventing service guarantees.
+ *
+ * Legal policies, checkout, authenticated accounts and content with no
+ * published equivalent remain untouched and must never be redirected here.
+ */
+const PUBLISHED_SECTION_SHORTCUTS = [
+  ["delivery", "order"],
+  ["services", "services"],
+  ["catering", "services"],
+  ["birthdays", "services"],
+  ["corporate", "services"],
+  ["families", "services"],
+  ["breakfasts", "services"],
+  ["surprise_breakfasts", "services"],
+  ["table_decorations", "services"],
+  ["events", "events"],
+  ["locations", "locations"],
+  ["reservations", "contact"],
+  ["about", "stories"],
+  ["reviews", "reviews"],
+  ["careers", "contact"],
+  ["community", "community"],
+  ["loyalty", "rewards"],
+] as const;
+
+function getPublishedSectionShortcut(
+  locale: AppLocale,
+  slugSegments: readonly string[],
+): string | null {
+  for (const [routeKey, section] of PUBLISHED_SECTION_SHORTCUTS) {
+    const route = buildRoutePath(routeKey, locale);
+    const expected = getDecodedRouteSegments(route).slice(1);
+    if (routeSegmentsMatch(slugSegments, expected)) {
+      return `${buildRoutePath("home", locale)}#${section}`;
+    }
+  }
+  return null;
+}
+
+
 function getRestaurantFromRoute(
   locale:
     AppLocale,
@@ -980,7 +1024,10 @@ export function generateStaticParams():
       ],
     }));
 
-    const supportedRedirects = (["contact", "order"] as const).map((routeKey) => ({
+    const supportedRedirects = ([
+      "contact", "order",
+      ...PUBLISHED_SECTION_SHORTCUTS.map(([routeKey]) => routeKey),
+    ] as const).map((routeKey) => ({
       locale,
       slug: [
         ...getDecodedRouteSegments(buildRoutePath(routeKey, locale)).slice(1),
@@ -1155,6 +1202,11 @@ export default async function RestaurantPage({
 
   if (isContactRoute(locale, slug)) {
     redirect(`${buildRoutePath("home", locale)}#contact`);
+  }
+
+  const sectionShortcut = getPublishedSectionShortcut(locale, slug);
+  if (sectionShortcut) {
+    redirect(sectionShortcut);
   }
 
   if (
