@@ -5,6 +5,7 @@ import { evaluateLaunchReadiness, isLaunchCertified, type LaunchSignals, type La
 import { loadPublishedBrandAsset } from "@/lib/brand/public-brand";
 import { loadPublishedCmsTextContent } from "@/lib/cms/public-content";
 import { loadRcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
+import { getRcOrderaIntegrationReadiness } from "@/integrations/rc-ordera/config";
 import { mapWithConcurrencyLimit } from "@/lib/admin/bounded-map";
 
 export const dynamic = "force-dynamic";
@@ -111,6 +112,9 @@ const labels: Record<LaunchGate["state"], string> = {
  */
 export default async function CeoOperationsPage() {
   const admin = await requireAdminIdentity();
+  // Only authenticated administrators may see environment variable NAMES.
+  // Values and credentials are never rendered or serialized.
+  const rcConfiguration = getRcOrderaIntegrationReadiness();
   const signals = await collectLaunchSignals();
   const gates = evaluateLaunchReadiness(signals);
   const readyCount = gates.filter((gate) => gate.state === "ready").length;
@@ -185,6 +189,30 @@ export default async function CeoOperationsPage() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section aria-labelledby="rc-configuration-title" className="mt-9 rounded-[2rem] border border-[#e4dccf] bg-white p-6 sm:p-8">
+          <h2 id="rc-configuration-title" className="font-serif text-2xl font-bold">
+            Conexión pública con RC ORDERA
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-[#62594f]">
+            {rcConfiguration.configured
+              ? "Las direcciones, claves públicas y el identificador del restaurante cumplen las validaciones locales. Esto no confirma que RC ORDERA acepte pedidos."
+              : "La configuración de RC ORDERA requiere revisión antes de lanzar la web. No se muestra ninguna contraseña ni clave."}
+          </p>
+          {rcConfiguration.missing.length > 0 ? (
+            <p className="mt-3 break-words text-sm text-rose-900">
+              Variables ausentes: {rcConfiguration.missing.join(", ")}.
+            </p>
+          ) : null}
+          {rcConfiguration.invalid.length > 0 ? (
+            <p className="mt-3 break-words text-sm text-rose-900">
+              Variables inválidas: {rcConfiguration.invalid.join(", ")}.
+            </p>
+          ) : null}
+          <p className="mt-3 text-xs leading-6 text-[#62594f]">
+            El estado operativo del catálogo y las pruebas reales de cocina, pago y entrega se comprueban por separado.
+          </p>
         </section>
 
         <section className="mt-9 grid gap-5 rounded-[2rem] border border-[#e4dccf] bg-white p-6 sm:grid-cols-2 sm:p-8">

@@ -50,6 +50,13 @@ export interface RcOrderaIntegrationReadiness {
 
   readonly missing:
     readonly RcOrderaEnvironmentRequirement[];
+
+  /**
+   * A configured-but-invalid setting is NOT a verified integration.
+   * Never include credential values in this diagnostic result.
+   */
+  readonly invalid:
+    readonly RcOrderaEnvironmentRequirement[];
 }
 
 
@@ -427,48 +434,50 @@ export function buildRcOrderaOrderUrl(
    READINESS
    ============================================================ */
 
+/**
+ * Report absent and malformed configuration separately. An HTTPS-looking
+ * string alone is not enough: the same strict validator used by the actual
+ * RC ORDERA transport must accept the supplied endpoint.
+ *
+ * This is a local environment check, not an external API call or proof of
+ * successful orders. It intentionally never exposes keys or credentials.
+ */
 export function getRcOrderaIntegrationReadiness():
   RcOrderaIntegrationReadiness {
-  const missing:
-    RcOrderaEnvironmentRequirement[] =
-    [];
+  const missing: RcOrderaEnvironmentRequirement[] = [];
+  const invalid: RcOrderaEnvironmentRequirement[] = [];
 
-  if (
-    !readEnvironmentVariable(
-      "RC_ORDERA_SUPABASE_URL",
-    )
-  ) {
-    missing.push(
-      "RC_ORDERA_SUPABASE_URL",
-    );
+  const rawUrl = readEnvironmentVariable("RC_ORDERA_SUPABASE_URL");
+  const anonKey = readEnvironmentVariable("RC_ORDERA_SUPABASE_ANON_KEY");
+  const configuredRestaurantId = readEnvironmentVariable("CZAPELSKA_LOCATION_ID");
+
+  if (!rawUrl) {
+    missing.push("RC_ORDERA_SUPABASE_URL");
+  } else if (!normalizeHttpOrigin(rawUrl)) {
+    invalid.push("RC_ORDERA_SUPABASE_URL");
   }
 
-  if (
-    !readEnvironmentVariable(
-      "RC_ORDERA_SUPABASE_ANON_KEY",
-    )
-  ) {
-    missing.push(
-      "RC_ORDERA_SUPABASE_ANON_KEY",
-    );
+  if (!anonKey) {
+    missing.push("RC_ORDERA_SUPABASE_ANON_KEY");
+  } else if (anonKey.length < 20) {
+    invalid.push("RC_ORDERA_SUPABASE_ANON_KEY");
   }
 
-  if (
-    !getRcOrderaRestaurantId(
-      "czapelska",
-    )
-  ) {
-    missing.push(
-      "CZAPELSKA_LOCATION_ID",
-    );
+  // Missing ID can use the known public Czapelska fallback. But an
+  // explicitly provided BAD ID must not be silently marked healthy.
+  if (!getRcOrderaRestaurantId("czapelska")) {
+    missing.push("CZAPELSKA_LOCATION_ID");
+  } else if (configuredRestaurantId && !UUID_PATTERN.test(configuredRestaurantId)) {
+    invalid.push("CZAPELSKA_LOCATION_ID");
   }
 
   return {
     configured:
-      missing.length ===
-      0,
-
+      missing.length === 0 &&
+      invalid.length === 0 &&
+      getRcOrderaServerConfig() !== null,
     missing,
+    invalid,
   };
 }
 
