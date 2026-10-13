@@ -253,6 +253,69 @@ async function checkOrderShortcut(locale) {
   }
 }
 
+/**
+ * These URLs are part of the published public route registry. Their full
+ * standalone pages are not implemented, so direct visitors must be sent
+ * to a real, local-language section, not a 404 or an empty promise.
+ * Legal/account/checkout URLs are deliberately excluded.
+ */
+const serviceShortcuts = {
+  pl: [
+    ["dostawa", "order"], ["uslugi", "services"], ["catering", "services"],
+    ["urodziny", "services"], ["dla-firm", "services"], ["dla-rodzin", "services"],
+    ["sniadania", "services"], ["sniadania-niespodzianki", "services"],
+    ["dekoracje-stolow", "services"], ["wydarzenia", "events"],
+    ["lokale", "locations"], ["rezerwacje", "contact"], ["o-nas", "stories"],
+    ["opinie", "reviews"], ["kariera", "contact"],
+    ["spolecznosc", "community"], ["nagrody", "rewards"],
+  ],
+  es: [
+    ["domicilios", "order"], ["servicios", "services"], ["catering", "services"],
+    ["cumpleanos", "services"], ["empresas", "services"], ["familias", "services"],
+    ["desayunos", "services"], ["desayunos-sorpresa", "services"],
+    ["decoracion-de-mesas", "services"], ["eventos", "events"],
+    ["restaurantes", "locations"], ["reservas", "contact"], ["nosotros", "stories"],
+    ["opiniones", "reviews"], ["trabaja-con-nosotros", "contact"],
+    ["comunidad", "community"], ["recompensas", "rewards"],
+  ],
+  en: [
+    ["delivery", "order"], ["services", "services"], ["catering", "services"],
+    ["birthdays", "services"], ["corporate", "services"], ["families", "services"],
+    ["breakfasts", "services"], ["surprise-breakfasts", "services"],
+    ["table-decorations", "services"], ["events", "events"],
+    ["locations", "locations"], ["reservations", "contact"], ["about", "stories"],
+    ["reviews", "reviews"], ["careers", "contact"],
+    ["community", "community"], ["rewards", "rewards"],
+  ],
+};
+
+async function checkServiceShortcuts(locale) {
+  const home = await request(`/${locale}`);
+  const pageIds = new Set(
+    [...home.body.matchAll(/\\bid="([^"]+)"/g)].map((match) => match[1]),
+  );
+  for (const [segment, anchor] of serviceShortcuts[locale]) {
+    const path = `/${locale}/${segment}`;
+    try {
+      const response = await fetch(new URL(path, origin), {
+        redirect: "manual",
+        signal: AbortSignal.timeout(15000),
+      });
+      const target = new URL(response.headers.get("location") ?? "", origin);
+      report(
+        [302, 303, 307, 308].includes(response.status) &&
+        target.origin === new URL(origin).origin &&
+        target.pathname === `/${locale}` &&
+        target.hash === `#${anchor}` &&
+        pageIds.has(anchor),
+        `${path} lleva a la sección publicada #${anchor}, en ${locale}`,
+      );
+    } catch (error) {
+      report(false, `${path}: ${String(error)}`);
+    }
+  }
+}
+
 async function checkMenuPage(locale) {
   const path = `/${locale}/menu`;
 
@@ -321,6 +384,7 @@ async function main() {
     await checkMenuPage(locale);
     await checkContactAndLegal(locale);
     await checkOrderShortcut(locale);
+    await checkServiceShortcuts(locale);
   }
 
   await checkInfrastructure();
