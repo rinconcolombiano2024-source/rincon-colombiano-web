@@ -647,10 +647,12 @@ export default async function MenuPage({
       locale
     ];
 
-  const catalog =
-    await getRcOrderaPublicCatalog(
-      "czapelska",
-    );
+  // Use the same single official CMS logo already used by the homepage.
+  // Fetch catalog and brand concurrently; both are safely cached/read-only.
+  const [catalog, primaryBrandLogo] = await Promise.all([
+    getRcOrderaPublicCatalog("czapelska"),
+    getPrimaryBrandLogo(),
+  ]);
 
   const orderHref =
     buildRcOrderaOrderUrl(
@@ -760,30 +762,31 @@ export default async function MenuPage({
             href={
               homeHref
             }
+            aria-label="Rincón Colombiano"
             className="
               flex
-              items-center
+              items-center min-w-0
               gap-3
               font-black
               text-[#12100e]
             "
           >
-            <span
-              className="
-                grid
-                size-11
-                place-items-center
-                rounded-2xl
-                bg-[#f7c600]
-                text-sm
-                font-black
-              "
-              aria-hidden="true"
-            >
-              RC
-            </span>
+            {primaryBrandLogo ? (
+              <span
+                className="block h-12 w-16 shrink-0 bg-contain bg-left bg-no-repeat sm:h-14 sm:w-20"
+                style={{ backgroundImage: `url("${primaryBrandLogo.publicUrl}")` }}
+                aria-hidden="true"
+              />
+            ) : (
+              <span
+                className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#f7c600] text-sm font-black text-[#12100e]"
+                aria-hidden="true"
+              >
+                RC
+              </span>
+            )}
 
-            <span>
+            <span className="hidden min-[480px]:inline">
               Rincón Colombiano
             </span>
           </Link>
