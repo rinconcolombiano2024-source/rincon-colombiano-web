@@ -49,6 +49,12 @@ El propietario debe verificar en la URL preview, con dispositivos reales:
 - Aplicación Windows: instalar artefacto compilado en PC, probar WebView2, navegación, autenticación y el instalador sin claves o datos embebidos. El ejecutable actual carece de firma digital corporativa.
 - Google Search Console: verificar propiedad de dominio por DNS TXT **sin cambiar A/CNAME** y enviar `https://rinconcolombiano.pl/sitemap.xml` **después** de publicar el sitio nuevo.
 
+### Protección de enlaces históricos de SumUp
+
+Se comprobaron URLs reales de la tienda actual: `/produkty`, `/product/tamal-tolimense`, `/product/arepa-80gr`, `/produkt/chocolate-con-queso-1` y `/kategoria/entradas-przystawki`. El nuevo Next.js redirige el índice del catálogo de forma permanente (`308`) a `/pl/menu`. Las fichas individuales y categorías van al mismo menú de forma **temporal (`307`)**, ya que aún no hay una equivalencia confirmada 1:1 con los productos y los precios reales de RC ORDERA. Todos los flujos ejecutan pruebas HTTP en CI y en staging, sin crear pedidos.
+
+**No trasladar automáticamente** `/cart`, `/koszyk`, `/checkout`, pedidos pagados, cuentas ni sesiones de SumUp. Mantener SumUp y sus datos disponibles para operaciones/pedidos previos según la política comercial; esos enlaces requieren decisión del titular y un plan de continuidad. Para recuperar posicionamiento de cada producto, verificar identificadores de RC ORDERA y diseñar páginas de producto específicas antes de convertir redirecciones individuales en permanentes.
+
 ## 4. Publicación controlada y reversión
 
 - Respaldar la configuración DNS, confirmar acceso a SumUp/Vercel, TLS, roles, fotografías y métodos de pedido ANTES de cortar.
