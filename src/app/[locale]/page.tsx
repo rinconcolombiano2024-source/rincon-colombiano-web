@@ -670,7 +670,7 @@ const homeContent:
         },
         {
           title:
-            "Lechona",
+            "Lechona Tolimense",
 
           description:
             "Kolumbijska klasyka przygotowywana w stylu Rincón.",
@@ -1219,7 +1219,7 @@ const homeContent:
         },
         {
           title:
-            "Lechona",
+            "Lechona Tolimense",
 
           description:
             "Una preparación colombiana tradicional con el estilo de Rincón.",
@@ -1768,7 +1768,7 @@ const homeContent:
         },
         {
           title:
-            "Lechona",
+            "Lechona Tolimense",
 
           description:
             "A Colombian classic prepared in the Rincón style.",
