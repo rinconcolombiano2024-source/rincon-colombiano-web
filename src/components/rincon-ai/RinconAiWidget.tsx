@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -9,6 +11,10 @@ import type {
   AppLocale,
 } from "@/i18n/config";
 
+
+// Keep a predictable number of chat nodes in mobile browsers, regardless
+// of how often visitors ask questions. Messages stay entirely local.
+const MAX_VISIBLE_CHAT_MESSAGES = 40;
 
 interface RinconAiWidgetProps {
   readonly locale:
@@ -409,6 +415,37 @@ export function RinconAiWidget({
       "",
     );
 
+  const launcherRef =
+    useRef<HTMLButtonElement>(null);
+
+  const closeButtonRef =
+    useRef<HTMLButtonElement>(null);
+
+  // A nonmodal floating assistant must still support keyboard exit and
+  // deliberate focus management. Focus the close button rather than the
+  // textarea so phone keyboards do not unexpectedly cover page content.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    closeButtonRef.current?.focus();
+
+    function handleEscape(event: KeyboardEvent): void {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsOpen(false);
+        launcherRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
+
+
   const [
     messages,
     setMessages,
@@ -461,7 +498,7 @@ export function RinconAiWidget({
               }
             : {}),
         },
-      ],
+      ].slice(-MAX_VISIBLE_CHAT_MESSAGES),
     );
   }
 
@@ -497,7 +534,7 @@ export function RinconAiWidget({
           text:
             rawQuestion.trim(),
         },
-      ],
+      ].slice(-MAX_VISIBLE_CHAT_MESSAGES),
     );
 
     if (
@@ -696,6 +733,7 @@ export function RinconAiWidget({
         isOpen
           ? (
               <section
+                id="rincon-ai-panel"
                 role="dialog"
                 aria-label={copy.title}
                 className="
@@ -823,13 +861,12 @@ export function RinconAiWidget({
                   </div>
 
                   <button
+                    ref={closeButtonRef}
                     type="button"
-                    onClick={
-                      () =>
-                        setIsOpen(
-                          false,
-                        )
-                    }
+                    onClick={() => {
+                      setIsOpen(false);
+                      launcherRef.current?.focus();
+                    }}
                     className="
                       grid
                       size-9
@@ -891,6 +928,7 @@ export function RinconAiWidget({
                                     href={
                                       message.href
                                     }
+                                    onClick={() => setIsOpen(false)}
                                     className="
                                       mt-2
                                       inline-flex
@@ -938,6 +976,7 @@ export function RinconAiWidget({
                   >
                     <a
                       href="#menu"
+                      onClick={() => setIsOpen(false)}
                       className="
                         rounded-full
                         border
@@ -955,6 +994,7 @@ export function RinconAiWidget({
 
                     <a
                       href={orderHref}
+                      onClick={() => setIsOpen(false)}
                       className="
                         rounded-full
                         border
@@ -972,6 +1012,7 @@ export function RinconAiWidget({
 
                     <a
                       href={contactHref}
+                      onClick={() => setIsOpen(false)}
                       className="
                         rounded-full
                         border
@@ -989,6 +1030,7 @@ export function RinconAiWidget({
 
                     <a
                       href="#locations"
+                      onClick={() => setIsOpen(false)}
                       className="
                         rounded-full
                         border
@@ -1107,7 +1149,9 @@ export function RinconAiWidget({
       }
 
       <button
+        ref={launcherRef}
         type="button"
+        aria-controls="rincon-ai-panel"
         onClick={
           () =>
             setIsOpen(
