@@ -49,6 +49,9 @@ jobs:
       - name: Verify secure RC ORDERA server and public URL origins
         run: node --experimental-strip-types scripts/test-rc-ordera-origins.mjs
 
+      - name: Reject unsafe Web, SEO and Supabase public origins
+        run: node --experimental-strip-types scripts/test-public-origins.mjs
+
       - name: Protect RC ORDERA menu shape and product images
         run: node --experimental-strip-types scripts/check-rc-menu-editor.mjs
 

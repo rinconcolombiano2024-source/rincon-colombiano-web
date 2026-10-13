@@ -23,6 +23,8 @@
  */
 
 
+import { safePublicHttpOrigin } from "@/config/public-origin";
+
 /* ============================================================
    TYPES
    ============================================================ */
@@ -236,18 +238,11 @@ function normalizeUrl(
   value: string | undefined,
   fallback: string,
 ): string {
-  const candidate =
-    value?.trim() || fallback;
-
-  try {
-    const url = new URL(candidate);
-
-    return url
-      .toString()
-      .replace(/\/$/, "");
-  } catch {
-    return fallback.replace(/\/$/, "");
-  }
+  return safePublicHttpOrigin(
+    value,
+    fallback,
+    process.env.NODE_ENV !== "production",
+  );
 }
 
 
@@ -354,8 +349,11 @@ const siteUrl =
       "NEXT_PUBLIC_SITE_URL"
     ],
 
-    environment ===
-      "production"
+    // Next.js builds production and Vercel preview bundles with
+    // NODE_ENV=production even if NEXT_PUBLIC_APP_ENV was omitted.
+    // Never emit localhost links in a deployed browser.
+    process.env.NODE_ENV === "production" ||
+      environment === "production"
       ? PRODUCTION_SITE_URL
       : DEFAULT_SITE_URL,
   );

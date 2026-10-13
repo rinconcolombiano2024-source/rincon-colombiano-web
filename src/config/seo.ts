@@ -44,6 +44,7 @@ import type {
 import type {
   SupportedLocale,
 } from "@/config/site";
+import { safePublicHttpOrigin } from "@/config/public-origin";
 
 import {
   buildRoutePath,
@@ -80,25 +81,13 @@ export const SEO_DEFAULT_LOCALE:
  * https://rinconcolombiano.pl
  */
 
-function normalizeOrigin(
-  value:
-    string,
-): string {
-  return value
-    .trim()
-    .replace(
-      /\/+$/,
-      "",
-    );
-}
-
-
 export const SEO_ORIGIN =
-  normalizeOrigin(
+  safePublicHttpOrigin(
     process.env[
       "NEXT_PUBLIC_SITE_URL"
-    ] ??
-      SEO_PRODUCTION_ORIGIN,
+    ],
+    SEO_PRODUCTION_ORIGIN,
+    process.env.NODE_ENV !== "production",
   );
 
 
