@@ -482,7 +482,7 @@ export function RinconAiWidget({
             `assistant-${Date.now()}-${current.length}`,
 
           role:
-            "assistant",
+            "assistant" as const,
 
           text,
 
@@ -529,7 +529,7 @@ export function RinconAiWidget({
             `user-${Date.now()}-${current.length}`,
 
           role:
-            "user",
+            "user" as const,
 
           text:
             rawQuestion.trim(),
