@@ -24,9 +24,21 @@ internal static class Program
 
 internal sealed class AdminWindow : Form
 {
-    // Intentionally pinned to the official domain: no arbitrary remote URL
-    // can be configured to impersonate the CEO login form.
+    // Two build-time-only, immutable hosts. End users CANNOT supply an URL
+    // or change it by environment variables, command-line flags or links.
+    // Staging is an unmistakably separate executable and local browser profile
+    // so it can be tested BEFORE switching rinconcolombiano.pl from SumUp.
+#if RC_CEO_STAGING
+    private const string OfficialOrigin = "https://rincon-colombiano-web.vercel.app";
+    private const string AppMode = " [PRUEBAS · VERCEL]";
+    private const string ProfileDirectory = "CEODesktopStaging";
+    private const string WebsiteButtonLabel = "Vista previa ↗";
+#else
     private const string OfficialOrigin = "https://rinconcolombiano.pl";
+    private const string AppMode = "";
+    private const string ProfileDirectory = "CEODesktop";
+    private const string WebsiteButtonLabel = "Sitio comercial ↗";
+#endif
     private static readonly Uri AdminUrl = new(OfficialOrigin + "/admin");
 
     private static readonly Color Blue = Color.FromArgb(18, 61, 115);
@@ -76,7 +88,7 @@ internal sealed class AdminWindow : Form
 
     public AdminWindow()
     {
-        Text = "Rincón Colombiano | CEO y Administración";
+        Text = "Rincón Colombiano | CEO y Administración" + AppMode;
         MinimumSize = new Size(800, 600);
         Size = new Size(1280, 850);
         StartPosition = FormStartPosition.CenterScreen;
@@ -86,7 +98,7 @@ internal sealed class AdminWindow : Form
 
         var title = new Label
         {
-            Text = "🇨🇴 RINCÓN COLOMBIANO  |  CEO · ADMINISTRACIÓN",
+            Text = "🇨🇴 RINCÓN COLOMBIANO  |  CEO · ADMINISTRACIÓN" + AppMode,
             Dock = DockStyle.Fill,
             ForeColor = Color.White,
             Font = new Font("Segoe UI", 12F, FontStyle.Bold),
@@ -105,7 +117,7 @@ internal sealed class AdminWindow : Form
                 _ = ConnectAsync();
             }
         });
-        var website = Command("Sitio comercial ↗",
+        var website = Command(WebsiteButtonLabel,
             () => OpenExternal(new Uri(OfficialOrigin)));
 
         var toolbar = new TableLayoutPanel
@@ -341,9 +353,9 @@ internal sealed class AdminWindow : Form
                 _web.Visible = false;
                 _placeholder.Visible = true;
                 Report(
-                    "La nueva administración todavía no está publicada en rinconcolombiano.pl.\n\n" +
+                    "La administración de esta versión todavía no está disponible en " + AdminUrl.Host + ".\n\n" +
                     "La página antigua no permite iniciar Rincón Admin.\n" +
-                    "Cuando el despliegue oficial de Next.js termine, pulsa «Actualizar».\n\n" +
+                    "Cuando la versión correspondiente esté disponible y verificada, pulsa «Actualizar».\n\n" +
                     "No se han enviado credenciales ni se ha abierto otra página.",
                     error: true);
                 return;
@@ -353,7 +365,7 @@ internal sealed class AdminWindow : Form
             {
                 var profile = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "RinconColombiano", "CEODesktop", "WebView2");
+                    "RinconColombiano", ProfileDirectory, "WebView2");
 
                 var env = await CoreWebView2Environment.CreateAsync(
                     userDataFolder: profile);
