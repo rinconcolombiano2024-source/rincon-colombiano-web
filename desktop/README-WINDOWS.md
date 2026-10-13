@@ -28,6 +28,21 @@ seguir redirecciones el manifiesto real de /admin antes de mostrar el login.
 Si el alias de Vercel está desactualizado, bloqueado o sin manifiesto, la
 aplicación de pruebas NO abre un login alternativo.
 
+CONTROL ADICIONAL DE VERSIÓN EN PRUEBAS
+La aplicación CEO STAGING de GitHub incluye el SHA exacto del commit con el
+que se compiló. Antes de abrir /admin valida por HTTPS el manifiesto y el
+endpoint público /release.json del mismo dominio Vercel. Exige:
+- project = rincon-colombiano-web;
+- revision = el SHA de 40 caracteres integrado en el ejecutable;
+- respuesta JSON correcta, sin redirecciones.
+Si el último commit todavía no ha sido desplegado en Vercel, si la cuota de
+despliegues está bloqueada o si la revisión es distinta, el ejecutable de
+pruebas NO abrirá el login administrativo. El mensaje pide verificar el
+despliegue y pulsar «Actualizar». Nunca cambiar el dominio oficial para
+eludir este control. El código de producción conserva su conexión original.
+
+
+
 IMPORTANTE: los perfiles WebView2 son distintos, por lo que no comparten
 cookies ni sesiones entre producción y pruebas. Antes de ensayar cambios
 en productos, precios, usuarios o pagos, confirmar que el despliegue de
