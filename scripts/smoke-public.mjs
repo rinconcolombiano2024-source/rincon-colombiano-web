@@ -49,6 +49,16 @@ const legalFooterLabels = {
   es: "Información legal",
   en: "Legal",
 };
+const futureLocationStatus = {
+  pl: "Wkrótce",
+  es: "Próximamente",
+  en: "Coming soon",
+};
+const customerContactCopy = {
+  pl: "Masz pytanie o menu, zamówienie, catering lub współpracę?",
+  es: "Estamos aquí para ayudarte con tus pedidos",
+  en: "Questions about our menu, orders, catering or working together?",
+};
 
 const smallCommercialLabels = {
   pl: ["Społeczność", "Nasza historia", "Praca", "Informacje", "Warszawa"],
@@ -171,6 +181,18 @@ async function checkPage(locale) {
     report(
       html.includes(legalFooterLabels[locale]),
       `${path} incluye navegación legal localizada`
+    );
+
+    const footer = html.match(/<footer\b[^>]*>[\s\S]*?<\/footer>/i)?.[0] ?? "";
+    // Strip SSR React comments/HTML tags before inspecting real user text.
+    const footerText = footer.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+    report(
+      footerText.includes(`Brzeska 10 · ${futureLocationStatus[locale]}`),
+      `${path} marks unopened Brzeska 10 as coming soon in the footer`,
+    );
+    report(
+      html.includes(customerContactCopy[locale]),
+      `${path} presents natural contact copy for actual customers`,
     );
 
     report(

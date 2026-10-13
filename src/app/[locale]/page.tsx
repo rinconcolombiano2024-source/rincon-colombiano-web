@@ -824,10 +824,10 @@ const homeContent:
         "Celebracje i biznes",
 
       title:
-        "Powiedz nam, co planujesz. Rincón zajmie się doświadczeniem.",
+        "Zaplanuj wyjątkowy dzień z kolumbijskim smakiem.",
 
       description:
-        "Jedno miejsce do zapytań dotyczących cateringu, firm, rodzin, urodzin, śniadań, niespodzianek, dekoracji i wydarzeń.",
+        "Planujesz urodziny, rodzinne spotkanie lub wydarzenie firmowe? Napisz do nas i poznaj możliwości cateringu Rincón Colombiano.",
 
       categories: [
         "Catering",
@@ -869,7 +869,7 @@ const homeContent:
         "Social",
 
       title:
-        "Internet prowadzi do Rincón. Rincón prowadzi dalej.",
+        "Bądź bliżej kolumbijskich smaków.",
 
       description:
         "Odkryj nowe dania, wydarzenia i wiadomości z restauracji na naszych profilach społecznościowych.",
@@ -951,7 +951,7 @@ const homeContent:
         "Masz pomysł, pytanie lub wydarzenie? Porozmawiajmy.",
 
       description:
-        "Kontakt, sugestie, współpraca, catering i sprawy klientów będą kierowane do odpowiedniego procesu zamiast trafiać do jednego chaotycznego formularza.",
+        "Masz pytanie o menu, zamówienie, catering lub współpracę? Skontaktuj się z nami — chętnie pomożemy.",
 
       contactAction:
         "Skontaktuj się",
@@ -1922,10 +1922,10 @@ const homeContent:
         "Celebrations and business",
 
       title:
-        "Tell us what you are planning. Rincón builds the experience.",
+        "Make your next celebration taste of Colombia.",
 
       description:
-        "One central point for catering, businesses, families, birthdays, breakfasts, surprises, decoration and events.",
+        "Planning a birthday, family gathering or corporate event in Warsaw? Get in touch to discuss Colombian catering from Rincón Colombiano.",
 
       categories: [
         "Catering",
@@ -1967,7 +1967,7 @@ const homeContent:
         "Social",
 
       title:
-        "The internet leads to Rincón. Rincón takes the relationship further.",
+        "Follow the flavours of Colombia.",
 
       description:
         "Follow us for Colombian dishes, events, special offers and a little taste of home.",
@@ -2049,7 +2049,7 @@ const homeContent:
         "Have an idea, question or event? Talk to us.",
 
       description:
-        "Customer care, suggestions, collaboration, catering and business inquiries will follow clear processes rather than one generic inbox.",
+        "Questions about our menu, orders, catering or working together? Get in touch — we're happy to help.",
 
       contactAction:
         "Contact us",
@@ -5894,7 +5894,7 @@ export default async function HomePage({
                   text-white/70
                 "
               >
-                Brzeska 10
+                Brzeska 10 · {copy.locations.comingSoon}
               </span>
             </div>
           </div>
