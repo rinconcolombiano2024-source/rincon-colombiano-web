@@ -10,6 +10,27 @@
 
 ## 2. Preparar preview en Vercel (SIN cortar dominio)
 
+### Qué corregimos en el release gate (13 octubre de 2026)
+
+La aplicación ya protegía las previews: `robots.txt` declaraba `Disallow: /` y sus páginas enviaban `noindex`.
+Sin embargo, el antiguo workflow `Verify Vercel Staging` exigía equivocadamente los valores de SEO de **producción**, por lo que una preview correcta fallaba la validación.
+
+Ahora `scripts/smoke-public.mjs` y `scripts/smoke-navigation.mjs` aceptan `--preview`: verifican que todos los enlaces locales sean válidos y que la preview esté protegida contra indexación. **El Quality Gate comprueba los dos modos mediante compilaciones reales diferentes**. No se relaja la política de indexación del sitio publicado.
+
+### Despliegue provisional desde GitHub Actions (opcional, autorizado)
+
+Hay un workflow manual adicional: [Deploy Rincón Web Vercel Preview (manual)](../.github/workflows/vercel-preview-deploy.yml).
+Reutiliza el mismo repositorio y proyecto Vercel; no genera una web paralela.
+
+1. El administrador de GitHub configura en **Settings → Secrets and variables → Actions** las credenciales `VERCEL_TOKEN`, `VERCEL_ORG_ID` y `VERCEL_PROJECT_ID`. No copiarlas en tickets, mensajes, workflows ni código.
+2. En GitHub Actions lanzar **Deploy Rincón Web Vercel Preview (manual)** **sobre `main`**. El workflow se detiene si faltan secretos. Utiliza `vercel pull --environment=preview`, `vercel build` y `vercel deploy --prebuilt` — sin `--prod`, sin promover dominios ni tocar DNS.
+3. El mismo workflow valida la URL resultante mediante un allowlist estricto `*.vercel.app`, verifica acceso anónimo, PWA, tres idiomas, SEO `noindex` de preview, sitemap, vínculos y secciones públicas.
+4. Si el proyecto Vercel está limitado por cuota, devuelve error: **`--prebuilt` no evita necesariamente el límite de despliegues**. Resolver la cuota con Vercel antes de insistir.
+5. No se aceptan pruebas como válidas si el preview responde 401/403, aunque exista Deployment Protection. Se debe habilitar un mecanismo de aceptación autenticado y seguro antes de promover.
+6. El workflow no prueba pedidos reales, permisos editor con sesión, móvil físico ni Windows, y jamás asigna `rinconcolombiano.pl`. El corte a producción requiere aprobación y rollback por separado.
+
+### Preparación del entorno
+
 1. Conectar a Vercel el repositorio GitHub `rinconcolombiano2024-source/rincon-colombiano-web` y utilizar el framework Next.js, sin desplazar el proyecto RC ORDERA independiente.
 2. Configurar variables **en Vercel**, nunca en GitHub ni en una conversación. Leer `.env.example`: `NEXT_PUBLIC_SITE_URL=https://rinconcolombiano.pl`, `NEXT_PUBLIC_APP_ENV=preview`, el endpoint/clave **pública** de Supabase web, `SUPABASE_SERVICE_ROLE_KEY` solo en servidor, `RC_ORDERA_SUPABASE_URL`, `RC_ORDERA_SUPABASE_ANON_KEY`, y `RC_ORDERA_PUBLIC_APP_URL`. Comprobar si otras funciones habilitadas necesitan variables adicionales. Las variables públicas no deben contener claves privilegiadas.
 3. Configurar los roles reales de administración en `web_private.admin_members` y sus políticas RPC. La variable obsoleta `ADMIN_ALLOWED_EMAILS` **no otorga permisos**.

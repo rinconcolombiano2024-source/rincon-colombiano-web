@@ -1,0 +1,93 @@
+name: Deploy Rincón Web Vercel Preview (manual)
+
+# Never overwrite SumUp, RC ORDERA or the real commercial domain.
+# Deploys a detached, non-indexable Vercel Preview for CEO acceptance.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rincon-web-vercel-preview
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    name: Build and test independent preview (no DNS changes)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      NEXT_PUBLIC_SITE_URL: https://rinconcolombiano.pl
+      VERCEL_ENV: preview
+
+    steps:
+      - name: Checkout exactly main commit
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Fail closed if Vercel connection is not configured
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${VERCEL_TOKEN:-}" || -z "${VERCEL_ORG_ID:-}" || -z "${VERCEL_PROJECT_ID:-}" ]]; then
+            echo "::error::Configure VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID as GitHub Actions secrets; never paste credentials in issues or chat."
+            exit 1
+          fi
+
+      - name: Install locked dependencies and Vercel CLI
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --global vercel@latest
+
+      - name: Pull authorized Vercel PREVIEW environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          vercel pull --yes --environment=preview --token "$VERCEL_TOKEN"
+
+      - name: Build and deploy PREVIEW only
+        id: staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          vercel build --token "$VERCEL_TOKEN"
+          preview_url="$(vercel deploy --prebuilt --archive=tgz --token "$VERCEL_TOKEN")"
+          # Validate before ever writing the URL to GitHub outputs.
+          PREVIEW_URL="$preview_url" node scripts/validate-vercel-preview.mjs
+
+      - name: Check deployed PWA and private admin protection
+        env:
+          SITE_ORIGIN: ${{ steps.staging.outputs.url }}
+        run: node scripts/smoke-admin-pwa.mjs "$SITE_ORIGIN"
+
+      - name: Check real PL ES EN pages and preview robots
+        env:
+          SITE_ORIGIN: ${{ steps.staging.outputs.url }}
+        run: node scripts/smoke-public.mjs "$SITE_ORIGIN" --preview
+
+      - name: Crawl preview navigation, canonical URLs and noindex
+        env:
+          SITE_ORIGIN: ${{ steps.staging.outputs.url }}
+        run: node scripts/smoke-navigation.mjs "$SITE_ORIGIN" --preview
+
+      - name: Record isolated preview URL for CEO approval
+        env:
+          SITE_ORIGIN: ${{ steps.staging.outputs.url }}
+        shell: bash
+        run: |
+          echo "### Rincón Colombiano Web — candidate preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Preview: $SITE_ORIGIN" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "No domain, DNS, real orders, payment or release promotion was changed." >> "$GITHUB_STEP_SUMMARY"
+          echo "Approval still requires owner/admin login E2E, mobile review and explicit production launch authorization." >> "$GITHUB_STEP_SUMMARY"
