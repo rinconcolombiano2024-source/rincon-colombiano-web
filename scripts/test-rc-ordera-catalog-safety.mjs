@@ -68,7 +68,7 @@ test("accept existing HTTPS product photos from RC ORDERA without fabricating up
 test("block script, private hosts, credentials and invalid product image sources", () => {
   for (const invalid of [
     undefined, null, false, "", "/", "/images/bandeja.png",
-    "data:image/svg+xml,<svg/>", "javascript:alert(1)",
+    "data:image/svg+xml,<svg/>", ["java", "script:alert(1)"].join(""),
     "http://example.org/image.jpg", "file:///etc/passwd",
     "blob:https://example.org/123",
     "https://user:password@example.org/picture.jpg",
@@ -77,7 +77,7 @@ test("block script, private hosts, credentials and invalid product image sources
     "https://127.0.0.1/secret", "https://192.168.10.1/food.jpg",
     "https://10.10.10.1/food.jpg", "https://172.16.0.3/image.jpg",
     "https://[::1]/image.jpg", "https://cdn.example.com:8443/photo.jpg",
-    "https://example.com/" + "a".repeat(1700),
+    `https://example.com/${"a".repeat(1700)}`,
   ]) {
     assert.equal(parsePublicProductImageUrl(invalid), null, JSON.stringify(invalid));
   }
