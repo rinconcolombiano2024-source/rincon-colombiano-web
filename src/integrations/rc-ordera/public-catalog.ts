@@ -50,6 +50,7 @@ import {
 import {
   parsePublicMenuPrice,
   parsePublicMenuAvailability,
+  parsePublicProductImageUrl,
 } from "@/integrations/rc-ordera/public-product-safety";
 
 
@@ -472,19 +473,12 @@ function normalizeProduct(
       "details",
     );
 
+  // Keep photos from the real RC ORDERA catalog only. Unsafe/invalid
+  // links never reach customers' browsers; do not fabricate a placeholder.
   const imageUrl =
-    readString(
-      value,
-      "imageUrl",
-    ) ??
-    readString(
-      value,
-      "image",
-    ) ??
-    readString(
-      value,
-      "photo",
-    );
+    parsePublicProductImageUrl(readString(value, "imageUrl")) ??
+    parsePublicProductImageUrl(readString(value, "image")) ??
+    parsePublicProductImageUrl(readString(value, "photo"));
 
   const available = parsePublicMenuAvailability(
     readValue(value, "available"),

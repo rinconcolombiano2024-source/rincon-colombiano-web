@@ -2,6 +2,7 @@ import type {
   Metadata,
 } from "next";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -1325,6 +1326,20 @@ export default async function MenuPage({
                                           p-5
                                         "
                                       >
+                                        {product.imageUrl ? (
+                                          <div className="relative mb-5 aspect-[3/2] w-full overflow-hidden rounded-xl bg-[#e7e1d7]">
+                                            <Image
+                                              src={product.imageUrl}
+                                              alt={product.name}
+                                              width={640}
+                                              height={426}
+                                              sizes="(max-width: 767px) 100vw, 50vw"
+                                              loading="lazy"
+                                              unoptimized
+                                              className="h-full w-full object-cover"
+                                            />
+                                          </div>
+                                        ) : null}
                                         <div>
                                           <div
                                             className="
