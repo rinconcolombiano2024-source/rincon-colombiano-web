@@ -1,3 +1,5 @@
+import { parsePublicHttpOrigin } from "@/config/public-origin";
+
 export interface SupabasePublicConfig {
   readonly url:
     string;
@@ -33,36 +35,15 @@ function readEnvironmentVariable(
 }
 
 
-function isValidSupabaseUrl(
-  value:
-    string,
-): boolean {
-  try {
-    const url =
-      new URL(
-        value,
-      );
-
-    if (
-      url.protocol ===
-      "https:"
-    ) {
-      return true;
-    }
-
-    return (
-      url.protocol ===
-        "http:" &&
-      (
-        url.hostname ===
-          "localhost" ||
-        url.hostname ===
-          "127.0.0.1"
-      )
-    );
-  } catch {
-    return false;
-  }
+/**
+ * A malformed backend base URL must never receive the public API key.
+ * Production always enforces HTTPS; loopback HTTP is local-only.
+ */
+function normalizeSupabaseOrigin(value: string): string | null {
+  return parsePublicHttpOrigin(
+    value,
+    process.env.NODE_ENV !== "production",
+  );
 }
 
 
@@ -87,18 +68,15 @@ export function getSupabasePublicConfig():
     publishableKey ??
     legacyAnonKey;
 
-  if (
-    !url ||
-    !key ||
-    !isValidSupabaseUrl(
-      url,
-    )
-  ) {
+  const safeUrl =
+    url ? normalizeSupabaseOrigin(url) : null;
+
+  if (!safeUrl || !key) {
     return null;
   }
 
   return {
-    url,
+    url: safeUrl,
     key,
   };
 }
