@@ -38,6 +38,68 @@ metadatos ni JSON-LD:** ajiaco, mondongo, cocido boyacense, cabro
 santandereano, pepitoria, carimañolas, obleas, cholado y demás platos
 de la lista general que no estén confirmados actualmente en el menú.
 
+## Investigación pública de intención de búsqueda (13/10/2026)
+
+Fuentes consultadas: la web pública actual de Rincón Colombiano, listados
+verificables de menús en Wolt, Pyszne y Uber Eats y la reseña editorial de
+Warsaw Foodie (29/08/2025). Los textos mencionan el restaurante de Czapelska
+33 y especialidades como bandeja paisa, arepas, empanadas, sancocho y lechona.
+
+**Límite importante:** los resultados públicos prueban pertinencia temática,
+NO el volumen de búsquedas, conversiones, posición real ni qué preguntan en
+privado las personas a ChatGPT. Las preguntas de esta tabla son **hipótesis
+editoriales útiles**, no consultas extraídas de Search Console.
+
+| Intención y prioridad | Polaco (mercado principal) | Español | Inglés | Destino real |
+| --- | --- | --- | --- | --- |
+| Restaurante y ciudad · alta | gdzie zjeść kolumbijskie jedzenie w Warszawie; restauracja kolumbijska Warszawa | dónde comer comida colombiana en Varsovia | where to eat Colombian food in Warsaw | /pl, /es, /en |
+| Barrio y visita · alta | kuchnia kolumbijska Praga-Południe; Rondo Wiatraczna restauracja kolumbijska | restaurante colombiano cerca de Rondo Wiatraczna | Colombian restaurant Praga-Południe | portada y ficha Czapelska |
+| Platos típicos · alta | tradycyjne kolumbijskie dania; bandeja paisa Warszawa | comida típica colombiana, bandeja paisa en Varsovia | traditional Colombian dishes Warsaw | /pl/menu, /es/menu, /en/menu |
+| Tamales y lechona · alta | tamales kolumbijskie Warszawa; lechona kolumbijska | tamales y lechona colombiana en Varsovia | Colombian tamales and lechona Warsaw | menú real |
+| Antojitos · media | kolumbijskie empanadas; arepas Warszawa; buñuelos | dónde comprar empanadas y arepas | Colombian empanadas and arepas Warsaw | menú real |
+| Sopas · media | sancocho kolumbijskie Warszawa | sancocho colombiano en Varsovia | Colombian sancocho Warsaw | menú real |
+| Para llevar / entrega · alta | jedzenie kolumbijskie na wynos; zamów kolumbijskie jedzenie | comida colombiana para llevar / domicilio | Colombian food takeaway / delivery | enlace a RC ORDERA |
+| Catering · alta | catering kolumbijski Warszawa; catering na urodziny | catering colombiano para eventos en Varsovia | Colombian catering Warsaw | sección de catering/contacto |
+| Familias y eventos · media | kolumbijskie jedzenie na imprezy firmowe | comida colombiana para cumpleaños | Colombian food for birthdays and parties | sección de eventos/contacto |
+| Horarios y ubicación · alta | Czapelska 33 godziny otwarcia; restauracja przy Rondzie Wiatraczna | horario Rincón Colombiano Varsovia | Rincón Colombiano Warsaw opening hours | sede Czapelska |
+
+### Aplicación segura en el sitio
+
+- La portada ya muestra preguntas y respuestas **reales, visibles, traducidas**
+  sobre dirección, platos colombianos, tamales/lechona y pedidos para llevar.
+  No se crean páginas de miles de variantes para los mismos términos.
+- El menú y los precios continúan gobernados por RC ORDERA, incluso si Google
+  muestra un resultado de terceros con otro importe.
+- No generar automáticamente páginas para platos no existentes, restaurantes
+  de barrios no operados, ni prometer envíos nacionales sin validación logística.
+- Mantener Google Business Profile y las menciones externas correctas para
+  **Czapelska 33, Warszawa**; Brzeska 10 sigue como próxima apertura.
+- No añadir metatags `keywords`, reseñas inventadas, FAQ rich results no
+  elegibles, contenido oculto para robots ni etiquetas que prometan ser n.º 1.
+- Una vez la web Next.js esté realmente en producción, comprobar los fragmentos
+  renderizados, hreflang, canonicals y `sitemap.xml` contra el dominio correcto.
+
+### Medición del posicionamiento real después del lanzamiento
+
+Conectar la propiedad de dominio en **Google Search Console**, y cada semana
+revisar: consultas por página/idioma, impresiones, clics, CTR, posición media,
+indexación y resultados móviles. Priorizar correcciones de consultas relevantes
+con impresiones y bajo CTR. Comparar rendimiento antes/después sin inferir
+posición a partir de un simple build verde. El posicionamiento de Maps depende
+de relevancia, distancia y notoriedad; nadie puede garantizar el primer puesto
+para toda búsqueda.
+
+Fuentes de investigación:
+
+- https://warsawfoodie.pl/2025/08/rincon-colombiano/
+- https://www.pyszne.pl/menu/rincon-colombiano
+- https://wolt.com/pl/pol/warsaw/restaurant/rincon-colombiano
+- https://developers.google.com/search/docs/essentials/spam-policies
+- https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+- https://developers.google.com/search/docs/appearance/structured-data/local-business
+- https://support.google.com/business/answer/7091
+- https://support.google.com/webmasters/answer/7576553
+
 ## Estrategia técnica implementada
 
 - Páginas /pl, /es y /en con título y descripción originales.

@@ -907,6 +907,34 @@ const homeContent:
       items: [
         {
           question:
+            "Gdzie zjeść kolumbijskie jedzenie w Warszawie?",
+
+          answer:
+            "Rincón Colombiano zaprasza na Czapelską 33 na Pradze-Południe, niedaleko Ronda Wiatraczna. Na miejscu spróbujesz smaków tradycyjnej kuchni kolumbijskiej.",
+        },
+        {
+          question:
+            "Jakie tradycyjne kolumbijskie dania znajdę w menu?",
+
+          answer:
+            "Sprawdź nasze menu z bandeja paisa, arepas, empanadas, lechoną i innymi daniami kuchni kolumbijskiej. Aktualne ceny i dostępność potwierdzisz w menu podczas zamawiania.",
+        },
+        {
+          question:
+            "Gdzie w Warszawie zamówię tamales i lechonę kolumbijską?",
+
+          answer:
+            "Zajrzyj do menu Rincón Colombiano i sprawdź dostępność tamal tolimense oraz lechony. Przed większym zamówieniem skontaktuj się z restauracją, aby ustalić szczegóły.",
+        },
+        {
+          question:
+            "Czy można zamówić kolumbijskie jedzenie na wynos?",
+
+          answer:
+            "Tak. Otwórz zamówienia online i sprawdź możliwość odbioru przy Czapelskiej 33 lub dostawy pod wybrany adres.",
+        },
+        {
+          question:
             "Czy mogę zamówić online?",
 
           answer:
@@ -1454,6 +1482,34 @@ const homeContent:
         "Lo que nuestros clientes necesitan saber.",
 
       items: [
+        {
+          question:
+            "¿Dónde comer comida colombiana en Varsovia?",
+
+          answer:
+            "Visítanos en Rincón Colombiano, Czapelska 33, en Praga-Południe, cerca de Rondo Wiatraczna. Compartimos los sabores tradicionales de Colombia en Varsovia.",
+        },
+        {
+          question:
+            "¿Qué platos típicos colombianos encuentro en el menú?",
+
+          answer:
+            "Consulta nuestra carta de bandeja paisa, arepas, empanadas, lechona y otras especialidades colombianas. Los precios y la disponibilidad se confirman en el menú al pedir.",
+        },
+        {
+          question:
+            "¿Dónde comprar tamales y lechona colombiana en Varsovia?",
+
+          answer:
+            "Consulta nuestro menú para comprobar la disponibilidad del tamal tolimense y la lechona. Si necesitas un pedido grande, contáctanos para confirmar los detalles.",
+        },
+        {
+          question:
+            "¿Puedo pedir comida colombiana para llevar?",
+
+          answer:
+            "Sí. Entra en pedidos online y revisa las opciones disponibles para recoger en Czapelska 33 o recibir a domicilio.",
+        },
         {
           question:
             "¿Puedo pedir online?",
@@ -2005,6 +2061,34 @@ const homeContent:
       items: [
         {
           question:
+            "Where can I eat Colombian food in Warsaw?",
+
+          answer:
+            "Visit Rincón Colombiano at Czapelska 33 in Praga-Południe, near Rondo Wiatraczna. Discover traditional Colombian flavours in Warsaw.",
+        },
+        {
+          question:
+            "What traditional Colombian dishes are on the menu?",
+
+          answer:
+            "Explore bandeja paisa, arepas, empanadas, lechona and other Colombian specialities on our menu. Check current prices and availability when ordering.",
+        },
+        {
+          question:
+            "Where can I order Colombian tamales and lechona in Warsaw?",
+
+          answer:
+            "Check our menu for the current availability of tamal tolimense and lechona. Please contact the restaurant to discuss larger orders.",
+        },
+        {
+          question:
+            "Can I order Colombian food for takeaway?",
+
+          answer:
+            "Yes. Open online ordering to check available collection at Czapelska 33 or delivery options for your address.",
+        },
+        {
+          question:
             "Can I order online?",
 
           answer:
@@ -2029,7 +2113,7 @@ const homeContent:
             "How will rewards work?",
 
           answer:
-            "Rewards will be based on validated purchases and referrals with configurable program rules.",
+            "The rewards programme is still being prepared. Points and referral prizes are not available yet.",
         },
         {
           question:

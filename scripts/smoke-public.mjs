@@ -60,6 +60,29 @@ const customerContactCopy = {
   en: "Questions about our menu, orders, catering or working together?",
 };
 
+// Natural restaurant-search questions must be visible in each locale's SSR
+// HTML, rather than hidden keyword inventories or bot-only markup.
+const searchIntentFaqQuestions = {
+  pl: [
+    "Gdzie zjeść kolumbijskie jedzenie w Warszawie?",
+    "Jakie tradycyjne kolumbijskie dania znajdę w menu?",
+    "Gdzie w Warszawie zamówię tamales i lechonę kolumbijską?",
+    "Czy można zamówić kolumbijskie jedzenie na wynos?",
+  ],
+  es: [
+    "¿Dónde comer comida colombiana en Varsovia?",
+    "¿Qué platos típicos colombianos encuentro en el menú?",
+    "¿Dónde comprar tamales y lechona colombiana en Varsovia?",
+    "¿Puedo pedir comida colombiana para llevar?",
+  ],
+  en: [
+    "Where can I eat Colombian food in Warsaw?",
+    "What traditional Colombian dishes are on the menu?",
+    "Where can I order Colombian tamales and lechona in Warsaw?",
+    "Can I order Colombian food for takeaway?",
+  ],
+};
+
 const smallCommercialLabels = {
   pl: ["Społeczność", "Nasza historia", "Praca", "Informacje", "Warszawa"],
   es: ["Comunidad", "Nuestra historia", "Trabaja con nosotros", "Información", "Varsovia"],
@@ -194,6 +217,13 @@ async function checkPage(locale) {
       html.includes(customerContactCopy[locale]),
       `${path} presents natural contact copy for actual customers`,
     );
+
+    for (const question of searchIntentFaqQuestions[locale]) {
+      report(
+        html.includes(question),
+        `${path} renders visible, localized restaurant-search answer: ${question}`,
+      );
+    }
 
     report(
       !html.includes("La web de Rincón Colombiano será el centro de contacto") &&
