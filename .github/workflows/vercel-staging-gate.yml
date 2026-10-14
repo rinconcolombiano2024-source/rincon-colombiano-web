@@ -40,6 +40,11 @@ jobs:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
         run: node scripts/smoke-deployment-revision.mjs "$SITE_ORIGIN" "$GITHUB_SHA"
 
+      - name: Validate real PL ES EN guest journeys and admin route protection
+        env:
+          SITE_ORIGIN: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-live-guest-journey.mjs "$SITE_ORIGIN"
+
       - name: Check deployed admin PWA and private route redirects
         env:
           SITE_ORIGIN: ${{ steps.target.outputs.url }}
