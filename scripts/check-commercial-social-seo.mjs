@@ -25,6 +25,21 @@ test("public menu never exposes internal catalog/connection technology copy", ()
   assert.match(menu, /buildRcOrderaOrderUrl/);
 });
 
+test("structured menu offers preserve genuine explicit zero prices without inventing free items", () => {
+  const schema = read("src/config/seo-menu.ts");
+  const catalog = read("src/integrations/rc-ordera/public-catalog.ts");
+  const validation = read("src/integrations/rc-ordera/public-product-safety.ts");
+  assert.match(schema, /product\.price\s*>=\s*0/,
+    "Real explicitly free menu entries must not vanish from JSON-LD");
+  assert.doesNotMatch(schema, /product\.price\s*>\s*0/,
+    "Do not contradict genuine zero-PLN offers shown in the public menu");
+  assert.match(schema, /product\.available/);
+  assert.match(schema, /priceCurrency:\s*"PLN"/);
+  assert.match(catalog, /parsePublicMenuPrice\(/);
+  assert.match(validation, /if \(!Number\.isFinite\(numberValue\)/,
+    "Only normalized valid source prices can reach the public menu and SEO");
+});
+
 test("home speaks as a Colombian restaurant in all three languages", () => {
   for (const text of [
     "Kolumbijskie smaki • Warszawa",
