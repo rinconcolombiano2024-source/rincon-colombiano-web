@@ -5,6 +5,7 @@ import {
   parsePublicMenuPrice,
   parsePublicMenuAvailability,
   parsePublicProductImageUrl,
+  normalizePublicPlnSymbol,
 } from "../src/integrations/rc-ordera/public-product-safety.ts";
 
 test("accept exactly priced RC ORDERA products, including explicit free items", () => {
@@ -47,6 +48,23 @@ test("real public catalog uses validated offer data, not invented defaults", () 
   assert.match(catalog, /Object\.hasOwn\(value, "available"\)/);
   assert.doesNotMatch(catalog, /available\s*:\s*available\s*!==\s*false/);
   assert.doesNotMatch(catalog, /readNumber\(\s*value,\s*"price",?\s*\)\s*\?\?\s*0/);
+});
+
+test("Warsaw menu cannot display currency labels that contradict PLN offer metadata", () => {
+  for (const [raw, expected] of [
+    [undefined, "zł"], [null, "zł"], ["", "zł"], [" zł ", "zł"],
+    ["ZŁ", "zł"], ["zl", "zł"], ["PLN", "PLN"], [" pln ", "PLN"],
+    ["EUR", "zł"], ["€", "zł"], ["USD", "zł"],
+    ["<script>alert(1)</script>", "zł"], ["\nUSD\n", "zł"],
+    [123, "zł"], [{ value: "EUR" }, "zł"],
+  ]) {
+    assert.equal(normalizePublicPlnSymbol(raw), expected);
+  }
+  const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
+  assert.match(catalog, /normalizePublicPlnSymbol\(/,
+    "RC ORDERA read-only settings must use the PLN-safe currency display");
+  assert.doesNotMatch(catalog, /currencySymbol:\s*readString\(/,
+    "Raw arbitrary catalog labels must never appear beside prices");
 });
 
 test("accept existing HTTPS product photos from RC ORDERA without fabricating uploads", () => {
