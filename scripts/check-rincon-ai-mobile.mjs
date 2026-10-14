@@ -79,7 +79,7 @@ test("unavailable loyalty rewards never impersonate a team contact button", () =
   for (const message of [
     "El programa de puntos y recompensas todavía no está activo.",
     "Program punktów i nagród nie jest jeszcze aktywny.",
-    "The points and rewards program is not active yet.",
+    "Our points and rewards programme isn't active yet.",
   ]) {
     assert.ok(source.includes(message),
       "All three locales must explicitly disclose that rewards are inactive");
