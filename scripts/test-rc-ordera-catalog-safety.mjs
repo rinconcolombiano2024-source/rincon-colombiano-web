@@ -104,6 +104,16 @@ test("block script, private hosts, credentials and invalid product image sources
   }
 });
 
+test("RC ORDERA public reads never follow redirects with API headers", () => {
+  const source = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
+  assert.match(source, /redirect:\s*"error"/,
+    "Upstream 30x must fail closed instead of forwarding the public API key");
+  assert.match(source, /\.\.\.buildPublicHeaders\(/,
+    "Ensure the redirect check protects the existing authenticated API requests");
+  assert.match(source, /catch\s*\{[\s\S]*?status:\s*0/,
+    "The public catalog must fail gracefully on a blocked upstream redirect");
+});
+
 test("the real public menu shows only validated RC ORDERA product photos", () => {
   const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
   const menu = readFileSync("src/app/[locale]/menu/page.tsx", "utf8");
