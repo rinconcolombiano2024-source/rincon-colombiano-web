@@ -106,3 +106,30 @@ test("Rincón AI keeps new answers visible without scrolling or focusing the who
     "Screen readers should announce new messages, not deleted history");
   assert.match(transcript, /aria-atomic="false"/);
 });
+
+test("Rincón AI never blocks unrelated links, controls or keyboard navigation after outside interaction", () => {
+  assert.match(source, /const widgetRef =\s*useRef<HTMLDivElement>\(null\)/,
+    "Outside events must be scoped to the widget itself");
+  assert.match(source, /ref=\{widgetRef\}/,
+    "Nonmodal assistant needs a real DOM containment boundary");
+  assert.match(source, /!widgetRef\.current\?\.contains\(target\)/,
+    "Only clicks and focus outside the Rincón AI UI dismiss it");
+  assert.match(source, /document\.addEventListener\("pointerdown", dismissIfOutside\)/,
+    "Touch/mouse clicks elsewhere must dismiss the assistant");
+  assert.match(source, /document\.addEventListener\("focusin", dismissIfOutside\)/,
+    "Tabbing to another control must dismiss the assistant");
+  assert.match(source, /document\.removeEventListener\("pointerdown", dismissIfOutside\)/,
+    "Clean up outside-click listener on close/unmount");
+  assert.match(source, /document\.removeEventListener\("focusin", dismissIfOutside\)/,
+    "Clean up outside-focus listener on close/unmount");
+  const dismissal = source.slice(
+    source.indexOf("function dismissIfOutside("),
+    source.indexOf('document.addEventListener("pointerdown", dismissIfOutside)'),
+  );
+  assert.match(dismissal, /setIsOpen\(false\)/,
+    "Outside interaction must close the widget");
+  assert.doesNotMatch(dismissal, /preventDefault\(|stopPropagation\(/,
+    "Closing Rincón AI must not cancel the visitor's tap or navigation");
+  assert.match(source, /if \(!isOpen\) \{\s*return;/,
+    "Listeners must not remain mounted while chat is collapsed");
+});

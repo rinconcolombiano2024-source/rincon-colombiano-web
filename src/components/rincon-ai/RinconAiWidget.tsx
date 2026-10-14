@@ -432,6 +432,9 @@ export function RinconAiWidget({
   const launcherRef =
     useRef<HTMLButtonElement>(null);
 
+  const widgetRef =
+    useRef<HTMLDivElement>(null);
+
   const closeButtonRef =
     useRef<HTMLButtonElement>(null);
 
@@ -456,6 +459,35 @@ export function RinconAiWidget({
     document.addEventListener("keydown", handleEscape);
     return () => {
       document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
+
+  // This assistant is a nonmodal helper. On phones, leaving it open while
+  // using a menu link or another page control can cover the destination.
+  // Dismiss on genuine interactions outside the widget, without swallowing
+  // the pointer event or preventing the visitor's intended navigation.
+  // Keyboard users can also Tab away without leaving a floating panel open.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function dismissIfOutside(event: Event): void {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        !widgetRef.current?.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", dismissIfOutside);
+    document.addEventListener("focusin", dismissIfOutside);
+
+    return () => {
+      document.removeEventListener("pointerdown", dismissIfOutside);
+      document.removeEventListener("focusin", dismissIfOutside);
     };
   }, [isOpen]);
 
@@ -787,6 +819,7 @@ export function RinconAiWidget({
 
   return (
     <div
+      ref={widgetRef}
       className={`
         fixed
         right-3
