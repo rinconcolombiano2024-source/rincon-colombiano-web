@@ -27,7 +27,7 @@ export function buildVerifiedMenuJsonLd(
           product.name.trim().length > 0 &&
           product.name.length <= 160 &&
           Number.isFinite(product.price) &&
-          product.price > 0 &&
+          product.price >= 0 &&
           product.price <= 9999)
         .slice(0, 100)
         .map((product) => ({
