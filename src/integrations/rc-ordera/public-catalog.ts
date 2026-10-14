@@ -51,6 +51,7 @@ import {
   parsePublicMenuPrice,
   parsePublicMenuAvailability,
   parsePublicProductImageUrl,
+  normalizePublicPlnSymbol,
 } from "@/integrations/rc-ordera/public-product-safety";
 
 
@@ -700,11 +701,12 @@ function normalizeSettings(
       ),
 
     currencySymbol:
-      readString(
-        settings,
-        "currencySymbol",
-      ) ??
-      "zł",
+      normalizePublicPlnSymbol(
+        readValue(
+          settings,
+          "currencySymbol",
+        ),
+      ),
 
     currencyPosition:
       currencyPosition ===
