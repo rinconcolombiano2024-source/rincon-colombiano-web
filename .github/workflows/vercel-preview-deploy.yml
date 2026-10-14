@@ -70,6 +70,11 @@ jobs:
           SITE_ORIGIN: ${{ steps.staging.outputs.url }}
         run: node scripts/smoke-deployment-revision.mjs "$SITE_ORIGIN" "$GITHUB_SHA"
 
+      - name: Check published PL ES EN guest paths and safe RC ORDERA ordering redirects
+        env:
+          SITE_ORIGIN: ${{ steps.staging.outputs.url }}
+        run: node scripts/smoke-live-guest-journey.mjs "$SITE_ORIGIN"
+
       - name: Check deployed PWA and private admin protection
         env:
           SITE_ORIGIN: ${{ steps.staging.outputs.url }}
