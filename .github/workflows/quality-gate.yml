@@ -88,6 +88,9 @@ jobs:
       - name: Guard Rincón AI mobile safe positioning
         run: node scripts/check-rincon-ai-mobile.mjs
 
+      - name: Verify useful Rincón AI price and opening-hour answers in three languages
+        run: node --experimental-strip-types scripts/test-rincon-ai-commercial-intents.mjs
+
       - name: Keep web payment provider credentials in RC ORDERA
         run: node scripts/check-web-payments-boundary.mjs
 
