@@ -140,6 +140,7 @@ jobs:
           node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3100 "$GITHUB_SHA"
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
           node scripts/smoke-public.mjs http://127.0.0.1:3100
+          node scripts/smoke-live-guest-journey.mjs http://127.0.0.1:3100
           node scripts/smoke-navigation.mjs http://127.0.0.1:3100
           node scripts/smoke-sumup-catalog-migration.mjs http://127.0.0.1:3100
 
@@ -191,5 +192,6 @@ jobs:
           node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3101 "$GITHUB_SHA"
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3101
           node scripts/smoke-public.mjs http://127.0.0.1:3101 --preview
+          node scripts/smoke-live-guest-journey.mjs http://127.0.0.1:3101
           node scripts/smoke-navigation.mjs http://127.0.0.1:3101 --preview
           node scripts/smoke-sumup-catalog-migration.mjs http://127.0.0.1:3101

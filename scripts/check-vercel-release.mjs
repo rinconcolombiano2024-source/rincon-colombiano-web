@@ -7,6 +7,7 @@ const staging = read(".github/workflows/vercel-staging-gate.yml");
 const deployment = read(".github/workflows/vercel-preview-deploy.yml");
 const alias = read(".github/workflows/audit-vercel-live-alias.yml");
 const revisionSmoke = read("scripts/smoke-deployment-revision.mjs");
+const guestJourney = read("scripts/smoke-live-guest-journey.mjs");
 const publicSmoke = read("scripts/smoke-public.mjs");
 const navigationSmoke = read("scripts/smoke-navigation.mjs");
 const robots = read("src/app/robots.ts");
@@ -66,4 +67,24 @@ assert.match(revisionSmoke, /redirect:\s*"manual"/,
   "Do not silently follow redirects to another host when checking a release");
 assert.match(revisionSmoke, /STALE DEPLOYMENT/,
   "Never mark an older Vercel alias as published");
+for (const workflow of [deployment, staging, alias]) {
+  assert.match(workflow, /smoke-live-guest-journey\.mjs/,
+    "No live/staging version can be accepted without actual PL/ES/EN order and CEO route checks");
+}
+assert.match(quality, /smoke-live-guest-journey\.mjs http:\/\/127\.0\.0\.1:3100/,
+  "Production CI must exercise read-only real customer navigation");
+assert.match(quality, /smoke-live-guest-journey\.mjs http:\/\/127\.0\.0\.1:3101/,
+  "Preview CI must exercise read-only real customer navigation");
+assert.match(guestJourney, /redirect: "manual"/,
+  "A malicious redirect must not silently be followed");
+assert.match(guestJourney, /validateVercelPreviewUrl/,
+  "Release audit inputs must never be arbitrary network targets");
+assert.match(guestJourney, /rincon-colombiano-pedidosapp\.vercel\.app/,
+  "Customer order links must point to the actual RC ORDERA system");
+assert.match(guestJourney, /\/admin\/menu/,
+  "Test that CEO menu is inaccessible to unauthenticated visitors");
+assert.doesNotMatch(guestJourney, /method:\s*"POST"|method:\s*"PUT"|method:\s*"PATCH"|method:\s*"DELETE"/,
+  "Live guest acceptance must NEVER mutate merchant/order/payment data");
+console.log("PASS: manual and CI guest route acceptance is read-only, origin-restricted and mandatory");
+
 console.log("PASS: safe deployment gates enforce reviewed SHA on live alias, staging and preview builds");
