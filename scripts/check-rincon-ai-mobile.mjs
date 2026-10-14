@@ -85,3 +85,24 @@ test("unavailable loyalty rewards never impersonate a team contact button", () =
       "All three locales must explicitly disclose that rewards are inactive");
   }
 });
+
+test("Rincón AI keeps new answers visible without scrolling or focusing the whole webpage", () => {
+  assert.match(source, /const messagesPanelRef = useRef<HTMLDivElement>\(null\)/,
+    "The chat has a dedicated ref for its internal scrollable transcript");
+  assert.match(source, /ref=\{messagesPanelRef\}/,
+    "Scroll is scoped to the message list rather than the document");
+  assert.match(source, /panel\.scrollTop = panel\.scrollHeight/,
+    "New questions and replies move the transcript to the latest message");
+  assert.match(source, /\}, \[isOpen, messages\]\)/,
+    "Opening a conversation and adding replies must display the latest response");
+  assert.match(source, /if \(!isOpen\) \{\s*return;/,
+    "Hidden panel must not trigger unnecessary browser layout work");
+  assert.doesNotMatch(source, /scrollIntoView\(/,
+    "Never jump the whole restaurant page when the AI assistant replies");
+  const transcript = source.slice(source.indexOf('id="rincon-ai-panel"'));
+  assert.match(transcript, /role="log"/);
+  assert.match(transcript, /aria-live="polite"/);
+  assert.match(transcript, /aria-relevant="additions"/,
+    "Screen readers should announce new messages, not deleted history");
+  assert.match(transcript, /aria-atomic="false"/);
+});
