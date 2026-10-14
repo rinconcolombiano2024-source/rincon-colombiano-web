@@ -32,6 +32,21 @@ export function parsePublicMenuPrice(value: unknown): number | null {
 }
 
 /**
+ * Prices are published and structured as PLN for the Warsaw restaurant.
+ * A malformed/foreign currency label must not contradict the actual PLN
+ * offer or display attacker-controlled strings beside product prices.
+ * Preserve the two established legitimate representations; do not change
+ * prices, exchange currency, or mutate RC ORDERA settings.
+ */
+export function normalizePublicPlnSymbol(value: unknown): "zł" | "PLN" {
+  if (typeof value !== "string") {
+    return "zł";
+  }
+  const text = value.trim().toLocaleLowerCase("pl-PL");
+  return text === "pln" ? "PLN" : "zł";
+}
+
+/**
  * RC ORDERA legacy public catalogs may omit "available": historically this
  * means available. Preserve that behavior ONLY when the field is absent.
  * When it IS supplied, unknown types must never silently become "available".
