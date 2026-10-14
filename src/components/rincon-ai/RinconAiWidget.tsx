@@ -11,6 +11,8 @@ import type {
   AppLocale,
 } from "@/i18n/config";
 
+import { getCommercialInquiryIntent } from "@/components/rincon-ai/commercial-intents";
+
 
 // Keep a predictable number of chat nodes in mobile browsers, regardless
 // of how often visitors ask questions. Messages stay entirely local.
@@ -90,6 +92,9 @@ interface WidgetCopy {
     string;
 
   readonly eventsAnswer:
+    string;
+
+  readonly hoursAnswer:
     string;
 
   readonly locationsAnswer:
@@ -177,6 +182,9 @@ const widgetCopy:
       eventsAnswer:
         "Rincón obsługuje catering, wydarzenia, urodziny, firmy, rodziny, śniadania, niespodzianki i dekoracje. Najbezpieczniej przejść do kontaktu i opisać wydarzenie.",
 
+      hoursAnswer:
+        "Godziny otwarcia restauracji przy ul. Czapelskiej 33 znajdziesz w sekcji Lokale. Brzeska 10 jest w przygotowaniu i jeszcze nie jest otwarta.",
+
       locationsAnswer:
         "Informacje o lokalach Rincón znajdziesz w sekcji Lokale.",
 
@@ -254,6 +262,9 @@ const widgetCopy:
       eventsAnswer:
         "Rincón atiende catering, eventos, cumpleaños, empresas, familias, desayunos, sorpresas y decoración. Lo más seguro es contactar al equipo y describir lo que necesitas.",
 
+      hoursAnswer:
+        "Consulta los horarios de nuestra sede de Czapelska 33 en la sección Restaurantes. Brzeska 10 abrirá próximamente y todavía no está atendiendo.",
+
       locationsAnswer:
         "Puedes consultar la información de nuestros restaurantes en la sección Restaurantes.",
 
@@ -330,6 +341,9 @@ const widgetCopy:
 
       eventsAnswer:
         "Rincón supports catering, events, birthdays, companies, families, breakfasts, surprises and table decoration. The safest next step is to contact the team and describe what you need.",
+
+      hoursAnswer:
+        "Find the opening hours for Czapelska 33 under Locations. Brzeska 10 is coming soon and is not open yet.",
 
       locationsAnswer:
         "You can find our restaurant information in the Locations section.",
@@ -573,6 +587,27 @@ export function RinconAiWidget({
         copy.contactTeam,
       );
 
+      return;
+    }
+
+    // Visitors often ask about prices and opening hours without using
+    // the words "menu" or "restaurant". Use the published sections;
+    // never invent live opening status, stock or commercial prices.
+    const commercialIntent = getCommercialInquiryIntent(question, locale);
+    if (commercialIntent === "hours") {
+      addAssistantMessage(
+        copy.hoursAnswer,
+        "#locations",
+        copy.viewLocations,
+      );
+      return;
+    }
+    if (commercialIntent === "prices") {
+      addAssistantMessage(
+        copy.menuAnswer,
+        "#menu",
+        copy.viewMenu,
+      );
       return;
     }
 
