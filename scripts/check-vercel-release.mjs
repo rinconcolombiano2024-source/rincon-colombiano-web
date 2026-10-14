@@ -68,18 +68,18 @@ assert.match(revisionSmoke, /redirect:\s*"manual"/,
 assert.match(revisionSmoke, /STALE DEPLOYMENT/,
   "Never mark an older Vercel alias as published");
 for (const workflow of [deployment, staging, alias]) {
-  assert.match(workflow, /smoke-live-guest-journey\\.mjs/,
+  assert.match(workflow, /smoke-live-guest-journey\.mjs/,
     "No live/staging version can be accepted without actual PL/ES/EN order and CEO route checks");
 }
-assert.match(quality, /smoke-live-guest-journey\\.mjs http:\\/\\/127\\.0\\.0\\.1:3100/,
+assert.match(quality, /smoke-live-guest-journey\.mjs http:\/\/127\.0\.0\.1:3100/,
   "Production CI must exercise read-only real customer navigation");
-assert.match(quality, /smoke-live-guest-journey\\.mjs http:\\/\\/127\\.0\\.0\\.1:3101/,
+assert.match(quality, /smoke-live-guest-journey\.mjs http:\/\/127\.0\.0\.1:3101/,
   "Preview CI must exercise read-only real customer navigation");
 assert.match(guestJourney, /redirect: "manual"/,
   "A malicious redirect must not silently be followed");
 assert.match(guestJourney, /validateVercelPreviewUrl/,
   "Release audit inputs must never be arbitrary network targets");
-assert.match(guestJourney, /rincon-colombiano-pedidosapp\\.vercel\\.app/,
+assert.match(guestJourney, /rincon-colombiano-pedidosapp\.vercel\.app/,
   "Customer order links must point to the actual RC ORDERA system");
 assert.match(guestJourney, /\/admin\/menu/,
   "Test that CEO menu is inaccessible to unauthenticated visitors");
