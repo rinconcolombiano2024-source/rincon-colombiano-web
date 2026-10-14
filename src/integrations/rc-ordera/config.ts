@@ -200,17 +200,14 @@ function parseTimeout(
     return RC_ORDERA_DEFAULT_TIMEOUT_MS;
   }
 
-  const parsed =
-    Number.parseInt(
-      rawValue,
-      10,
-    );
+  // Reject partial numbers ("8000junk"), fractions and exponent notation.
+  // A malformed timeout must never silently change production network load.
+  if (!/^[0-9]+$/.test(rawValue)) {
+    return RC_ORDERA_DEFAULT_TIMEOUT_MS;
+  }
 
-  if (
-    !Number.isFinite(
-      parsed,
-    )
-  ) {
+  const parsed = Number(rawValue);
+  if (!Number.isSafeInteger(parsed)) {
     return RC_ORDERA_DEFAULT_TIMEOUT_MS;
   }
 

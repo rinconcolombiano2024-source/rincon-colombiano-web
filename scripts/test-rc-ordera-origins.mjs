@@ -10,6 +10,7 @@ import {
 const vars = [
   "NODE_ENV",
   "RC_ORDERA_SUPABASE_URL",
+  "RC_ORDERA_API_TIMEOUT_MS",
   "RC_ORDERA_SUPABASE_ANON_KEY",
   "RC_ORDERA_PUBLIC_APP_URL",
   "NEXT_PUBLIC_ORDER_APP_URL",
@@ -67,6 +68,24 @@ test("RC ORDERA server requests reject remote HTTP and injected URL components",
     );
     assert.equal(valid?.supabaseUrl, "https://project.supabase.co");
   });
+});
+
+test("RC ORDERA timeout remains bounded and rejects junk or truncated numeric values", () => {
+  const base = {
+    ...config,
+    NODE_ENV: "production",
+    RC_ORDERA_SUPABASE_URL: "https://project.supabase.co",
+  };
+  for (const [input, expected] of [
+    ["8000", 8000], ["1000", 1000], ["30000", 30000],
+    ["100", 1000], ["999999", 30000],
+    ["8000junk", 8000], ["0x10", 8000], ["8.5", 8000],
+    ["1e5", 8000], ["-1", 8000], ["NaN", 8000],
+    ["99999999999999999999999999999", 8000], ["", 8000],
+  ]) {
+    const result = withEnv({ ...base, RC_ORDERA_API_TIMEOUT_MS: input }, getRcOrderaServerConfig);
+    assert.equal(result?.timeoutMs, expected, JSON.stringify(input));
+  }
 });
 
 test("local HTTP is permitted only for local development", () => {
