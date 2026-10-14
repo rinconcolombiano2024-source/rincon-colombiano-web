@@ -61,6 +61,9 @@ jobs:
       - name: Reject invented free prices and invalid availability in public RC ORDERA catalog
         run: node --experimental-strip-types scripts/test-rc-ordera-catalog-safety.mjs
 
+      - name: Guarantee unique multilingual menu category links and targets
+        run: node --experimental-strip-types scripts/test-menu-category-anchors.mjs
+
       - name: Preserve Lechona Tolimense name in PL ES EN while keeping RC ORDERA IDs prices and stations
         run: node --experimental-strip-types scripts/test-lechona-tolimense.mjs
 

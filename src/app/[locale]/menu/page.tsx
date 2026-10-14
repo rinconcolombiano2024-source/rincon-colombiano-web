@@ -36,6 +36,7 @@ import {
   type RcOrderaPublicCatalog,
 } from "@/integrations/rc-ordera/public-catalog";
 import { localizeRcOrderaCategories } from "@/integrations/rc-ordera/localize-catalog";
+import { withMenuCategoryAnchors } from "@/integrations/rc-ordera/menu-category-anchors";
 
 
 /* ============================================================
@@ -588,36 +589,6 @@ function formatProductPrice(
    SECTION ID
    ============================================================ */
 
-function buildCategoryId(
-  category:
-    string,
-): string {
-  const normalized =
-    category
-      .normalize(
-        "NFD",
-      )
-      .replace(
-        /[\u0300-\u036f]/g,
-        "",
-      )
-      .toLowerCase()
-      .replace(
-        /[^a-z0-9]+/g,
-        "-",
-      )
-      .replace(
-        /^-+|-+$/g,
-        "",
-      );
-
-  return normalized.length >
-    0
-    ? `category-${normalized}`
-    : "category-menu";
-}
-
-
 /* ============================================================
    MENU PAGE
    ============================================================ */
@@ -668,7 +639,8 @@ export default async function MenuPage({
 
   const categories =
     catalog
-      ? localizeRcOrderaCategories(catalog.categories, locale)
+      ? withMenuCategoryAnchors(
+          localizeRcOrderaCategories(catalog.categories, locale)
           .map(
             (
               category,
@@ -695,7 +667,8 @@ export default async function MenuPage({
                 .products
                 .length >
               0,
-          )
+          ),
+        )
       : [];
 
   const hasLiveMenu =
@@ -1203,12 +1176,10 @@ export default async function MenuPage({
                         ) => (
                           <a
                             key={
-                              category.name
+                              category.anchorId
                             }
                             href={
-                              `#${buildCategoryId(
-                                category.name,
-                              )}`
+                              `#${category.anchorId}`
                             }
                             className="
                               rounded-full
@@ -1247,12 +1218,10 @@ export default async function MenuPage({
                         ) => (
                           <section
                             key={
-                              category.name
+                              category.anchorId
                             }
                             id={
-                              buildCategoryId(
-                                category.name,
-                              )
+                              category.anchorId
                             }
                             className="
                               scroll-mt-24
