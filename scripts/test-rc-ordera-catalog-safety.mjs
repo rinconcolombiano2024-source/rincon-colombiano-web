@@ -41,8 +41,8 @@ test("delivery display never accepts partial, negative or fractional-grosz fees"
     assert.equal(parsePublicDeliveryFee(raw), expected, JSON.stringify(raw));
   }
   const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
-  assert.match(catalog, /deliveryFee:\\s*parsePublicDeliveryFee\\(readValue\\(settings, "deliveryFee"\\)\\)/);
-  assert.match(catalog, /deliveryMinimumFee:\\s*parsePublicDeliveryFee\\(readValue\\(settings, "deliveryMinimumFee"\\)\\)/);
+  assert.match(catalog, /deliveryFee:\s*parsePublicDeliveryFee\(readValue\(settings, "deliveryFee"\)\)/);
+  assert.match(catalog, /deliveryMinimumFee:\s*parsePublicDeliveryFee\(readValue\(settings, "deliveryMinimumFee"\)\)/);
 });
 
 test("preserve legacy omission of availability, never trust malformed explicit false", () => {
