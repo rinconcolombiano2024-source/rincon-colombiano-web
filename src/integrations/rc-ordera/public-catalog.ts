@@ -819,6 +819,10 @@ async function fetchJson(
         {
           ...init,
 
+          // Never forward public API credentials to another host through a
+          // redirect controlled by an upstream API or intermediate proxy.
+          redirect: "error",
+
           headers: {
             ...buildPublicHeaders(
               config,
