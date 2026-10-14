@@ -477,6 +477,22 @@ export function RinconAiWidget({
       },
     ]);
 
+  // Scroll only the conversation region, not the document or the phone
+  // viewport. Otherwise fresh answers appear below the visible transcript
+  // after a customer has asked several questions.
+  const messagesPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const panel = messagesPanelRef.current;
+    if (panel) {
+      panel.scrollTop = panel.scrollHeight;
+    }
+  }, [isOpen, messages]);
+
 
   // Keep React keys unique even after the last 40 messages have been
   // retained and many rapid questions arrive within the same millisecond.
@@ -944,7 +960,11 @@ export function RinconAiWidget({
                     bg-[#faf9f6]
                     p-4
                   "
+                  ref={messagesPanelRef}
+                  role="log"
                   aria-live="polite"
+                  aria-relevant="additions"
+                  aria-atomic="false"
                 >
                   {
                     messages.map(
