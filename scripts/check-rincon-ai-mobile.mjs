@@ -54,3 +54,34 @@ test("many repeated questions cannot make the chat DOM grow without limit", () =
   assert.match(source, /maxLength=\{600\}/,
     "Each individual user message must have a reasonable length bound");
 });
+
+test("chat message keys stay unique despite a capped 40-message history", () => {
+  assert.match(source, /const nextMessageSequence = useRef\(0\)/,
+    "Monotonic counter must persist across renders and history trimming");
+  assert.match(source, /nextMessageSequence\.current \+= 1/,
+    "Every sent message must receive a new sequence number");
+  assert.match(source, /const messageId = nextMessageId\("assistant"\)/);
+  assert.match(source, /const messageId = nextMessageId\("user"\)/);
+  assert.doesNotMatch(source, /Date\.now\(\)/,
+    "Timestamps are not stable chat keys after history stops growing");
+  assert.doesNotMatch(source, /\`(?:assistant|user)-\$\{current\.length\}/,
+    "Array length must not be reused to identify messages");
+});
+
+test("unavailable loyalty rewards never impersonate a team contact button", () => {
+  const blockStart = source.indexOf("copy.rewardsAnswer,");
+  assert.ok(blockStart >= 0, "Multilingual loyalty FAQ must remain present");
+  const rewardAction = source.slice(blockStart, blockStart + 110);
+  assert.match(rewardAction, /contactHref,\s*copy\.contactTeam/,
+    "Contact team action must point to the actual contact section");
+  assert.doesNotMatch(rewardAction, /"#rewards"/,
+    "Do not label an inactive loyalty-program anchor as 'Contact the team'");
+  for (const message of [
+    "El programa de puntos y recompensas todavía no está activo.",
+    "Program punktów i nagród nie jest jeszcze aktywny.",
+    "Our points and rewards programme isn't active yet.",
+  ]) {
+    assert.ok(source.includes(message),
+      "All three locales must explicitly disclose that rewards are inactive");
+  }
+});

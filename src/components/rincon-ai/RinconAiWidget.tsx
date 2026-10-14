@@ -464,6 +464,17 @@ export function RinconAiWidget({
     ]);
 
 
+  // Keep React keys unique even after the last 40 messages have been
+  // retained and many rapid questions arrive within the same millisecond.
+  // Allocate outside React state updater callbacks (which may be replayed).
+  const nextMessageSequence = useRef(0);
+
+  function nextMessageId(role: "assistant" | "user"): string {
+    nextMessageSequence.current += 1;
+    return `${role}-${nextMessageSequence.current}`;
+  }
+
+
   function addAssistantMessage(
     text:
       string,
@@ -472,6 +483,8 @@ export function RinconAiWidget({
     actionLabel?:
       string,
   ): void {
+    const messageId = nextMessageId("assistant");
+
     setMessages(
       (
         current,
@@ -479,7 +492,7 @@ export function RinconAiWidget({
         ...current,
         {
           id:
-            `assistant-${Date.now()}-${current.length}`,
+            messageId,
 
           role:
             "assistant" as const,
@@ -519,6 +532,8 @@ export function RinconAiWidget({
       return;
     }
 
+    const messageId = nextMessageId("user");
+
     setMessages(
       (
         current,
@@ -526,7 +541,7 @@ export function RinconAiWidget({
         ...current,
         {
           id:
-            `user-${Date.now()}-${current.length}`,
+            messageId,
 
           role:
             "user" as const,
@@ -680,9 +695,12 @@ export function RinconAiWidget({
         ],
       )
     ) {
+      // The loyalty program is not active yet. The answer explicitly
+      // invites visitors to ask our team about current promotions.
+      // Do not label an inactive rewards section as "Contact the team".
       addAssistantMessage(
         copy.rewardsAnswer,
-        "#rewards",
+        contactHref,
         copy.contactTeam,
       );
 
