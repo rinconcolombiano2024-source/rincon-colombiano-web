@@ -33,6 +33,9 @@ jobs:
           node scripts/smoke-deployment-revision.mjs \
             https://rincon-colombiano-web.vercel.app "$GITHUB_SHA"
 
+      - name: Test three languages, actual menu, safe RC ORDERA redirect and unauthenticated CEO access
+        run: node scripts/smoke-live-guest-journey.mjs https://rincon-colombiano-web.vercel.app
+
       - name: Record positive audit without claiming domain cutover
         shell: bash
         run: |
