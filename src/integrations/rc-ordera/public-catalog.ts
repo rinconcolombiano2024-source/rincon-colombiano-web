@@ -49,6 +49,7 @@ import {
 } from "@/integrations/rc-ordera/config";
 import {
   parsePublicMenuPrice,
+  parsePublicDeliveryFee,
   parsePublicMenuAvailability,
   parsePublicProductImageUrl,
   normalizePublicPlnSymbol,
@@ -721,24 +722,10 @@ function normalizeSettings(
         : "eu",
 
     deliveryFee:
-      Math.max(
-        0,
-        readNumber(
-          settings,
-          "deliveryFee",
-        ) ??
-        0,
-      ),
+      parsePublicDeliveryFee(readValue(settings, "deliveryFee")),
 
     deliveryMinimumFee:
-      Math.max(
-        0,
-        readNumber(
-          settings,
-          "deliveryMinimumFee",
-        ) ??
-        0,
-      ),
+      parsePublicDeliveryFee(readValue(settings, "deliveryMinimumFee")),
   };
 }
 

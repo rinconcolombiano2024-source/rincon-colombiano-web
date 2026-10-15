@@ -32,6 +32,16 @@ export function parsePublicMenuPrice(value: unknown): number | null {
 }
 
 /**
+ * Monetary delivery settings must not parse numeric prefixes ("20PLN"),
+ * negative amounts, infinity or fractions of a grosz. This is a
+ * read-only presentation safeguard; the actual checkout stays in RC ORDERA.
+ */
+export function parsePublicDeliveryFee(value: unknown): number {
+  const parsed = parsePublicMenuPrice(value);
+  return parsed ?? 0;
+}
+
+/**
  * Prices are published and structured as PLN for the Warsaw restaurant.
  * A malformed/foreign currency label must not contradict the actual PLN
  * offer or display attacker-controlled strings beside product prices.

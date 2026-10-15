@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import {
   parsePublicMenuPrice,
+  parsePublicDeliveryFee,
   parsePublicMenuAvailability,
   parsePublicProductImageUrl,
   normalizePublicPlnSymbol,
@@ -27,6 +28,21 @@ test("never display missing/malformed/negative/infinite price as 0 zł", () => {
   ]) {
     assert.equal(parsePublicMenuPrice(raw), null, JSON.stringify(raw));
   }
+});
+
+test("delivery display never accepts partial, negative or fractional-grosz fees", () => {
+  for (const [raw, expected] of [
+    [0, 0], [15, 15], ["15", 15], ["15,50", 15.5],
+    [" 20.99 ", 20.99], ["0.01", 0.01], [9999, 9999],
+    [undefined, 0], [null, 0], ["", 0], [-1, 0],
+    ["15PLN", 0], ["20xyz", 0], ["1e4", 0], ["12.345", 0],
+    [Infinity, 0], [true, 0], ["9999.99", 0],
+  ]) {
+    assert.equal(parsePublicDeliveryFee(raw), expected, JSON.stringify(raw));
+  }
+  const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
+  assert.match(catalog, /deliveryFee:\s*parsePublicDeliveryFee\(readValue\(settings, "deliveryFee"\)\)/);
+  assert.match(catalog, /deliveryMinimumFee:\s*parsePublicDeliveryFee\(readValue\(settings, "deliveryMinimumFee"\)\)/);
 });
 
 test("preserve legacy omission of availability, never trust malformed explicit false", () => {
