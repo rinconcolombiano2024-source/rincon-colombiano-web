@@ -236,6 +236,18 @@ export async function proxy(
   if (
     pathnameLocale
   ) {
+    // Browser language tags and old links may use es-CO, pl-PL or EN.
+    // App Router only generates pl/es/en: normalize before reaching it.
+    // Clone the URL so campaign parameters survive the redirect.
+    const canonicalPathname = addLocalePrefix(pathname, pathnameLocale);
+    if (pathname !== canonicalPathname) {
+      const url = request.nextUrl.clone();
+      url.pathname = canonicalPathname;
+      const response = NextResponse.redirect(url, 308);
+      setLocaleCookie(response, request, pathnameLocale);
+      return response;
+    }
+
     const response =
       NextResponse.next();
 
