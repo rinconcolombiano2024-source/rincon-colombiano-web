@@ -266,7 +266,7 @@ const widgetCopy:
         "Consulta los horarios de nuestra sede de Czapelska 33 en la sección Restaurantes. Brzeska 10 abrirá próximamente y todavía no está atendiendo.",
 
       locationsAnswer:
-        "Puedes consultar la información de nuestros restaurantes en la sección Restaurantes.",
+        "Estamos en Czapelska 33, Varsovia (esquina con Igańska). Esta es nuestra sede abierta. Brzeska 10 es una próxima apertura y todavía no atiende clientes. Si necesitas indicaciones para llegar, dime desde dónde vienes.",
 
       rewardsAnswer:
         "El programa de puntos y recompensas todavía no está activo. Pregunta a nuestro equipo por las promociones disponibles.",
@@ -734,6 +734,25 @@ export function RinconAiWidget({
         copy.viewEvents,
       );
 
+      return;
+    }
+
+    // Answer a request for the address directly instead of sending visitors
+    // back to the restaurant page. Never describe Brzeska as open.
+    if (
+      includesAny(question, [
+        "dirección", "direccion", "direcciones", "address", "adres",
+        "dónde están", "donde estan", "dónde queda", "donde queda",
+        "cómo llegar", "como llegar", "jak dojechać", "jak dojechac",
+        "where are you", "how to get there", "czapelska", "brzeska",
+      ])
+    ) {
+      const directAddress = locale === "pl"
+        ? "Zapraszamy na ul. Czapelską 33 w Warszawie (róg ul. Igańskiej). To nasz czynny lokal. Brzeska 10 jest planowaną lokalizacją i nie jest jeszcze otwarta. Napisz, skąd jedziesz, jeśli potrzebujesz wskazówek dojazdu."
+        : locale === "en"
+          ? "You can find us at Czapelska 33, Warsaw (corner of Igańska Street). This is our open location. Brzeska 10 is planned and is not open yet. Tell me where you're travelling from if you'd like directions."
+          : "Estamos en Czapelska 33, Varsovia (esquina con Igańska). Es nuestra sede abierta. Brzeska 10 abrirá próximamente y todavía no atiende. Dime desde dónde vienes si necesitas indicaciones para llegar.";
+      addAssistantMessage(directAddress, "#locations", copy.viewLocations);
       return;
     }
 
