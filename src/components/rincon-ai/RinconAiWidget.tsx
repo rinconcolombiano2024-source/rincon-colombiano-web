@@ -929,7 +929,7 @@ export function RinconAiWidget({
                 className="
                   mb-3
                   flex
-                  h-[min(34rem,calc(100dvh-7rem))]
+                  h-[min(34rem,calc(100dvh-3rem))]
                   w-[min(24rem,calc(100vw-2rem))]
                   flex-col
                   overflow-hidden
@@ -1360,7 +1360,7 @@ export function RinconAiWidget({
         }
         className="
           group
-          flex
+          ${isOpen ? "hidden" : "flex"}
           min-h-14
           items-center
           gap-3
@@ -1461,7 +1461,7 @@ export function RinconAiWidget({
               rounded-full
               border-2
               border-white
-              bg-emerald-500
+              bg-[#123d73]
             "
           />
         </span>
