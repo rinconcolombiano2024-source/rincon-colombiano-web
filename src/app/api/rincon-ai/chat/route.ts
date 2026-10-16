@@ -53,7 +53,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let size = 0;
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        break;
+      }
       size += value.byteLength;
       if (size > 5000) {
         await reader.cancel();
