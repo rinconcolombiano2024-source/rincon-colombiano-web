@@ -8,16 +8,16 @@ function response(data: unknown, status = 200) { return NextResponse.json(data, 
 function config() { return getSupabasePublicConfig(); }
 export async function GET() {
   const cfg = config();
-  if (!cfg) { return response({ reviews: [] }); }
+  if (!cfg) { return response({ available: false, reviews: [] }); }
   try {
     const result = await fetch(`${cfg.url}/rest/v1/customer_reviews?select=id,display_name,body,rating,created_at&status=eq.published&order=created_at.desc&limit=12`, {
       headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` },
       cache: "no-store", signal: AbortSignal.timeout(3500),
     });
-    if (!result.ok) { return response({ reviews: [] }); }
+    if (!result.ok) { return response({ available: false, reviews: [] }); }
     const reviews: unknown = await result.json();
-    return response({ reviews: Array.isArray(reviews) ? reviews : [] });
-  } catch { return response({ reviews: [] }); }
+    return response({ available: true, reviews: Array.isArray(reviews) ? reviews : [] });
+  } catch { return response({ available: false, reviews: [] }); }
 }
 export async function POST(request: NextRequest) {
   if (request.headers.get("sec-fetch-site") === "cross-site") { return response({ error: "forbidden" }, 403); }
