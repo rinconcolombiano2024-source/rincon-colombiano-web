@@ -135,7 +135,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }),
     });
     if (!response.ok) { return unavailable(); }
-    const result: unknown = await response.json();
+    // Do not buffer an unbounded upstream response, even from an allowlisted host.
+    // A compromised or malfunctioning IA service must not exhaust server memory.
+    const reader = response.body?.getReader();
+    if (!reader) { return unavailable(); }
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) { break; }
+      received += value.byteLength;
+      if (received > 8192) {
+        await reader.cancel();
+        return unavailable();
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(received);
+    let position = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, position);
+      position += chunk.byteLength;
+    }
+    const result: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
     if (
       !result || typeof result !== "object" ||
       typeof (result as { answer?: unknown }).answer !== "string"
