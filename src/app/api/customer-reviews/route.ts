@@ -24,7 +24,12 @@ export async function POST(request: NextRequest) {
   if (request.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() !== "application/json") { return response({ error: "unsupported_media_type" }, 415); }
   const origin = request.headers.get("origin");
   if (!origin || origin !== request.nextUrl.origin) { return response({ error: "forbidden" }, 403); }
-  if (request.headers.get("content-length") && Number(request.headers.get("content-length")) > 2500) { return response({ error: "too_large" }, 413); }
+  const contentLength = request.headers.get("content-length");
+  if (contentLength !== null) {
+    const declaredLength = Number(contentLength);
+    if (!/^\d+$/.test(contentLength) || !Number.isSafeInteger(declaredLength)) { return response({ error: "invalid_request" }, 400); }
+    if (declaredLength > 2500) { return response({ error: "too_large" }, 413); }
+  }
   const cfg = config();
   if (!cfg) { return response({ error: "unavailable" }, 503); }
   let payload: { name?: unknown; body?: unknown; rating?: unknown; website?: unknown };
