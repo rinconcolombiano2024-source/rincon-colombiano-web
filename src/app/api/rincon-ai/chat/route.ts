@@ -56,15 +56,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const input = payload as Record<string, unknown>;
   if (
-    typeof input["question"] !== "string" ||
-    input["question"].trim().length < 1 ||
-    input["question"].length > MAX_QUESTION ||
-    !["es", "pl", "en"].includes(String(input["locale"]))
+    typeof input.question !== "string" ||
+    input.question.trim().length < 1 ||
+    input.question.length > MAX_QUESTION ||
+    !["es", "pl", "en"].includes(String(input.locale))
   ) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-  const history = Array.isArray(input["history"])
-    ? input["history"].slice(-MAX_HISTORY).filter(
+  const history = Array.isArray(input.history)
+    ? input.history.slice(-MAX_HISTORY).filter(
       (entry): entry is { role: "user" | "assistant"; text: string } =>
         !!entry && typeof entry === "object" &&
         ["user", "assistant"].includes(entry.role) &&
@@ -83,19 +83,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         Authorization: `Bearer ${sharedToken}`,
       },
       body: JSON.stringify({
-        question: input["question"].trim(),
-        locale: input["locale"],
+        question: input.question.trim(),
+        locale: input.locale,
         history,
       }),
     });
-    if (!response.ok) return unavailable();
+    if (!response.ok) { return unavailable(); }
     const result: unknown = await response.json();
     if (
       !result || typeof result !== "object" ||
-      typeof (result as Record<string, unknown>)["answer"] !== "string"
-    ) return unavailable();
+      typeof (result as Record<string, unknown>).answer !== "string"
+    ) { return unavailable(); }
     const answer = (result as { answer: string }).answer.trim();
-    if (!answer || answer.length > MAX_RESPONSE) return unavailable();
+    if (!answer || answer.length > MAX_RESPONSE) { return unavailable(); }
     return NextResponse.json(
       { available: true, answer },
       { headers: { "Cache-Control": "no-store" } },
