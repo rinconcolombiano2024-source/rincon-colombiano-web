@@ -85,6 +85,12 @@ interface WidgetCopy {
   readonly contact:
     string;
 
+  readonly reviews:
+    string;
+
+  readonly orderChannels:
+    string;
+
   readonly menuAnswer:
     string;
 
@@ -173,6 +179,12 @@ const widgetCopy:
       contact:
         "Kontakt",
 
+      reviews:
+        "Opinie",
+
+      orderChannels:
+        "Sposoby zamawiania",
+
       menuAnswer:
         "Zajrzyj do naszego menu, by poznać dostępne dania i ceny. Dostępność potwierdzisz podczas zamawiania.",
 
@@ -253,6 +265,12 @@ const widgetCopy:
       contact:
         "Contacto",
 
+      reviews:
+        "Opiniones",
+
+      orderChannels:
+        "Opciones de pedido",
+
       menuAnswer:
         "Descubre nuestros platos y precios en el menú. La disponibilidad final se confirma al realizar el pedido.",
 
@@ -332,6 +350,12 @@ const widgetCopy:
 
       contact:
         "Contact",
+
+      reviews:
+        "Reviews",
+
+      orderChannels:
+        "Ordering options",
 
       menuAnswer:
         "Explore our menu for dishes and prices. Final availability is confirmed when you place your order.",
@@ -1220,6 +1244,22 @@ export function RinconAiWidget({
                       "
                     >
                       {copy.events}
+                    </a>
+
+                    <a
+                      href={`/${locale}/canales-pedido`}
+                      onClick={() => setIsOpen(false)}
+                      className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-bold text-[#2d2925] hover:bg-[#faf9f6]"
+                    >
+                      {copy.orderChannels}
+                    </a>
+
+                    <a
+                      href="#reviews"
+                      onClick={() => setIsOpen(false)}
+                      className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-bold text-[#2d2925] hover:bg-[#faf9f6]"
+                    >
+                      {copy.reviews}
                     </a>
 
                     <a
