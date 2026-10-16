@@ -17,6 +17,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     { status: 503, headers: { "Cache-Control": "no-store" } },
   );
 
+  // Reject cross-site browser requests before spending paid IA resources.
+  // This is defense-in-depth, not a replacement for provider-side rate limits.
+  if (request.headers.get("sec-fetch-site") === "cross-site") {
+    return NextResponse.json(
+      { error: "forbidden" },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!/^application\\/json(?:\\s*;|$)/i.test(contentType)) {
+    return NextResponse.json(
+      { error: "unsupported_media_type" },
+      { status: 415, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const endpointString = process.env["RINCON_IA_CHAT_ENDPOINT"];
   const sharedToken = process.env["RINCON_IA_CHAT_TOKEN"];
   if (!endpointString || !sharedToken || sharedToken.length < 32) {
