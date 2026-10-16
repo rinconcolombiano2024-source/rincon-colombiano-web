@@ -656,6 +656,9 @@ export function RinconAiWidget({
         text: message.text.slice(0, 800),
       }));
       const response = await fetch("/api/rincon-ai/chat", {
+        // Keep the chat responsive even if a network intermediary stalls.
+        // The server has a separate 9-second upstream timeout.
+        signal: AbortSignal.timeout(12000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
