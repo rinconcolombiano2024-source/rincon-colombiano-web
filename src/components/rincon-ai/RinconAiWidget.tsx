@@ -429,6 +429,9 @@ export function RinconAiWidget({
       "",
     );
 
+  const [isLoading, setIsLoading] = useState(false);
+  const pendingRequestRef = useRef(false);
+
   const launcherRef =
     useRef<HTMLButtonElement>(null);
 
@@ -582,6 +585,10 @@ export function RinconAiWidget({
     rawQuestion:
       string,
   ): Promise<void> {
+    if (pendingRequestRef.current) {
+      return;
+    }
+
     const question =
       normalizeMessage(
         rawQuestion,
@@ -641,6 +648,8 @@ export function RinconAiWidget({
     // Prefer real generative conversation. If the dedicated IA service is
     // unavailable, retain the existing safe, localized intent responses.
     // Allergy guidance above always comes directly from the restaurant.
+    pendingRequestRef.current = true;
+    setIsLoading(true);
     try {
       const history = messages.slice(-6).map((message) => ({
         role: message.role,
@@ -673,6 +682,9 @@ export function RinconAiWidget({
       }
     } catch {
       // Network and IA failures must never break the public website.
+    } finally {
+      pendingRequestRef.current = false;
+      setIsLoading(false);
     }
 
     // Visitors often ask about prices and opening hours without using
@@ -1279,10 +1291,7 @@ export function RinconAiWidget({
                     <button
                       type="submit"
                       disabled={
-                        input
-                          .trim()
-                          .length ===
-                        0
+                        isLoading || input.trim().length === 0
                       }
                       className="
                         min-h-11
@@ -1303,6 +1312,12 @@ export function RinconAiWidget({
                       {copy.send}
                     </button>
                   </form>
+
+                  <p role="status" aria-live="polite" className="sr-only">
+                    {isLoading
+                      ? (locale === "pl" ? "Przygotowuję odpowiedź…" : locale === "en" ? "Preparing a reply…" : "Preparando respuesta…")
+                      : ""}
+                  </p>
 
                   <p
                     className="
