@@ -6098,6 +6098,10 @@ export default async function HomePage({
         </div>
       </footer>
 
+      <a href={`/${locale}/canales-pedido`} className="mx-auto my-6 flex min-h-12 w-fit items-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-sm font-black text-[#12100e] shadow-lg transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
+        {locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}
+      </a>
+
       <RinconAiWidget
         locale={locale}
         orderHref={orderHref}
