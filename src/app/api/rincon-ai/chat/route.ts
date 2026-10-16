@@ -26,7 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
   const contentType = request.headers.get("content-type") ?? "";
-  if (!/^application\\/json(?:\\s*;|$)/i.test(contentType)) {
+  if (!contentType.toLowerCase().startsWith("application/json")) {
     return NextResponse.json(
       { error: "unsupported_media_type" },
       { status: 415, headers: { "Cache-Control": "no-store" } },
