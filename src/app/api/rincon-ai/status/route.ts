@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
  * model requests or paid-provider tokens to the IA service.
  */
 export async function GET(): Promise<NextResponse> {
-  const configuredUrl = process.env.RINCON_IA_PUBLIC_STATUS_URL?.trim();
+  const configuredUrl = process.env["RINCON_IA_PUBLIC_STATUS_URL"]?.trim();
 
   if (!configuredUrl) {
     return NextResponse.json(
