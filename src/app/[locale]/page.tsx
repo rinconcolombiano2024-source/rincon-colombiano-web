@@ -787,7 +787,7 @@ const homeContent:
         "Zaproś znajomych na kolumbijskie jedzenie. Program poleceń i jego warunki jeszcze nie obowiązują.",
 
       tokenTitle:
-        "Bezpieczny QR / token",
+        "Promocje i oferty",
 
       tokenDescription:
         "Wszystkie zasady promocji i ewentualne kody ogłosimy przed uruchomieniem programu.",
