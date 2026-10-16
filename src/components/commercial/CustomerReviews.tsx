@@ -29,14 +29,14 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
     return () => { active = false; };
   }, []);
   useEffect(() => {
-    if (!open) return;
+    if (!open) { return; }
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (busy) return;
+    if (busy) { return; }
     setBusy(true);
     setMessage("");
     try {
