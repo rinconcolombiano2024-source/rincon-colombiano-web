@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-  const input = payload as Record<string, unknown>;
+  const input = payload as { question?: unknown; locale?: unknown; history?: unknown };
   if (
     typeof input.question !== "string" ||
     input.question.trim().length < 1 ||
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const result: unknown = await response.json();
     if (
       !result || typeof result !== "object" ||
-      typeof (result as Record<string, unknown>).answer !== "string"
+      typeof (result as { answer?: unknown }).answer !== "string"
     ) { return unavailable(); }
     const answer = (result as { answer: string }).answer.trim();
     if (!answer || answer.length > MAX_RESPONSE) { return unavailable(); }
