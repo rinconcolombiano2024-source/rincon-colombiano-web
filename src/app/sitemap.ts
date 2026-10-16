@@ -185,5 +185,12 @@ export default function sitemap():
   return [
     ...buildStaticSitemapEntries(),
     ...buildRestaurantSitemapEntries(),
+    ...["canales-pedido", "polityka-prywatnosci", "polityka-cookies"].flatMap(slug => SUPPORTED_LOCALES.map(locale => ({
+      url: buildProductionUrl(`/${locale}/${slug}`),
+      alternates: { languages: Object.fromEntries([
+        ...SUPPORTED_LOCALES.map(language => [seoLocaleConfig[language].hreflang, buildProductionUrl(`/${language}/${slug}`)]),
+        ["x-default", buildProductionUrl(`/pl/${slug}`)],
+      ]) },
+    }))),
   ];
 }

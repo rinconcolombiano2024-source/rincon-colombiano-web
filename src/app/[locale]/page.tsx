@@ -1,3 +1,4 @@
+import { BusinessIdentity } from "@/components/commercial/BusinessIdentity";
 import {
   RinconAiWidget,
 } from "@/components/rincon-ai/RinconAiWidget";
@@ -3858,6 +3859,34 @@ export default async function HomePage({
                 </a>
 
                 <a
+                  href="https://rincon-colombiano.sumupstore.com/produkty"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                    inline-flex
+                    min-h-12
+                    items-center
+                    rounded-full
+                    border
+                    border-[#f7c600]
+                    bg-white
+                    px-6
+                    text-sm
+                    font-black
+                    text-[#12100e]
+                    transition-colors
+                    hover:bg-[#f7c600]
+                  "
+                >
+                  {locale === "pl"
+                    ? "Zamów bezpośrednio — płatność online"
+                    : locale === "es"
+                      ? "Pedir directamente — pago en línea"
+                      : "Order directly — pay online"}
+                  <span className="ml-2" aria-hidden="true">↗</span>
+                </a>
+
+                <a
                   href="#menu"
                   className="
                     inline-flex
@@ -5421,6 +5450,7 @@ export default async function HomePage({
                     .description
                 }
               </p>
+              <BusinessIdentity locale={locale} />
             </div>
 
             <div

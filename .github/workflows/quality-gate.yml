@@ -109,6 +109,12 @@ jobs:
       - name: Verify CEO only trusts official domain with matching deployed Git SHA
         run: node --experimental-strip-types scripts/test-official-domain-revision.mjs
 
+      - name: Test integrated IA engine and restaurant chat
+        run: |
+          npm --prefix apps/ia test
+          node --test scripts/test-native-restaurant-chat.mjs scripts/check-order-channels.mjs
+          node --experimental-strip-types --test scripts/test-chat-payload.mjs
+
       - name: Typecheck
         run: npm run typecheck
 

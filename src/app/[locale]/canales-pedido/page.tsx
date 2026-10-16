@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { isSeoProductionEnvironment } from "@/config/seo";
 import { notFound } from "next/navigation";
 
 type Locale = "pl" | "es" | "en";
@@ -11,21 +12,21 @@ const labels = {
 const delivery = [
   { name: "Uber Eats", url: "https://www.ubereats.com/pl/store/rincon-colombiano/wL2-43SIUx2415myUeosqw" },
   { name: "Glovo", url: "https://glovoapp.com/pl/pl/warszawa/stores/rincon-colombiano-waw" },
-  { name: "Pyszne.pl", url: "https://www.pyszne.pl/en/menu/rincon-colombiano" },
+  { name: "Pyszne.pl", url: "https://www.pyszne.pl/menu/rincon-colombiano" },
   { name: "Wolt", url: "https://wolt.com/pl/pol/warsaw/restaurant/rincon-colombiano" },
 ] as const;
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!(locale in labels)) { return {}; }
   const t = labels[locale as Locale];
-  return { title: t.title, description: t.intro, alternates: { canonical: `/${locale}/canales-pedido`, languages: { pl: "/pl/canales-pedido", es: "/es/canales-pedido", en: "/en/canales-pedido" } }, robots: { index: true, follow: true } };
+  return { title: t.title, description: t.intro, alternates: { canonical: `/${locale}/canales-pedido`, languages: { pl: "/pl/canales-pedido", es: "/es/canales-pedido", en: "/en/canales-pedido" } }, robots: { index: isSeoProductionEnvironment(), follow: true } };
 }
 export default async function OrderChannels({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!(locale in labels)) { notFound(); }
   const t = labels[locale as Locale];
   return (
-    <main className="min-h-screen bg-[#faf8f3] px-4 py-12 text-[#171717] sm:py-20">
+    <main id="main-content" className="min-h-screen bg-[#faf8f3] px-4 py-12 text-[#171717] sm:py-20">
       <div className="mx-auto max-w-4xl">
         <a href={`/${locale}`} className="font-semibold text-[#123d73] underline underline-offset-4">{t.back}</a>
         <p className="mt-10 text-sm font-extrabold uppercase tracking-widest text-[#b62532]">Rincón Colombiano · Warszawa</p>
