@@ -135,6 +135,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }),
     });
     if (!response.ok) { return unavailable(); }
+    // Only consume the expected JSON representation from the protected IA server.
+    const upstreamType = response.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase();
+    if (upstreamType !== "application/json") { return unavailable(); }
     // Do not buffer an unbounded upstream response, even from an allowlisted host.
     // A compromised or malfunctioning IA service must not exhaust server memory.
     const reader = response.body?.getReader();
@@ -159,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     const result: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
     if (
-      !result || typeof result !== "object" ||
+      !result || typeof result !== "object" || Array.isArray(result) ||
       typeof (result as { answer?: unknown }).answer !== "string"
     ) { return unavailable(); }
     const answer = (result as { answer: string }).answer.trim();
