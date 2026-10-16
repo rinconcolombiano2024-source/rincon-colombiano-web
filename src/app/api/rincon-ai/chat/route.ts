@@ -1,3 +1,4 @@
+import { nativeRestaurantChat } from "@/lib/rincon-ai/native";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -8,10 +9,9 @@ const MAX_HISTORY = 6;
 const MAX_RESPONSE = 1200;
 const TIMEOUT_MS = 9000;
 
-// Enabled only when a protected IA service and server-only credentials are configured.
-// Provider-side rate limiting and operational budget controls remain required.
-// Never expose credentials
-// to browsers or use the IA administrative API directly from the client.
+// Native mode and the protected HTTPS bridge both require server-only credentials.
+// Production also requires deployment-wide rate limiting and provider budget caps.
+// Never expose IA credentials to browsers or call its administrative API.
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const unavailable = () => NextResponse.json(
     { available: false, reason: "not_configured" },
@@ -41,30 +41,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const endpointString = process.env["RINCON_IA_CHAT_ENDPOINT"];
-  const sharedToken = process.env["RINCON_IA_CHAT_TOKEN"];
-  if (!endpointString || !sharedToken || sharedToken.length < 32) {
-    return unavailable();
-  }
-
-  let endpoint: URL;
-  try {
-    endpoint = new URL(endpointString);
-    const allowedHost = process.env["RINCON_IA_CHAT_HOST"];
-    if (
-      endpoint.protocol !== "https:" ||
-      !allowedHost ||
-      endpoint.hostname !== allowedHost ||
-      endpoint.pathname !== "/api/restaurant-chat" ||
-      endpoint.username || endpoint.password ||
-      endpoint.search || endpoint.hash
-    ) {
-      return unavailable();
-    }
-  } catch {
-    return unavailable();
-  }
-
   let payload: unknown;
   try {
     // Bound the actual streamed bytes, not the untrusted Content-Length.
@@ -82,8 +58,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       size += value.byteLength;
       if (size > 5000) {
-        // A disconnected client can cause cancel() to reject. Preserve the 413.
-        try { await reader.cancel(); } catch { /* Best-effort cancellation. */ }
+        // Cancellation may reject if the peer has already disconnected;
+        // an oversized request must still receive a 413, never a 400.
+        try {
+          await reader.cancel();
+        } catch {
+          // The body is already unusable; preserve the size-limit response.
+        }
         return NextResponse.json({ error: "too_large" }, { status: 413 });
       }
       chunks.push(value);
@@ -119,6 +100,42 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         typeof entry.text === "string" && entry.text.length <= MAX_QUESTION,
     )
     : [];
+
+  if (process.env["RINCON_IA_MODE"] === "native") {
+    try {
+      const answer = await nativeRestaurantChat().answer({ question: input.question.trim(), locale: String(input.locale), history });
+      return NextResponse.json({ available: true, answer }, { headers: { "Cache-Control": "no-store" } });
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "RATE_LIMITED") {
+        return NextResponse.json({ available: false, reason: "busy" }, { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "60" } });
+      }
+      return unavailable();
+    }
+  }
+
+  const endpointString = process.env["RINCON_IA_CHAT_ENDPOINT"];
+  const sharedToken = process.env["RINCON_IA_CHAT_TOKEN"];
+  if (!endpointString || !sharedToken || sharedToken.length < 32) {
+    return unavailable();
+  }
+
+  let endpoint: URL;
+  try {
+    endpoint = new URL(endpointString);
+    const allowedHost = process.env["RINCON_IA_CHAT_HOST"];
+    if (
+      endpoint.protocol !== "https:" ||
+      !allowedHost ||
+      endpoint.hostname !== allowedHost ||
+      endpoint.pathname !== "/api/restaurant-chat" ||
+      endpoint.username || endpoint.password ||
+      endpoint.search || endpoint.hash
+    ) {
+      return unavailable();
+    }
+  } catch {
+    return unavailable();
+  }
 
   try {
     const response = await fetch(endpoint, {

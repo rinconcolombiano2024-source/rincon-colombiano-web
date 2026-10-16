@@ -188,6 +188,7 @@ const eslintConfig = defineConfig([
    * ----------------------------------------------------------
    */
   globalIgnores([
+    "apps/ia/**", // Upstream CommonJS app has its own node:test suite.
     ".next/**",
     "out/**",
     "build/**",

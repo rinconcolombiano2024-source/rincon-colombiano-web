@@ -1,3 +1,4 @@
+import { nativeRestaurantChat } from "@/lib/rincon-ai/native";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -9,6 +10,14 @@ export const dynamic = "force-dynamic";
  * model requests or paid-provider tokens to the IA service.
  */
 export async function GET(): Promise<NextResponse> {
+  if (process.env["RINCON_IA_MODE"] === "native") {
+    try {
+      const available = nativeRestaurantChat().configured();
+      return NextResponse.json({ available }, { status: available ? 200 : 503, headers: { "Cache-Control": "no-store" } });
+    } catch {
+      return NextResponse.json({ available: false }, { status: 503, headers: { "Cache-Control": "no-store" } });
+    }
+  }
   const configuredUrl = process.env["RINCON_IA_PUBLIC_STATUS_URL"]?.trim();
 
   if (!configuredUrl) {

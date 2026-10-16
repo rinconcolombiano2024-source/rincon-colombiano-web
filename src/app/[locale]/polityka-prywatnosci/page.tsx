@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { isSeoProductionEnvironment } from "@/config/seo";
+import { BusinessIdentity } from "@/components/commercial/BusinessIdentity";
 import { notFound } from "next/navigation";
 
 const content = {
@@ -5,6 +8,12 @@ const content = {
   pl: { title: "Polityka prywatności", intro: "Informacje o przetwarzaniu danych i ustawieniach prywatności tej strony.", controller: "Administrator: Rincón Colombiano, Warszawa, Polska. W sprawach prywatności skorzystaj z danych kontaktowych podanych na stronie.", essential: "Dane techniczne: serwer może przetwarzać adres IP, datę, dane przeglądarki i logi niezbędne do bezpieczeństwa i działania witryny.", choice: "Preferencje: zapisujemy lokalnie w przeglądarce decyzję o opcjonalnych plikach cookie. Możesz ją zmienić przez «Ustawienia prywatności».", rights: "W odpowiednich przypadkach możesz żądać dostępu, sprostowania, usunięcia danych lub wnieść sprzeciw oraz skargę do UODO.", caution: "Przed uznaniem dokumentu za ostateczny należy uzupełnić dane podmiotu, kontakt, dostawców usług, okresy przechowywania i rzeczywiście używane technologie." },
   en: { title: "Privacy policy", intro: "Information about personal data and privacy choices on this website.", controller: "Controller: Rincón Colombiano, Warsaw, Poland. Use the contact information on this website for privacy inquiries.", essential: "Technical data: the server may process IP address, date, browser information and logs needed for security and operation.", choice: "Preferences: we save your optional-cookie choice locally in your browser. You can change it using 'Privacy settings'.", rights: "Where applicable, you may request access, correction, deletion or object to processing, and complain to Poland's data protection authority (UODO).", caution: "Before treating this as a final legal notice, add the legal entity, privacy contact, providers, retention periods and technologies actually in use." },
 } as const;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!["pl", "es", "en"].includes(locale)) { return {}; }
+  const t = content[locale as keyof typeof content];
+  return { title: t.title, description: t.intro, alternates: { canonical: `/${locale}/polityka-prywatnosci`, languages: { pl: "/pl/polityka-prywatnosci", es: "/es/polityka-prywatnosci", en: "/en/polityka-prywatnosci" } }, robots: { index: isSeoProductionEnvironment(), follow: true } };
+}
 export default async function PolicyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!(locale in content)) { notFound(); }
@@ -13,6 +22,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ locale:
     <a href={`/${locale}`} className="text-[#123d73] underline">← Rincón Colombiano</a>
     <h1 className="mt-8 text-3xl font-black text-[#123d73]">{t.title}</h1>
     <p className="mt-5 leading-7">{t.intro}</p>
+    <BusinessIdentity locale={locale as keyof typeof content} />
     {[t.controller,t.essential,t.choice,t.rights].map((paragraph,i)=><p key={i} className="mt-5 leading-7">{paragraph}</p>)}
     <p className="mt-8 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6">{t.caution}</p>
   </main>;

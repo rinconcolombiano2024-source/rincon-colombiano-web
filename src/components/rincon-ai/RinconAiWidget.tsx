@@ -11,11 +11,12 @@ import type {
   AppLocale,
 } from "@/i18n/config";
 
+import { buildChatPayload } from "@/components/rincon-ai/chat-payload";
 import { getCommercialInquiryIntent } from "@/components/rincon-ai/commercial-intents";
 
 
 // Keep a predictable number of chat nodes in mobile browsers, regardless
-// of how often visitors ask questions. Messages stay entirely local.
+// of how often visitors ask questions. Only bounded recent context is sent for replies.
 const MAX_VISIBLE_CHAT_MESSAGES = 40;
 
 interface RinconAiWidgetProps {
@@ -675,10 +676,6 @@ export function RinconAiWidget({
     pendingRequestRef.current = true;
     setIsLoading(true);
     try {
-      const history = messages.slice(-6).map((message) => ({
-        role: message.role,
-        text: message.text.slice(0, 800),
-      }));
       const response = await fetch("/api/rincon-ai/chat", {
         // Keep the chat responsive even if a network intermediary stalls.
         // The server has a separate 9-second upstream timeout.
@@ -686,11 +683,7 @@ export function RinconAiWidget({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({
-          question: rawQuestion.trim().slice(0, 800),
-          locale,
-          history,
-        }),
+        body: buildChatPayload(rawQuestion, locale, messages),
       });
       if (response.ok) {
         const data: unknown = await response.json();
@@ -1377,7 +1370,9 @@ export function RinconAiWidget({
                       text-[#756b61]
                     "
                   >
-                    {copy.safety}
+                    {copy.safety}{" "}
+                    {locale === "pl" ? "Wiadomość i ostatnie wypowiedzi mogą być przekazywane dostawcy AI. Nie podawaj danych wrażliwych." : locale === "es" ? "Tu mensaje y el contexto reciente pueden enviarse a un proveedor de IA. No compartas datos sensibles." : "Your message and recent context may be sent to an AI provider. Do not share sensitive data."}{" "}
+                    <a href={`/${locale}/polityka-prywatnosci`} className="underline underline-offset-2">{locale === "pl" ? "Prywatność" : locale === "es" ? "Privacidad" : "Privacy"}</a>
                   </p>
                 </div>
               </section>

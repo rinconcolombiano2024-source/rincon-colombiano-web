@@ -1,3 +1,4 @@
+import { BusinessIdentity } from "@/components/commercial/BusinessIdentity";
 import {
   RinconAiWidget,
 } from "@/components/rincon-ai/RinconAiWidget";
@@ -2893,21 +2894,7 @@ export default async function HomePage({
 
 
             <a
-              href={
-                orderHref
-              }
-              target={
-                siteConfig
-                  .orderAppUrl
-                  ? "_blank"
-                  : undefined
-              }
-              rel={
-                siteConfig
-                  .orderAppUrl
-                  ? "noopener noreferrer"
-                  : undefined
-              }
+              href={`/${locale}/canales-pedido`}
               className="
                 hidden
                 min-h-11
@@ -3179,21 +3166,7 @@ export default async function HomePage({
                 "
               >
                 <a
-                  href={
-                    orderHref
-                  }
-                  target={
-                    siteConfig
-                      .orderAppUrl
-                      ? "_blank"
-                      : undefined
-                  }
-                  rel={
-                    siteConfig
-                      .orderAppUrl
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
+                  href={`/${locale}/canales-pedido`}
                   className="
                     inline-flex
                     min-h-13
@@ -3397,7 +3370,7 @@ export default async function HomePage({
                               leading-none
                             "
                           >
-                            Gastronomía que cuenta una historia.
+                            {locale === "pl" ? "Kuchnia, która opowiada historię." : locale === "es" ? "Gastronomía que cuenta una historia." : "Food that tells a story."}
                           </strong>
                         </div>
 
@@ -3816,21 +3789,7 @@ export default async function HomePage({
                 "
               >
                 <a
-                  href={
-                    orderHref
-                  }
-                  target={
-                    siteConfig
-                      .orderAppUrl
-                      ? "_blank"
-                      : undefined
-                  }
-                  rel={
-                    siteConfig
-                      .orderAppUrl
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
+                  href={`/${locale}/canales-pedido`}
                   className="
                     inline-flex
                     min-h-12
@@ -3855,6 +3814,34 @@ export default async function HomePage({
                   >
                     →
                   </span>
+                </a>
+
+                <a
+                  href="https://rincon-colombiano.sumupstore.com/produkty"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                    inline-flex
+                    min-h-12
+                    items-center
+                    rounded-full
+                    border
+                    border-[#f7c600]
+                    bg-white
+                    px-6
+                    text-sm
+                    font-black
+                    text-[#12100e]
+                    transition-colors
+                    hover:bg-[#f7c600]
+                  "
+                >
+                  {locale === "pl"
+                    ? "Zamów bezpośrednio — płatność online"
+                    : locale === "es"
+                      ? "Pedir directamente — pago en línea"
+                      : "Order directly — pay online"}
+                  <span className="ml-2" aria-hidden="true">↗</span>
                 </a>
 
                 <a
@@ -5421,6 +5408,7 @@ export default async function HomePage({
                     .description
                 }
               </p>
+              <BusinessIdentity locale={locale} />
             </div>
 
             <div
