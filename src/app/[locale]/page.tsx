@@ -58,6 +58,7 @@ import {
 
 
 import FoodGallery from "@/components/commercial/FoodGallery";
+import { CustomerReviews } from "@/components/commercial/CustomerReviews";
 
 import { SocialLinks } from "@/components/social/SocialLinks";
 
@@ -4525,31 +4526,14 @@ export default async function HomePage({
                 }
               </p>
 
+              <CustomerReviews locale={locale} />
               <div
                 className="
-                  mt-8
+                  mt-5
                   grid
                   gap-3
                 "
               >
-                <a
-                  href="#contact"
-                  className="
-                    rounded-2xl
-                    bg-[#f7c600]
-                    px-5
-                    py-4
-                    text-center
-                    text-sm
-                    font-black
-                  "
-                >
-                  {
-                    copy
-                      .reviews
-                      .action
-                  }
-                </a>
 
                 <a
                   href="#contact"
