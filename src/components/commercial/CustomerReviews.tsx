@@ -49,7 +49,8 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previousOverflow; openButtonRef.current?.focus(); };
+    const opener = openButtonRef.current;
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previousOverflow; opener?.focus(); };
   }, [open]);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
