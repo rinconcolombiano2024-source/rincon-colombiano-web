@@ -45,7 +45,7 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, body, rating, website }),
       });
-      if (!response.ok) throw new Error("submission failed");
+      if (!response.ok) { throw new Error("submission failed"); }
       setMessage(t.sent);
       setBody("");
       setName("");
