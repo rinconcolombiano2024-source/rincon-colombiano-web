@@ -8,9 +8,9 @@ const MAX_HISTORY = 6;
 const MAX_RESPONSE = 1200;
 const TIMEOUT_MS = 9000;
 
-// Deliberately disabled until a protected IA service, rate limiting and
-// operational budget controls are configured. Never expose Basic credentials
-// to browsers or use the IA administrative API directly from the client.
+// Fail closed unless a dedicated HTTPS IA endpoint and server-side token are
+// configured. Production still requires rate limiting and budget controls.
+// Never expose IA credentials to browsers or call its administrative API.
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const unavailable = () => NextResponse.json(
     { available: false, reason: "not_configured" },
@@ -58,7 +58,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       size += value.byteLength;
       if (size > 5000) {
-        await reader.cancel();
+        // Cancellation may reject if the peer has already disconnected;
+        // an oversized request must still receive a 413, never a 400.
+        try {
+          await reader.cancel();
+        } catch {
+          // The body is already unusable; preserve the size-limit response.
+        }
         return NextResponse.json({ error: "too_large" }, { status: 413 });
       }
       chunks.push(value);
