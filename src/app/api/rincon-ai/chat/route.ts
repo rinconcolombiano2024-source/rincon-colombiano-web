@@ -43,10 +43,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   let payload: unknown;
   try {
-    if (Number(request.headers.get("content-length") || 0) > 5000) {
+    // Content-Length can be omitted or forged. Bound the actual decoded body
+    // before parsing JSON so chunked requests cannot bypass the size limit.
+    const raw = await request.text();
+    if (raw.length > 5000) {
       return NextResponse.json({ error: "too_large" }, { status: 413 });
     }
-    payload = await request.json();
+    payload = JSON.parse(raw) as unknown;
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
