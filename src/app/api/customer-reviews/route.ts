@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       if (done) { break; }
       size += value.byteLength;
       if (size > 2500) {
-        await reader.cancel();
+        try { await reader.cancel(); } catch { /* Client may already be disconnected. */ }
         return response({ error: "too_large" }, 413);
       }
       chunks.push(value);
