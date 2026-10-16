@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = readFileSync(new URL("../src/app/[locale]/pedir/page.tsx", import.meta.url), "utf8");
+const source = readFileSync(new URL("../src/app/[locale]/canales-pedido/page.tsx", import.meta.url), "utf8");
 
 test("localized order page has all supported languages", () => {
-  for (const locale of ["pl", "es", "en"]) assert.match(source, new RegExp('\\b' + locale + ': \\{ title:'));
+  for (const locale of ["pl", "es", "en"]) { assert.match(source, new RegExp(`\\b${locale}: \\{ title:`)); }
 });
 test("direct ordering keeps RC ORDERA and no invented checkout", () => {
   assert.match(source, /https:\/\/rincon-colombiano-pedidosapp\.vercel\.app\//);
@@ -17,7 +17,7 @@ test("delivery links lead to identified restaurant listings", () => {
     "glovoapp.com/pl/pl/warszawa/stores/rincon-colombiano-waw",
     "pyszne.pl/en/menu/rincon-colombiano",
     "wolt.com/pl/pol/warsaw/restaurant/rincon-colombiano",
-  ]) assert.ok(source.includes(fragment), fragment);
+  ]) { assert.ok(source.includes(fragment), fragment); }
 });
 test("external links are protected and SEO locales are declared", () => {
   assert.match(source, /rel="noopener noreferrer"/);
