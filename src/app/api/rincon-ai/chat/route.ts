@@ -25,6 +25,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 403, headers: { "Cache-Control": "no-store" } },
     );
   }
+  const origin = request.headers.get("origin");
+  if (!origin || origin !== request.nextUrl.origin) {
+    return NextResponse.json(
+      { error: "forbidden" },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   const contentType = request.headers.get("content-type") ?? "";
   if (contentType.split(";")[0]?.trim().toLowerCase() !== "application/json") {
     return NextResponse.json(
