@@ -93,6 +93,13 @@ function localHref(href, sourcePath) {
   if (absolute.origin !== officialOrigin) {
     return null; // RC ORDERA, WhatsApp and public social platforms
   }
+  // /produkty is the existing separately hosted SumUp storefront on the
+  // canonical domain, not a Next.js page. Never crawl it against localhost:
+  // Next.js legitimately redirects this unknown route to its locale router.
+  // Keep this exception exact so other broken internal links still fail CI.
+  if (absolute.pathname === "/produkty" && !absolute.search && !absolute.hash) {
+    return null;
+  }
   // Canonical links on production stay HTTPS; localhost is only the
   // smoke-test transport and must never leak into actual site hrefs.
   return { path: absolute.pathname + absolute.search, anchor: decodeURIComponent(absolute.hash.slice(1)) };
