@@ -868,10 +868,14 @@ export function RinconAiWidget({
       return;
     }
 
+    // Be transparent when the generative service is unavailable. Do not
+    // pretend that a scripted fallback is a free-form AI conversation.
     addAssistantMessage(
-      copy.fallbackAnswer,
-      contactHref,
-      copy.contactTeam,
+      locale === "pl"
+        ? "Chętnie porozmawiam! 😊 Teraz nie mogę odpowiedzieć na pytania otwarte. Mogę pomóc z menu, zamówieniem, cateringiem lub dojazdem do restauracji. W czym pomóc?"
+        : locale === "en"
+          ? "I'd love to chat! 😊 I can't answer open-ended questions right now, but I can help with our menu, orders, catering or directions. What would you like to know?"
+          : "¡Me encantaría conversar contigo! 😊 Ahora mismo no puedo responder preguntas abiertas, pero sí ayudarte con el menú, los pedidos, el catering o cómo llegar. ¿Qué te gustaría saber?",
     );
   }
 
@@ -881,6 +885,7 @@ export function RinconAiWidget({
       FormEvent<HTMLFormElement>,
   ): void {
     event.preventDefault();
+    if (pendingRequestRef.current) return;
 
     const question =
       input;
