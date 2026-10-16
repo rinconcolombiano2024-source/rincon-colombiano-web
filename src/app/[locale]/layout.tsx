@@ -12,6 +12,7 @@ import {
 } from "next/navigation";
 
 import "../globals.css";
+import { CookieConsent } from "@/components/commercial/CookieConsent";
 
 import {
   SEO_ORIGIN,
@@ -239,6 +240,7 @@ export default async function LocaleLayout({
         </a>
 
         {children}
+        <CookieConsent locale={locale} />
 
         <script
           type="application/ld+json"
