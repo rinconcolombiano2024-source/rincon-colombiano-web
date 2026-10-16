@@ -24,13 +24,13 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
     let active = true;
     fetch("/api/customer-reviews", { cache: "no-store" })
       .then((r) => r.ok ? r.json() : { reviews: [] })
-      .then((data: { reviews?: Review[] }) => { if (active) setReviews(Array.isArray(data.reviews) ? data.reviews : []); })
+      .then((data: { reviews?: Review[] }) => { if (active) { setReviews(Array.isArray(data.reviews) ? data.reviews : []); } })
       .catch(() => {});
     return () => { active = false; };
   }, []);
   useEffect(() => {
     if (!open) { return; }
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); } };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
@@ -63,7 +63,7 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
             <p className="mt-2 whitespace-pre-wrap break-words text-sm">{review.body}</p>
           </article>
         ))}</div>}
-      {open && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
+      {open && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) { setOpen(false); } }}>
         <div role="dialog" aria-modal="true" aria-labelledby="review-dialog-title" className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
           <div className="flex items-start justify-between gap-4"><h3 id="review-dialog-title" className="text-2xl font-extrabold text-[#123d73]">{t.title}</h3><button type="button" onClick={() => setOpen(false)} aria-label={t.close} className="rounded-full px-3 py-1 text-2xl">×</button></div>
           <form onSubmit={submit} className="mt-5 space-y-4">
