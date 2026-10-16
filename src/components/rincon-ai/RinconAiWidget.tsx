@@ -885,7 +885,9 @@ export function RinconAiWidget({
       FormEvent<HTMLFormElement>,
   ): void {
     event.preventDefault();
-    if (pendingRequestRef.current) return;
+    if (pendingRequestRef.current) {
+      return;
+    }
 
     const question =
       input;
