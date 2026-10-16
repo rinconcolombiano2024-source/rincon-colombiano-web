@@ -8,8 +8,9 @@ const MAX_HISTORY = 6;
 const MAX_RESPONSE = 1200;
 const TIMEOUT_MS = 9000;
 
-// Deliberately disabled until a protected IA service, rate limiting and
-// operational budget controls are configured. Never expose Basic credentials
+// Enabled only when a protected IA service and server-only credentials are configured.
+// Provider-side rate limiting and operational budget controls remain required.
+// Never expose credentials
 // to browsers or use the IA administrative API directly from the client.
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const unavailable = () => NextResponse.json(
@@ -81,7 +82,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       size += value.byteLength;
       if (size > 5000) {
-        await reader.cancel();
+        // A disconnected client can cause cancel() to reject. Preserve the 413.
+        try { await reader.cancel(); } catch { /* Best-effort cancellation. */ }
         return NextResponse.json({ error: "too_large" }, { status: 413 });
       }
       chunks.push(value);
