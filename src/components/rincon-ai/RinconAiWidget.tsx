@@ -578,10 +578,10 @@ export function RinconAiWidget({
   }
 
 
-  function handleQuestion(
+  async function handleQuestion(
     rawQuestion:
       string,
-  ): void {
+  ): Promise<void> {
     const question =
       normalizeMessage(
         rawQuestion,
@@ -636,6 +636,43 @@ export function RinconAiWidget({
       );
 
       return;
+    }
+
+    // Prefer real generative conversation. If the dedicated IA service is
+    // unavailable, retain the existing safe, localized intent responses.
+    // Allergy guidance above always comes directly from the restaurant.
+    try {
+      const history = messages.slice(-6).map((message) => ({
+        role: message.role,
+        text: message.text.slice(0, 800),
+      }));
+      const response = await fetch("/api/rincon-ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          question: rawQuestion.trim().slice(0, 800),
+          locale,
+          history,
+        }),
+      });
+      if (response.ok) {
+        const data: unknown = await response.json();
+        if (
+          data &&
+          typeof data === "object" &&
+          "available" in data &&
+          data.available === true &&
+          "answer" in data &&
+          typeof data.answer === "string" &&
+          data.answer.trim().length > 0
+        ) {
+          addAssistantMessage(data.answer.trim());
+          return;
+        }
+      }
+    } catch {
+      // Network and IA failures must never break the public website.
     }
 
     // Visitors often ask about prices and opening hours without using
