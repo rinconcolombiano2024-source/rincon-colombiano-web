@@ -43,6 +43,11 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
           <p className="mt-3 text-slate-700">{t.directDesc}</p>
           <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">RC ORDERA ↗</a>
         </section>
+        <section className="mt-10 rounded-3xl border-2 border-[#123d73] bg-white p-6 shadow-md sm:p-8">
+          <h2 className="text-2xl font-bold">{t.pay}</h2>
+          <p className="mt-3 text-slate-700">{t.payDesc}</p>
+          <a href="https://rincon-colombiano.sumupstore.com/produkty" target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#f7c600] px-6 py-3 font-bold text-[#123d73] hover:bg-[#ffe064] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.booking} ↗</a>
+        </section>
         <section className="mt-10" aria-labelledby="delivery-heading">
           <h2 id="delivery-heading" className="text-2xl font-bold">{t.platforms}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -53,11 +58,7 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
             ))}
           </div>
         </section>
-        <section className="mt-10 rounded-3xl bg-white p-6 sm:p-8">
-          <h2 className="text-2xl font-bold">{t.pay}</h2>
-          <p className="mt-3 text-slate-700">{t.payDesc}</p>
-          <a href="https://rincon-colombiano.sumupstore.com/produkty" target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.booking} ↗</a>
-        </section>
+
       </div>
     </main>
   );

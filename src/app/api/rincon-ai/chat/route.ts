@@ -9,8 +9,8 @@ const MAX_HISTORY = 6;
 const MAX_RESPONSE = 1200;
 const TIMEOUT_MS = 9000;
 
-// Fail closed unless a dedicated HTTPS IA endpoint and server-side token are
-// configured. Production still requires rate limiting and budget controls.
+// Native mode and the protected HTTPS bridge both require server-only credentials.
+// Production also requires deployment-wide rate limiting and provider budget caps.
 // Never expose IA credentials to browsers or call its administrative API.
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const unavailable = () => NextResponse.json(

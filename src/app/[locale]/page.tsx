@@ -2894,21 +2894,7 @@ export default async function HomePage({
 
 
             <a
-              href={
-                orderHref
-              }
-              target={
-                siteConfig
-                  .orderAppUrl
-                  ? "_blank"
-                  : undefined
-              }
-              rel={
-                siteConfig
-                  .orderAppUrl
-                  ? "noopener noreferrer"
-                  : undefined
-              }
+              href={`/${locale}/canales-pedido`}
               className="
                 hidden
                 min-h-11
@@ -3180,21 +3166,7 @@ export default async function HomePage({
                 "
               >
                 <a
-                  href={
-                    orderHref
-                  }
-                  target={
-                    siteConfig
-                      .orderAppUrl
-                      ? "_blank"
-                      : undefined
-                  }
-                  rel={
-                    siteConfig
-                      .orderAppUrl
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
+                  href={`/${locale}/canales-pedido`}
                   className="
                     inline-flex
                     min-h-13
@@ -3398,7 +3370,7 @@ export default async function HomePage({
                               leading-none
                             "
                           >
-                            Gastronomía que cuenta una historia.
+                            {locale === "pl" ? "Kuchnia, która opowiada historię." : locale === "es" ? "Gastronomía que cuenta una historia." : "Food that tells a story."}
                           </strong>
                         </div>
 
@@ -3817,21 +3789,7 @@ export default async function HomePage({
                 "
               >
                 <a
-                  href={
-                    orderHref
-                  }
-                  target={
-                    siteConfig
-                      .orderAppUrl
-                      ? "_blank"
-                      : undefined
-                  }
-                  rel={
-                    siteConfig
-                      .orderAppUrl
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
+                  href={`/${locale}/canales-pedido`}
                   className="
                     inline-flex
                     min-h-12
