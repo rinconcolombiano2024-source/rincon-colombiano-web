@@ -6099,7 +6099,12 @@ export default async function HomePage({
       </footer>
 
       <a href={`/${locale}/canales-pedido`} aria-label={locale === "pl" ? "Zamów jedzenie — wybierz sposób zamówienia" : locale === "es" ? "Pedir comida — elegir cómo pedir" : "Order food — choose how to order"} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 z-40 flex min-h-12 max-w-[calc(100vw-7rem)] items-center justify-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-center text-sm font-black text-[#12100e] shadow-xl transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:bottom-6 sm:left-6">
-        {locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}
+        <span className="flex flex-col items-center leading-tight">
+          <span>{locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}</span>
+          <span className="mt-0.5 text-[0.65rem] font-semibold text-[#123d73]">
+            {locale === "pl" ? "Odbiór lub dostawa" : locale === "es" ? "Recoger o domicilio" : "Pickup or delivery"}
+          </span>
+        </span>
       </a>
 
       <RinconAiWidget
