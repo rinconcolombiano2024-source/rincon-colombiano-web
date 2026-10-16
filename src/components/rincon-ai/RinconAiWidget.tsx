@@ -16,7 +16,7 @@ import { getCommercialInquiryIntent } from "@/components/rincon-ai/commercial-in
 
 
 // Keep a predictable number of chat nodes in mobile browsers, regardless
-// of how often visitors ask questions. Messages stay entirely local.
+// of how often visitors ask questions. Only bounded recent context is sent for replies.
 const MAX_VISIBLE_CHAT_MESSAGES = 40;
 
 interface RinconAiWidgetProps {
@@ -1370,7 +1370,9 @@ export function RinconAiWidget({
                       text-[#756b61]
                     "
                   >
-                    {copy.safety}
+                    {copy.safety}{" "}
+                    {locale === "pl" ? "Wiadomość i ostatnie wypowiedzi mogą być przekazywane dostawcy AI. Nie podawaj danych wrażliwych." : locale === "es" ? "Tu mensaje y el contexto reciente pueden enviarse a un proveedor de IA. No compartas datos sensibles." : "Your message and recent context may be sent to an AI provider. Do not share sensitive data."}{" "}
+                    <a href={`/${locale}/polityka-prywatnosci`} className="underline underline-offset-2">{locale === "pl" ? "Prywatność" : locale === "es" ? "Privacidad" : "Privacy"}</a>
                   </p>
                 </div>
               </section>

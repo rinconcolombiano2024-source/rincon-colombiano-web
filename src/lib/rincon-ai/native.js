@@ -88,6 +88,7 @@ export function createNativeRestaurantChat({ env = process.env, fetchImpl = fetc
         execute: async ({ provider, selection }) => {
           const request = provider.buildTextRequest({ model: selection.id, purpose: "router", instructions: restaurantInstructions(locale, context), input: question.trim() });
           // Bound billed output as well as the returned answer and response bytes.
+          if (provider.id === "openai") { request.payload.store = false; }
           if (["openai", "xai", "groq"].includes(provider.id)) { request.payload.max_output_tokens = 900; }
           if (provider.id === "anthropic") { request.payload.max_tokens = 900; }
           if (provider.id === "gemini") { request.payload.generationConfig.maxOutputTokens = 900; }
