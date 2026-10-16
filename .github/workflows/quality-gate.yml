@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Reject high severity production dependency advisories
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
 
