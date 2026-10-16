@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Reject high severity production dependency advisories
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
 
@@ -138,6 +141,7 @@ jobs:
           fi
 
           node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3100 "$GITHUB_SHA"
+          node scripts/smoke-locale-routing.mjs http://127.0.0.1:3100
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3100
           node scripts/smoke-public.mjs http://127.0.0.1:3100
           node scripts/smoke-live-guest-journey.mjs http://127.0.0.1:3100
@@ -190,6 +194,7 @@ jobs:
           fi
 
           node scripts/smoke-deployment-revision.mjs http://127.0.0.1:3101 "$GITHUB_SHA"
+          node scripts/smoke-locale-routing.mjs http://127.0.0.1:3101
           node scripts/smoke-admin-pwa.mjs http://127.0.0.1:3101
           node scripts/smoke-public.mjs http://127.0.0.1:3101 --preview
           node scripts/smoke-live-guest-journey.mjs http://127.0.0.1:3101

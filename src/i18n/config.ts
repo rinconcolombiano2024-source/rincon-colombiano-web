@@ -795,6 +795,11 @@ export function resolveLocaleFromAcceptLanguage(
     const preference
     of preferences
   ) {
+    // q=0 explicitly excludes a language from browser negotiation.
+    if (preference.quality === 0) {
+      continue;
+    }
+
     if (
       preference.language ===
       "*"
