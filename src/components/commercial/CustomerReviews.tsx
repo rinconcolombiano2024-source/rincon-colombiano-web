@@ -24,7 +24,7 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   useEffect(() => {
     let active = true;
-    fetch("/api/customer-reviews", { cache: "no-store" })
+    fetch("/api/customer-reviews", { cache: "no-store", signal: AbortSignal.timeout(8000) })
       .then((r) => r.ok ? r.json() : { reviews: [] })
       .then((data: { reviews?: Review[] }) => { if (active) { setReviews(Array.isArray(data.reviews) ? data.reviews : []); } })
       .catch(() => {});
@@ -58,6 +58,7 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
     try {
       const response = await fetch("/api/customer-reviews", {
         method: "POST",
+        signal: AbortSignal.timeout(10000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, body, rating, website }),
       });
