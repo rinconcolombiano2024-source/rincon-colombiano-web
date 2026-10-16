@@ -22,11 +22,12 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [available, setAvailable] = useState(false);
   useEffect(() => {
     let active = true;
     fetch("/api/customer-reviews", { cache: "no-store", signal: AbortSignal.timeout(8000) })
       .then((r) => r.ok ? r.json() : { reviews: [] })
-      .then((data: { reviews?: Review[] }) => { if (active) { setReviews(Array.isArray(data.reviews) ? data.reviews : []); } })
+      .then((data: { available?: boolean; reviews?: Review[] }) => { if (active) { setAvailable(data.available === true); setReviews(Array.isArray(data.reviews) ? data.reviews : []); } })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -69,6 +70,7 @@ export function CustomerReviews({ locale }: { locale: Locale }) {
     } catch { setMessage(t.error); }
     finally { setBusy(false); }
   }
+  if (!available) { return null; }
   return (
     <div className="mt-8">
       <button ref={openButtonRef} type="button" onClick={() => { setMessage(""); setOpen(true); }} className="w-full rounded-2xl bg-[#f7c600] px-5 py-4 text-sm font-black text-[#171717] hover:bg-[#ffdc36] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.leave}</button>
