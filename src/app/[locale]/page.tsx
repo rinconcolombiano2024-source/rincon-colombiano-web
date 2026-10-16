@@ -6098,7 +6098,7 @@ export default async function HomePage({
         </div>
       </footer>
 
-      <a href={`/${locale}/canales-pedido`} className="mx-auto my-6 flex min-h-12 w-fit items-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-sm font-black text-[#12100e] shadow-lg transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
+      <a href={`/${locale}/canales-pedido`} aria-label={locale === "pl" ? "Zamów jedzenie — wybierz sposób zamówienia" : locale === "es" ? "Pedir comida — elegir cómo pedir" : "Order food — choose how to order"} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 z-40 flex min-h-12 max-w-[calc(100vw-7rem)] items-center justify-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-center text-sm font-black text-[#12100e] shadow-xl transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:bottom-6 sm:left-6">
         {locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}
       </a>
 
