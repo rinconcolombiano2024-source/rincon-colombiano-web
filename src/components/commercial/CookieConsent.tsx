@@ -28,7 +28,7 @@ export function CookieConsent({ locale }: { locale: Locale }) {
   return (
     <>
       {choice === null && (
-        <section role="dialog" aria-modal="false" aria-label={t.title} className="fixed inset-x-3 bottom-[max(6.5rem,env(safe-area-inset-bottom))] z-[80] mx-auto max-w-2xl rounded-2xl border-2 border-[#123d73] bg-white p-5 text-[#171717] shadow-2xl sm:bottom-5 sm:p-6">
+        <section role="dialog" aria-modal="false" aria-label={t.title} className="fixed inset-x-3 bottom-[max(6.5rem,env(safe-area-inset-bottom))] z-[80] mx-auto max-h-[calc(100dvh-8rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border-2 border-[#123d73] bg-white p-5 text-[#171717] shadow-2xl sm:bottom-5 sm:p-6">
           <h2 className="text-lg font-extrabold text-[#123d73]">{t.title}</h2>
           <p className="mt-2 text-sm leading-6">{t.body}</p>
           <div className="mt-3 flex flex-wrap gap-4 text-sm">
