@@ -1461,7 +1461,7 @@ export function RinconAiWidget({
               rounded-full
               border-2
               border-white
-              bg-emerald-500
+              bg-[#123d73]
             "
           />
         </span>
