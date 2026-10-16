@@ -7,6 +7,7 @@ const labels = {
   es: { title: "Pide en Rincón Colombiano", intro: "Elige cómo prefieres hacer tu pedido.", direct: "Pide directamente al restaurante", directDesc: "Haz tu pedido mediante RC ORDERA. Comprueba las opciones de pago antes de confirmarlo.", platforms: "Pide a domicilio con nuestros colaboradores", pay: "Pagos en línea", payDesc: "El enlace a la tienda SumUp se añadirá cuando el restaurante confirme su dirección oficial.", booking: "Reservas en SumUp", back: "Volver al inicio" },
   en: { title: "Order from Rincón Colombiano", intro: "Choose how you would like to order.", direct: "Order directly from the restaurant", directDesc: "Place your order through RC ORDERA. Check available payment methods before confirming.", platforms: "Delivery partners", pay: "Online payments", payDesc: "The SumUp store link will be added once the restaurant confirms its official address.", booking: "SumUp bookings", back: "Back to home" },
 } as const;
+// Only link to publicly identifiable restaurant listings. Never fabricate checkout URLs.
 const delivery = [
   { name: "Uber Eats", url: "https://www.ubereats.com/pl/store/rincon-colombiano/wL2-43SIUx2415myUeosqw" },
   { name: "Glovo", url: "https://glovoapp.com/pl/pl/warszawa/stores/rincon-colombiano-waw" },
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!(locale in labels)) return {};
   const t = labels[locale as Locale];
-  return { title: t.title, description: t.intro, robots: { index: true, follow: true } };
+  return { title: t.title, description: t.intro, alternates: { canonical: `/${locale}/pedir`, languages: { pl: "/pl/pedir", es: "/es/pedir", en: "/en/pedir" } }, robots: { index: true, follow: true } };
 }
 export default async function OrderChannels({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
