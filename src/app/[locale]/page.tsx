@@ -6098,7 +6098,7 @@ export default async function HomePage({
         </div>
       </footer>
 
-      <a href={`/${locale}/pedir`} className="fixed bottom-24 left-4 z-40 inline-flex min-h-12 items-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-sm font-black text-[#12100e] shadow-lg transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:bottom-6 sm:left-6">
+      <a href={`/${locale}/pedir`} className="mx-auto my-6 flex min-h-12 w-fit items-center rounded-full border-2 border-[#123d73] bg-[#f7c600] px-5 py-3 text-sm font-black text-[#12100e] shadow-lg transition hover:bg-[#ffdb33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
         {locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}
       </a>
 
