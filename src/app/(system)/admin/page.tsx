@@ -58,6 +58,14 @@ interface AdminModule {
 
 const ADMIN_MODULES = [
   {
+    key: "reviews",
+    eyebrow: "CLIENTES",
+    title: "Opiniones de clientes",
+    description: "Revisa, publica o retira opiniones conservando el texto y la valoración originales.",
+    status: "active",
+    href: "/admin/reviews",
+  },
+  {
     key:
       "home",
 
