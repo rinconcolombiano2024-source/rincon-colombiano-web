@@ -56,5 +56,28 @@ export function ConsentAnalytics() {
     window.gtag("event", "page_view", { page_path: pathname, page_location: window.location.origin + pathname });
   }, [allowed, pathname]);
 
+  // Measure outbound ordering intent, never payment completion or personal data.
+  useEffect(() => {
+    if (!allowed || !measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) { return; }
+    const onClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) { return; }
+      const anchor = event.target.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) { return; }
+      let url: URL;
+      try { url = new URL(anchor.href); } catch { return; }
+      const host = url.hostname.toLowerCase();
+      let channel: string | undefined;
+      if (host === "rincon-colombiano-pedidosapp.vercel.app") { channel = "rc_ordera"; }
+      else if (host === "rincon-colombiano.sumupstore.com") { channel = "sumup"; }
+      else if (host === "www.ubereats.com" || host === "ubereats.com") { channel = "uber_eats"; }
+      else if (host === "glovoapp.com") { channel = "glovo"; }
+      else if (host === "www.pyszne.pl" || host === "pyszne.pl") { channel = "pyszne"; }
+      else if (host === "wolt.com") { channel = "wolt"; }
+      if (channel) { window.gtag?.("event", "select_order_channel", { order_channel: channel }); }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [allowed]);
+
   return null;
 }
