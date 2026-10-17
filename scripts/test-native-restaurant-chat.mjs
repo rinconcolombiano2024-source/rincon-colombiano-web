@@ -75,7 +75,7 @@ test('instructions prohibit payment and allergy claims while preserving conversa
 test('native instructions use natural language names for every supported locale', () => {
   for (const [locale, language] of [['es', 'Spanish'], ['pl', 'Polish'], ['en', 'English']]) {
     const instructions = restaurantInstructions(locale, [{ role: 'user', text: '¿Puedo pedir para recoger?' }]);
-    assert.match(instructions, new RegExp('natural ' + language));
+    assert.match(instructions, new RegExp(`natural ${language}`));
     assert.match(instructions, /not scripted or robotic/);
     assert.match(instructions, /Do not repeat greetings/);
     assert.match(instructions, /RC ORDERA/);
