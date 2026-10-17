@@ -20,7 +20,7 @@ test('integrated IA provider receives bounded context, native language and outpu
     assert.equal(body.input,input.question);
     assert.equal(body.max_output_tokens,900);
     assert.equal(body.store,false);
-    assert.match(body.instructions,/naturally in es/);
+    assert.match(body.instructions,/natural Spanish/);
     assert.match(body.instructions,/Quiero probar/);
     assert.match(body.instructions,/sumupstore.com/);
     return ok();
