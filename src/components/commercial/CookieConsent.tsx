@@ -42,7 +42,7 @@ export function CookieConsent({ locale }: { locale: Locale }) {
         </section>
       )}
       {choice !== null && choice !== "loading" && (
-        <button type="button" onClick={() => setChoice(null)} className="fixed bottom-2 left-1/2 z-[60] -translate-x-1/2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-[#123d73] shadow-sm focus-visible:outline-2 sm:bottom-2">{t.settings}</button>
+        <button type="button" onClick={() => setChoice(null)} className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-[70] max-w-[calc(100vw-1.5rem)] rounded-xl border-2 border-[#123d73] bg-white px-4 py-3 text-sm font-bold text-[#123d73] shadow-lg transition-colors hover:bg-[#fff5c7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:left-4">{t.settings}</button>
       )}
     </>
   );
