@@ -13,6 +13,7 @@ import {
 
 import "../globals.css";
 import { CookieConsent } from "@/components/commercial/CookieConsent";
+import { ConsentAnalytics } from "@/components/commercial/ConsentAnalytics";
 
 import {
   SEO_ORIGIN,
@@ -241,6 +242,7 @@ export default async function LocaleLayout({
 
         {children}
         <CookieConsent locale={locale} />
+        <ConsentAnalytics />
 
         <script
           type="application/ld+json"
