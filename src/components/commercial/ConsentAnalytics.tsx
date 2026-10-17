@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const CONSENT_KEY = "rc-web-cookie-consent-v1";
-const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const measurementId = process.env['NEXT_PUBLIC_GA_MEASUREMENT_ID'];
 
 declare global {
   interface Window {
@@ -47,7 +47,7 @@ export function ConsentAnalytics() {
     if (!document.querySelector("script[data-rc-ga4]")) {
       const script = document.createElement("script");
       script.async = true;
-      script.dataset.rcGa4 = "true";
+      script.dataset['rcGa4'] = "true";
       script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
       document.head.appendChild(script);
       window.gtag("js", new Date());
