@@ -34,7 +34,7 @@ export function ConsentAnalytics() {
   }, []);
 
   useEffect(() => {
-    if (!measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) return;
+    if (!measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) { return; }
     Object.assign(window, { [`ga-disable-${measurementId}`]: !allowed });
     if (!allowed) {
       window.gtag?.("consent", "update", { analytics_storage: "denied" });
@@ -47,7 +47,7 @@ export function ConsentAnalytics() {
     if (!document.querySelector("script[data-rc-ga4]")) {
       const script = document.createElement("script");
       script.async = true;
-      script.dataset['rcGa4'] = "true";
+      script.setAttribute('data-rc-ga4', 'true') = "true";
       script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
       document.head.appendChild(script);
       window.gtag("js", new Date());
