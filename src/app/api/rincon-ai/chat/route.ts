@@ -104,7 +104,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (process.env["RINCON_IA_MODE"] === "native") {
     try {
       const answer = await nativeRestaurantChat().answer({ question: input.question.trim(), locale: String(input.locale), history });
-      return NextResponse.json({ available: true, answer }, { headers: { "Cache-Control": "no-store" } });
+      // Native and remote IA must obey the same public response contract.
+      // Never send malformed or oversized provider output to the browser.
+      if (typeof answer !== "string" || !answer.trim() || answer.trim().length > MAX_RESPONSE) {
+        return unavailable();
+      }
+      return NextResponse.json({ available: true, answer: answer.trim() }, { headers: { "Cache-Control": "no-store" } });
     } catch (error) {
       if (error instanceof Error && "code" in error && error.code === "RATE_LIMITED") {
         return NextResponse.json({ available: false, reason: "busy" }, { status: 429, headers: { "Cache-Control": "no-store", "Retry-After": "60" } });
