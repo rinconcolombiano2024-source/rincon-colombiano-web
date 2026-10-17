@@ -20,12 +20,20 @@ export async function moderateReview(formData: FormData) {
     redirect("/admin/reviews?result=invalid");
   }
   const supabase = await createSupabaseServerClient();
-  if (!supabase) redirect("/admin/reviews?result=unavailable");
+  if (!supabase) {
+    redirect("/admin/reviews?result=unavailable");
+  }
   const { data, error } = await supabase.from("customer_reviews")
     .update({ status }).eq("id", id).eq("status", expected).select("id");
-  if (error) redirect("/admin/reviews?result=unavailable");
-  if (data?.length !== 1) redirect("/admin/reviews?result=conflict");
+  if (error) {
+    redirect("/admin/reviews?result=unavailable");
+  }
+  if (data?.length !== 1) {
+    redirect("/admin/reviews?result=conflict");
+  }
   revalidatePath("/admin/reviews");
-  for (const locale of ["pl", "es", "en"]) revalidatePath(`/${locale}`);
+  for (const locale of ["pl", "es", "en"]) {
+    revalidatePath(`/${locale}`);
+  }
   redirect("/admin/reviews?result=saved");
 }
