@@ -115,6 +115,9 @@ jobs:
           node --test scripts/test-native-restaurant-chat.mjs scripts/check-order-channels.mjs
           node --experimental-strip-types --test scripts/test-chat-payload.mjs
 
+      - name: Verify private analytics reporting and failure handling
+        run: node --experimental-strip-types --test scripts/test-analytics-reports.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
