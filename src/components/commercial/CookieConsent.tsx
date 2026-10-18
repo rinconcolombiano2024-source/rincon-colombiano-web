@@ -15,10 +15,18 @@ export function CookieConsent({ locale }: { locale: Locale }) {
   const [choice, setChoice] = useState<Choice | null | "loading">("loading");
   const t = copy[locale];
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(KEY);
-      queueMicrotask(() => setChoice(saved === "accepted" || saved === "rejected" ? saved : null));
-    } catch { queueMicrotask(() => setChoice(null)); }
+    const sync = () => {
+      try {
+        const saved = localStorage.getItem(KEY);
+        setChoice(saved === "accepted" || saved === "rejected" ? saved : null);
+      } catch { setChoice(null); }
+    };
+    queueMicrotask(sync);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === KEY || event.key === null) { sync(); }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
   function save(next: Choice) {
     try { localStorage.setItem(KEY, next); } catch { /* Private browsing may block storage. */ }
