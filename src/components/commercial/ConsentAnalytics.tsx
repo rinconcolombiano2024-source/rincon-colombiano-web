@@ -4,7 +4,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const CONSENT_KEY = "rc-web-cookie-consent-v1";
-const measurementId = process.env['NEXT_PUBLIC_GA_MEASUREMENT_ID'];
+// Declare the public variable explicitly so noPropertyAccessFromIndexSignature
+// permits the direct access required for Next.js client-side env inlining.
+declare const process: { env: { NEXT_PUBLIC_GA_MEASUREMENT_ID?: string } };
+const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 declare global {
   interface Window {
