@@ -36,9 +36,9 @@ export function CookieConsent({ locale }: { locale: Locale }) {
   return (
     <>
       {choice === null && (
-        <section role="dialog" aria-modal="false" aria-label={t.title} className="fixed inset-x-3 bottom-[max(6.5rem,env(safe-area-inset-bottom))] z-[80] mx-auto max-h-[calc(100dvh-8rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border-2 border-[#123d73] bg-white p-5 text-[#171717] shadow-2xl sm:bottom-5 sm:p-6">
-          <h2 className="text-lg font-extrabold text-[#123d73]">{t.title}</h2>
-          <p className="mt-2 text-sm leading-6">{t.body}</p>
+        <section role="dialog" aria-modal="false" aria-labelledby="rc-cookie-dialog-title" aria-describedby="rc-cookie-dialog-description" className="fixed inset-x-3 bottom-[max(6.5rem,env(safe-area-inset-bottom))] z-[80] mx-auto max-h-[calc(100dvh-8rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border-2 border-[#123d73] bg-white p-5 text-[#171717] shadow-2xl sm:bottom-5 sm:p-6">
+          <h2 id="rc-cookie-dialog-title" className="text-lg font-extrabold text-[#123d73]">{t.title}</h2>
+          <p id="rc-cookie-dialog-description" className="mt-2 text-sm leading-6">{t.body}</p>
           <div className="mt-3 flex flex-wrap gap-4 text-sm">
             <a href={`/${locale}/polityka-prywatnosci`} className="underline underline-offset-4">{t.policy}</a>
             <a href={`/${locale}/polityka-cookies`} className="underline underline-offset-4">{t.cookies}</a>
@@ -50,7 +50,7 @@ export function CookieConsent({ locale }: { locale: Locale }) {
         </section>
       )}
       {choice !== null && choice !== "loading" && (
-        <button type="button" onClick={() => setChoice(null)} className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-[70] max-w-[calc(100vw-1.5rem)] rounded-xl border-2 border-[#123d73] bg-white px-4 py-3 text-sm font-bold text-[#123d73] shadow-lg transition-colors hover:bg-[#fff5c7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:left-4">{t.settings}</button>
+        <button type="button" onClick={() => setChoice(null)} aria-haspopup="dialog" className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-[70] max-w-[calc(100vw-1.5rem)] rounded-xl border-2 border-[#123d73] bg-white px-4 py-3 text-sm font-bold text-[#123d73] shadow-lg transition-colors hover:bg-[#fff5c7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] sm:left-4">{t.settings}</button>
       )}
     </>
   );
