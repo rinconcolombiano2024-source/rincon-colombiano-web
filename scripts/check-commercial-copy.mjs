@@ -6,6 +6,13 @@ const home = await readFile("src/app/[locale]/page.tsx", "utf8");
 // Customers should never see internal implementation promises. Any new
 // cross-language customer copy must describe an actual current experience.
 const forbidden = [
+  "QR / token seguro",
+  "Secure QR / token",
+  "Escalamiento a una persona",
+  "Un punto central para solicitudes",
+  "Perfiles de usuarios",
+  "User profiles",
+  "Profile użytkowników",
   "ecosistema de pedidos",
   "ecosystem of orders",
   "ekosystem RC ORDERA",
