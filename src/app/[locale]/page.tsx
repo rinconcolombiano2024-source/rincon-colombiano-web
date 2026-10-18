@@ -1,3 +1,4 @@
+import { OpenRinconAiButton } from "@/components/rincon-ai/OpenRinconAiButton";
 import { BusinessIdentity } from "@/components/commercial/BusinessIdentity";
 import {
   RinconAiWidget,
@@ -737,11 +738,11 @@ const homeContent:
         "Śledź nasze wydarzenia, zdjęcia i historie, a także dziel się radością z kolumbijskiej kuchni.",
 
       features: [
-        "Profile użytkowników",
-        "Posty, zdjęcia i filmy",
-        "Komentarze i reakcje",
-        "Historie i zapisane treści",
-        "Obserwowanie profili",
+        "Znajdź nas na Instagramie",
+        "Zdjęcia i filmy z naszej kuchni",
+        "Podziel się wrażeniami",
+        "Historie z restauracji",
+        "Obserwuj nas w mediach społecznościowych",
         "Wydarzenia i kultura",
       ],
 
@@ -813,8 +814,8 @@ const homeContent:
         "Zamówienia",
         "Rezerwacje",
         "Catering i wydarzenia",
-        "Nagrody i konto",
-        "Przekazanie rozmowy człowiekowi",
+        "Promocje i odbiór osobisty",
+        "Kontakt z restauracją",
       ],
 
       action:
@@ -1314,11 +1315,11 @@ const homeContent:
         "Comparte tu pasión por la gastronomía colombiana y acompáñanos en nuestros encuentros y actividades.",
 
       features: [
-        "Perfiles de usuarios",
-        "Publicaciones, fotos y videos",
-        "Comentarios y reacciones",
-        "Historias y guardados",
-        "Seguir perfiles",
+        "Encuéntranos en Instagram",
+        "Fotos y videos de nuestra cocina",
+        "Comparte tu experiencia",
+        "Historias del restaurante",
+        "Síguenos en redes sociales",
         "Eventos y cultura",
       ],
 
@@ -1366,7 +1367,7 @@ const homeContent:
         "Invita a tus amigos a disfrutar nuestra comida. El programa de referidos aún no está activo.",
 
       tokenTitle:
-        "QR / token seguro",
+        "Promociones y ofertas",
 
       tokenDescription:
         "Las condiciones de cualquier promoción futura se anunciarán antes de habilitar códigos de recompensa.",
@@ -1390,8 +1391,8 @@ const homeContent:
         "Pedidos",
         "Reservas",
         "Catering y eventos",
-        "Cuenta y recompensas",
-        "Escalamiento a una persona",
+        "Promociones y recogida",
+        "Contacto con el restaurante",
       ],
 
       action:
@@ -1406,7 +1407,7 @@ const homeContent:
         "Cuéntanos qué estás planeando. Rincón construye la experiencia.",
 
       description:
-        "Un punto central para solicitudes de catering, empresas, familias, cumpleaños, desayunos, sorpresas, decoración y eventos.",
+        "¿Organizas un cumpleaños, una reunión familiar o un evento de empresa? Cuéntanos tu idea y prepara una celebración con sabor colombiano.",
 
       categories: [
         "Catering",
@@ -1448,7 +1449,7 @@ const homeContent:
         "Redes sociales",
 
       title:
-        "Internet lleva a Rincón. Rincón lleva la relación más lejos.",
+        "Comparte con nosotros el sabor de Colombia.",
 
       description:
         "Síguenos para conocer nuevos platos, eventos, promociones y momentos especiales de Rincón Colombiano.",
@@ -1891,11 +1892,11 @@ const homeContent:
         "Join our community of Colombian food lovers and follow our stories and events in Warsaw.",
 
       features: [
-        "User profiles",
-        "Posts, photos and video",
-        "Comments and reactions",
-        "Stories and saved content",
-        "Following profiles",
+        "Find us on Instagram",
+        "Photos and videos from our kitchen",
+        "Share your experience",
+        "Stories from the restaurant",
+        "Follow us on social media",
         "Events and culture",
       ],
 
@@ -1943,7 +1944,7 @@ const homeContent:
         "Bring friends and family to enjoy Colombian food. The referral rewards programme is not active yet.",
 
       tokenTitle:
-        "Secure QR / token",
+        "Promotions and offers",
 
       tokenDescription:
         "We'll publish clear terms before introducing any future promotional codes or rewards.",
@@ -1960,15 +1961,15 @@ const homeContent:
         "Customer support when it actually matters.",
 
       description:
-        "The assistant will use real restaurant, menu, ordering, reservation and rewards data instead of inventing operational facts.",
+        "Ask about Colombian dishes, our location or catering. Contact the restaurant directly to confirm the details of your order.",
 
       features: [
         "Menu and availability",
         "Orders",
         "Reservations",
         "Catering and events",
-        "Account and rewards",
-        "Human handoff",
+        "Offers and pickup",
+        "Contact the restaurant",
       ],
 
       action:
@@ -4776,8 +4777,7 @@ export default async function HomePage({
                 {copy.ai.description}
               </p>
 
-              <a
-                href="#contact"
+              <OpenRinconAiButton
                 className="
                   mt-8
                   inline-flex
@@ -4791,7 +4791,7 @@ export default async function HomePage({
                 "
               >
                 {copy.ai.action}
-              </a>
+              </OpenRinconAiButton>
             </div>
 
             <div

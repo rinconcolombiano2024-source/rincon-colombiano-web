@@ -466,6 +466,12 @@ export function RinconAiWidget({
   const closeButtonRef =
     useRef<HTMLButtonElement>(null);
 
+  useEffect(() => {
+    const openAssistant = () => setIsOpen(true);
+    window.addEventListener("rc-open-ai", openAssistant);
+    return () => window.removeEventListener("rc-open-ai", openAssistant);
+  }, []);
+
   // A nonmodal floating assistant must still support keyboard exit and
   // deliberate focus management. Focus the close button rather than the
   // textarea so phone keyboards do not unexpectedly cover page content.
