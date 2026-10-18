@@ -84,3 +84,16 @@ test('native instructions use natural language names for every supported locale'
     assert.match(instructions, /untrusted quoted customer content/);
   }
 });
+
+
+test('native assistant maintains conversational continuity without inventing live access', () => {
+  for (const locale of ['pl', 'es', 'en']) {
+    const instructions = restaurantInstructions(locale, [{ role: 'user', text: 'I prefer vegetarian dishes' }]);
+    assert.match(instructions, /last relevant customer preference/);
+    assert.match(instructions, /changes the subject/);
+    assert.match(instructions, /Never claim you checked a website/);
+    assert.match(instructions, /without promising a refund/);
+    assert.match(instructions, /without an unsolicited promotion/);
+    assert.match(instructions, /I prefer vegetarian dishes/);
+  }
+});
