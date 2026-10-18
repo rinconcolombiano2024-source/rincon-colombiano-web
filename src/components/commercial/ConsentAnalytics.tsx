@@ -69,7 +69,7 @@ export function ConsentAnalytics() {
       let url: URL;
       try { url = new URL(anchor.href); } catch { return; }
       // Only count secure, public order links; never attribute unsafe URLs.
-      if (url.protocol !== "https:") { return; }
+      if (url.protocol !== "https:" || url.username || url.password || (url.port && url.port !== "443")) { return; }
       const host = url.hostname.toLowerCase();
       let channel: string | undefined;
       if (host === "rincon-colombiano-pedidosapp.vercel.app" && (url.pathname === "/" || (url.pathname === "/cliente.html" && url.searchParams.get("store") === "9702bf42-2f50-46b2-8f8a-d5f80ba576d5"))) { channel = "rc_ordera"; }
