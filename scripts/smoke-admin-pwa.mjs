@@ -108,6 +108,14 @@ await check("Opiniones administrativas protegidas sin sesión", async () => {
   assert.equal(destination.pathname, "/admin/login");
 });
 
+for (const path of ["/admin/analytics", "/admin/analytics?days=90"]) {
+  await check(`Estadísticas privadas protegidas: ${path}`, async () => {
+    const response = await get(path);
+    assert.ok([302, 303, 307, 308].includes(response.status));
+    assert.equal(new URL(response.headers.get("location") ?? "", origin).pathname, "/admin/login");
+  });
+}
+
 console.log(`Smoke admin PWA: ${errors} error(es)`);
 if (errors > 0) {
   process.exitCode = 1;

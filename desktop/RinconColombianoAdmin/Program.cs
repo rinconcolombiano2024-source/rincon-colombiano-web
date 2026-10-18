@@ -85,6 +85,8 @@ internal sealed class AdminWindow : Form
         "/admin/seo",
         "/admin/brand",
         "/admin/content",
+        "/admin/analytics",
+        "/admin/reviews",
     };
 
     public AdminWindow()
@@ -158,6 +160,8 @@ internal sealed class AdminWindow : Form
             ("Publicidad", "/admin/marketing"),
             ("Fotografías", "/admin/brand"),
             ("Contenidos", "/admin/content"),
+            ("Estadísticas", "/admin/analytics"),
+            ("Opiniones", "/admin/reviews"),
         })
         {
             var button = Command(label, () => NavigateAdminPage(path));

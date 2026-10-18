@@ -345,20 +345,12 @@ const ADMIN_MODULES = [
   },
 
   {
-    key:
-      "analytics",
-
-    eyebrow:
-      "DATOS",
-
-    title:
-      "Analítica",
-
-    description:
-      "Tráfico, conversiones, campañas, SEO, pedidos y comportamiento de los usuarios.",
-
-    status:
-      "planned",
+    key: "analytics",
+    eyebrow: "DATOS",
+    title: "Visitas y clics para pedir",
+    description: "Consulta visitantes, páginas más vistas y procedencia del tráfico en periodos de 7, 30 y 90 días.",
+    status: "active",
+    href: "/admin/analytics",
   },
 
   {
