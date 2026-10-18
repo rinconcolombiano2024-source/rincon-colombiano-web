@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const CONSENT_KEY = "rc-web-cookie-consent-v1";
-const measurementId = process.env['NEXT_PUBLIC_GA_MEASUREMENT_ID'];
+const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 declare global {
   interface Window {
