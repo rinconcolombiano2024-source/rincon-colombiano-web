@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:security-config": "node --test scripts/check-security-config.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
