@@ -15,6 +15,7 @@ test('official AI actions work in all three languages and preserve punctuation',
 
 test('model-generated unsafe, unverified, private and tracking links remain inert', () => {
   for (const value of [
+    // eslint-disable-next-line no-script-url -- malicious model output must be rejected, never executed
     'javascript:alert(1)', 'data:text/html,test', 'https://evil.example/',
     'https://rinconcolombiano.pl.evil.example/es/menu', 'https://evil@rinconcolombiano.pl/es/menu',
     'https://rinconcolombiano.pl:444/es/menu', 'http://rinconcolombiano.pl/es/menu',

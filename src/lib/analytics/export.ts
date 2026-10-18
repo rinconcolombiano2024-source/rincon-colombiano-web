@@ -29,5 +29,5 @@ export function analyticsCsv(report: ExportReport, period: number): string {
     rows.push([], [label, metric]);
     for (const entry of entries) { rows.push([entry.label, entry.values[0] ?? 0]); }
   }
-  return "\uFEFF" + rows.map(row => row.map(cell).join(",")).join("\r\n") + "\r\n";
+  return `\uFEFF${rows.map(row => row.map(cell).join(",")).join("\r\n")}\r\n`;
 }
