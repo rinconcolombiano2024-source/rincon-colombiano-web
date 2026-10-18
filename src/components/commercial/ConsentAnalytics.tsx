@@ -72,10 +72,10 @@ export function ConsentAnalytics() {
       let channel: string | undefined;
       if (host === "rincon-colombiano-pedidosapp.vercel.app") { channel = "rc_ordera"; }
       else if (host === "rincon-colombiano.sumupstore.com") { channel = "sumup"; }
-      else if (host === "www.ubereats.com" || host === "ubereats.com") { channel = "uber_eats"; }
-      else if (host === "glovoapp.com") { channel = "glovo"; }
-      else if (host === "www.pyszne.pl" || host === "pyszne.pl") { channel = "pyszne"; }
-      else if (host === "wolt.com") { channel = "wolt"; }
+      else if ((host === "www.ubereats.com" || host === "ubereats.com") && url.pathname === "/pl/store/rincon-colombiano/wL2-43SIUx2415myUeosqw") { channel = "uber_eats"; }
+      else if (host === "glovoapp.com" && url.pathname === "/pl/pl/warszawa/stores/rincon-colombiano-waw") { channel = "glovo"; }
+      else if ((host === "www.pyszne.pl" || host === "pyszne.pl") && url.pathname === "/menu/rincon-colombiano") { channel = "pyszne"; }
+      else if (host === "wolt.com" && url.pathname === "/pl/pol/warsaw/restaurant/rincon-colombiano") { channel = "wolt"; }
       if (channel) { window.gtag?.("event", "select_order_channel", { order_channel: channel }); }
     };
     document.addEventListener("click", onClick);
