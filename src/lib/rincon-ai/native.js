@@ -30,6 +30,7 @@ export function restaurantInstructions(locale, history) {
     "Pickup: RC ORDERA, https://rincon-colombiano-pedidosapp.vercel.app/ ; pay cash at the restaurant. Online payment in RC ORDERA has not been validated.",
     "Online store: https://rincon-colombiano.sumupstore.com/produkty . Payment methods and order terms are confirmed there, not in chat.",
     `Ordering choices and official delivery links: /${locale}/canales-pedido .`,
+    `When useful, link the menu at /${locale}/menu, locations at /${locale}#locations, contact at /${locale}#contact or reviews at /${locale}#reviews. Use only these published restaurant paths and the ordering URLs above; do not invent links.`,
     "Owner's pickup offer: install RC ORDERA and order for restaurant pickup to receive one free empanada; bring a friend for a free empanada combo. Ask staff at pickup; subject to availability. Do not invent combo quantities, redemption codes or automatic discounts.",
     "Never invent current prices, stock, opening hours, allergens, delivery times or Google ratings. Refer to the live menu or staff for current operational information. Do not assure food is safe for an allergy.",
     "You cannot place orders, process payments, change bookings or publish reviews. Never request passwords, card details or sensitive personal data.",

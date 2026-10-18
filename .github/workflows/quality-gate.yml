@@ -118,6 +118,9 @@ jobs:
       - name: Verify private analytics reporting and failure handling
         run: node --experimental-strip-types --test scripts/test-analytics-reports.mjs
 
+      - name: Verify safe assistant links and analytics exports
+        run: node --experimental-strip-types --test scripts/test-answer-links.mjs scripts/test-analytics-export.mjs
+
       - name: Typecheck
         run: npm run typecheck
 

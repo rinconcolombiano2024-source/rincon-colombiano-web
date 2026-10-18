@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AnalyticsExport } from "@/components/admin/AnalyticsExport";
+import { AnalyticsTrend } from "@/components/admin/AnalyticsTrend";
 import { requireAdminIdentity } from "@/lib/admin/auth";
 import { analyticsPeriod, getAnalyticsReport } from "@/lib/analytics/reports";
 
@@ -31,11 +33,13 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           </section>
         ) : (
           <>
+            <div className="mb-5 flex justify-end"><AnalyticsExport report={report} days={days} /></div>
             <section aria-label="Resumen" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[{ title: "Visitantes medidos", count: report.totals[0] }, { title: "Sesiones", count: report.totals[1] }, { title: "Páginas vistas", count: report.totals[2] }, { title: "Clics para pedir", count: report.orderClicks }].map(item => (
                 <article key={item.title} className="rounded-2xl border-t-4 border-[#f7c600] bg-white p-6 shadow-sm"><h2 className="font-bold text-[#123d73]">{item.title}</h2><p className="mt-3 text-4xl font-extrabold">{number.format(item.count ?? 0)}</p></article>
               ))}
             </section>
+            <AnalyticsTrend days={report.days} />
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               {[{ title: "Páginas más visitadas", label: "Página", metric: "Vistas", rows: report.pages }, { title: "De dónde llegan las visitas", label: "Canal", metric: "Sesiones", rows: report.sources }, { title: "Evolución diaria", label: "Fecha", metric: "Vistas", rows: report.days }].map(section => (
                 <section key={section.title} className="min-w-0 rounded-2xl bg-white p-6 shadow-sm">
@@ -52,3 +56,4 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
     </main>
   );
 }
+

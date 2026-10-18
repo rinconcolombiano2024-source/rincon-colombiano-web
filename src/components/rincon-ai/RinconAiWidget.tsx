@@ -12,6 +12,7 @@ import type {
 } from "@/i18n/config";
 
 import { buildChatPayload } from "@/components/rincon-ai/chat-payload";
+import { answerParts } from "@/components/rincon-ai/answer-links";
 import { getCommercialInquiryIntent } from "@/components/rincon-ai/commercial-intents";
 
 
@@ -1134,7 +1135,11 @@ export function RinconAiWidget({
                                 : "rounded-2xl rounded-bl-md border border-black/5 bg-white px-4 py-3 text-sm leading-6 text-[#2d2925] shadow-sm"
                             }
                           >
-                            {message.text}
+                            {message.role === "assistant"
+                              ? answerParts(message.text, locale).map((part, index) => part.href
+                                ? <a key={index} href={part.href} onClick={() => setIsOpen(false)} className="break-words font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">{part.text}</a>
+                                : <span key={index}>{part.text}</span>)
+                              : message.text}
                           </div>
 
                           {
@@ -1540,3 +1545,4 @@ export function RinconAiWidget({
     </div>
   );
 }
+
