@@ -68,9 +68,11 @@ export function ConsentAnalytics() {
       if (!(anchor instanceof HTMLAnchorElement)) { return; }
       let url: URL;
       try { url = new URL(anchor.href); } catch { return; }
-      // Only count secure, public order links; never attribute unsafe URLs.\n      if (url.protocol !== "https:") { return; }\n      const host = url.hostname.toLowerCase();
+      // Only count secure, public order links; never attribute unsafe URLs.
+      if (url.protocol !== "https:") { return; }
+      const host = url.hostname.toLowerCase();
       let channel: string | undefined;
-      if (host === "rincon-colombiano-pedidosapp.vercel.app" && url.pathname === "/") { channel = "rc_ordera"; }
+      if (host === "rincon-colombiano-pedidosapp.vercel.app" && (url.pathname === "/" || (url.pathname === "/cliente.html" && url.searchParams.get("store") === "9702bf42-2f50-46b2-8f8a-d5f80ba576d5"))) { channel = "rc_ordera"; }
       else if (host === "rincon-colombiano.sumupstore.com" && url.pathname === "/produkty") { channel = "sumup"; }
       else if ((host === "www.ubereats.com" || host === "ubereats.com") && url.pathname === "/pl/store/rincon-colombiano/wL2-43SIUx2415myUeosqw") { channel = "uber_eats"; }
       else if (host === "glovoapp.com" && url.pathname === "/pl/pl/warszawa/stores/rincon-colombiano-waw") { channel = "glovo"; }
