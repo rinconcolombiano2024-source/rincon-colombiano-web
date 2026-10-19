@@ -3,6 +3,7 @@ import type {
 } from "next";
 
 import Link from "next/link";
+import { CommercialNavigation } from "@/components/commercial/CommercialNavigation";
 
 import {
   notFound,
@@ -1199,6 +1200,7 @@ export default async function RestaurantPage({
   const locale:
     AppLocale =
     rawLocale;
+
 
   if (isContactRoute(locale, slug)) {
     redirect(`${buildRoutePath("home", locale)}#contact`);
