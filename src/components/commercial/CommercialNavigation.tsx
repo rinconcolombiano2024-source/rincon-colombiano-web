@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { buildRoutePath } from "@/config/routes";
 import type { AppLocale } from "@/i18n/config";
@@ -12,6 +15,8 @@ const keys = ["home", "menu", "services", "about", "community", "loyalty", "loca
 
 /** Shared across public pages; never renders on private admin routes. */
 export function CommercialNavigation({ locale }: { readonly locale: AppLocale }) {
+  const pathname = usePathname();
+  if (!pathname || pathname === `/${locale}` || pathname === `/${locale}/` || pathname.startsWith(`/${locale}/admin`)) return null;
   return (
     <nav aria-label={locale === "pl" ? "Nawigacja główna" : locale === "es" ? "Navegación principal" : "Main navigation"} className="border-b border-[#e7e1d7] bg-white">
       <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:gap-5">
