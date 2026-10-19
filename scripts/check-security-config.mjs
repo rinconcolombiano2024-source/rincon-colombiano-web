@@ -14,7 +14,7 @@ test("production HSTS remains conditional", () => {
   assert.match(config, /if\s*\(\s*isProduction\s*\)\s*\{\s*securityHeaders\.push/);
 });
 test("robots excludes administrative and API routes", () => {
-  for (const path of ["/admin", "/api"]) assert.ok(robots.includes(`"${path}"`));
+  for (const path of ["/admin", "/api"]) { assert.ok(robots.includes(`"${path}"`)); }
 });
 test("nonproduction robots disallows crawling", () => {
   assert.match(robots, /if\s*\(\s*!isProduction\s*\)/);
