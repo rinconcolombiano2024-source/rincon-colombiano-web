@@ -41,7 +41,7 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
         <section className="mt-10 rounded-3xl border-2 border-[#f7c600] bg-white p-6 sm:p-8">
           <h2 className="text-2xl font-bold">{t.direct}</h2>
           <p className="mt-3 text-slate-700">{t.directDesc}</p>
-          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.pickupCta} ↗</a>
+          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" aria-label={`${t.pickupCta} — ${t.newTab}`} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.pickupCta} ↗</a>
         </section>
         <section className="mt-10 rounded-3xl border-2 border-[#123d73] bg-white p-6 shadow-md sm:p-8">
           <h2 className="text-2xl font-bold">{t.pay}</h2>
