@@ -651,7 +651,6 @@ function isContactRoute(
  */
 const PUBLISHED_SECTION_SHORTCUTS = [
   ["delivery", "order"],
-  ["services", "services"],
   ["catering", "services"],
   ["birthdays", "services"],
   ["corporate", "services"],
@@ -660,14 +659,48 @@ const PUBLISHED_SECTION_SHORTCUTS = [
   ["surprise_breakfasts", "services"],
   ["table_decorations", "services"],
   ["events", "events"],
-  ["locations", "locations"],
   ["reservations", "contact"],
-  ["about", "stories"],
   ["reviews", "reviews"],
   ["careers", "contact"],
-  ["community", "community"],
-  ["loyalty", "rewards"],
 ] as const;
+
+const DEDICATED_SECTIONS = {
+  services: {
+    pl: { title: "Nasze usługi", intro: "Kolumbijskie smaki na każdą okazję.", cards: [["Catering", "Kolumbijskie potrawy na spotkania rodzinne i firmowe."], ["Uroczystości", "Świętuj urodziny i ważne chwile z bliskimi."], ["Wydarzenia", "Zapytaj nas o menu i organizację wydarzenia."]] },
+    es: { title: "Nuestros servicios", intro: "El sabor de Colombia para cada ocasión.", cards: [["Catering", "Comida colombiana para reuniones familiares y empresariales."], ["Celebraciones", "Celebra cumpleaños y momentos especiales."], ["Eventos", "Consúltanos por el menú y la organización de tu evento."]] },
+    en: { title: "Our services", intro: "Colombian flavours for every occasion.", cards: [["Catering", "Colombian food for family and business gatherings."], ["Celebrations", "Celebrate birthdays and special moments."], ["Events", "Ask us about food and arrangements for your event."]] },
+  },
+  about: {
+    pl: { title: "Nasza historia", intro: "Kawałek Kolumbii w Warszawie.", cards: [["Tradycja", "Dzielimy się smakami kolumbijskiej kuchni."], ["Rodzina", "Wierzymy w spotkania przy wspólnym stole."], ["Gościnność", "Zapraszamy do odkrywania naszej kultury."]] },
+    es: { title: "Nuestra historia", intro: "Un rincón de Colombia en Varsovia.", cards: [["Tradición", "Compartimos los sabores de la cocina colombiana."], ["Familia", "Creemos en los encuentros alrededor de la mesa."], ["Hospitalidad", "Te invitamos a conocer nuestra cultura."]] },
+    en: { title: "Our story", intro: "A little corner of Colombia in Warsaw.", cards: [["Tradition", "We share the flavours of Colombian cooking."], ["Family", "We believe in gathering around the table."], ["Hospitality", "Come and discover our culture."]] },
+  },
+  community: {
+    pl: { title: "Nasza społeczność", intro: "Łączy nas jedzenie, kultura i wspólne chwile.", cards: [["Kultura", "Odkrywaj z nami kolumbijskie tradycje."], ["Spotkania", "Rincón Colombiano to miejsce dla przyjaciół i rodzin."], ["Razem", "Dołącz do naszej społeczności w Warszawie."]] },
+    es: { title: "Nuestra comunidad", intro: "Nos unen la comida, la cultura y los buenos momentos.", cards: [["Cultura", "Descubre nuestras tradiciones colombianas."], ["Encuentros", "Rincón Colombiano es un lugar para amigos y familias."], ["Juntos", "Forma parte de nuestra comunidad en Varsovia."]] },
+    en: { title: "Our community", intro: "Food, culture and shared moments bring us together.", cards: [["Culture", "Discover Colombian traditions with us."], ["Gatherings", "Rincón Colombiano welcomes friends and families."], ["Together", "Be part of our Warsaw community."]] },
+  },
+  loyalty: {
+    pl: { title: "Nagrody i promocje", intro: "Odkrywaj nasze aktualne oferty.", cards: [["Zamów z odbiorem", "Zamów przez RC ORDERA i zapytaj o darmową empanadę."], ["Z przyjacielem", "Zapytaj o promocyjny zestaw empanad przy wspólnym zamówieniu."], ["Na bieżąco", "Sprawdzaj nasze aktualne promocje w restauracji."]] },
+    es: { title: "Recompensas y promociones", intro: "Descubre nuestras ofertas especiales.", cards: [["Pide para recoger", "Pide por RC ORDERA y pregunta por tu empanada gratis."], ["Ven con un amigo", "Pregunta por el combo promocional de empanadas."], ["Novedades", "Consulta las promociones vigentes en el restaurante."]] },
+    en: { title: "Rewards and offers", intro: "Discover our special offers.", cards: [["Order for pickup", "Order with RC ORDERA and ask about your free empanada."], ["Bring a friend", "Ask about our promotional empanada combo."], ["Latest offers", "Check current promotions at the restaurant."]] },
+  },
+  locations: {
+    pl: { title: "Nasze restauracje", intro: "Odwiedź Rincón Colombiano w Warszawie.", cards: [["Czapelska 33", "Zapraszamy do naszej restauracji w Warszawie."], ["Brzeska 10", "Nowa lokalizacja — wkrótce."], ["Menu", "Sprawdź aktualne dania i zamówienia na naszej stronie."]] },
+    es: { title: "Nuestros restaurantes", intro: "Visita Rincón Colombiano en Varsovia.", cards: [["Czapelska 33", "Te esperamos en nuestro restaurante en Varsovia."], ["Brzeska 10", "Nueva sede: próximamente."], ["Menú", "Consulta los platos disponibles y los pedidos en nuestra web."]] },
+    en: { title: "Our restaurants", intro: "Visit Rincón Colombiano in Warsaw.", cards: [["Czapelska 33", "Visit our restaurant in Warsaw."], ["Brzeska 10", "New location: coming soon."], ["Menu", "Explore available dishes and ordering options online."]] },
+  },
+} as const;
+
+function getDedicatedSection(locale: AppLocale, slugSegments: readonly string[]) {
+  for (const key of ["services", "about", "community", "loyalty", "locations"] as const) {
+    const expected = getDecodedRouteSegments(buildRoutePath(key, locale)).slice(1);
+    if (routeSegmentsMatch(slugSegments, expected)) {
+      return { key, copy: DEDICATED_SECTIONS[key][locale] };
+    }
+  }
+  return null;
+}
 
 function getPublishedSectionShortcut(
   locale: AppLocale,
@@ -1034,7 +1067,12 @@ export function generateStaticParams():
       ],
     }));
 
-    return [...restaurantPaths, ...supportedRedirects];
+    const dedicatedPaths = (["services", "about", "community", "loyalty", "locations"] as const).map((key) => ({
+      locale,
+      slug: [...getDecodedRouteSegments(buildRoutePath(key, locale)).slice(1)],
+    }));
+
+    return [...restaurantPaths, ...supportedRedirects, ...dedicatedPaths];
   });
 }
 
@@ -1202,6 +1240,34 @@ export default async function RestaurantPage({
 
   if (isContactRoute(locale, slug)) {
     redirect(`${buildRoutePath("home", locale)}#contact`);
+  }
+
+  const dedicated = getDedicatedSection(locale, slug);
+  if (dedicated) {
+    return (
+      <main id="main-content" className="min-h-screen bg-[#faf9f6] text-[#12100e]">
+        <div className="h-2 bg-[linear-gradient(90deg,#f7c600_0_50%,#123d73_50%_75%,#c92d39_75%_100%)]" />
+        <div className="site-container py-12 sm:py-20">
+          <Link href={buildRoutePath("home", locale)} className="font-bold text-[#123d73] hover:underline">
+            ← {locale === "pl" ? "Strona główna" : locale === "es" ? "Inicio" : "Home"}
+          </Link>
+          <h1 className="mt-10 font-serif text-4xl font-bold sm:text-6xl">{dedicated.copy.title}</h1>
+          <p className="mt-5 max-w-2xl text-lg text-[#62594f]">{dedicated.copy.intro}</p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {dedicated.copy.cards.map(([title, description], index) => (
+              <article key={title} className={`rounded-3xl border-t-4 bg-white p-7 shadow-sm ${index === 0 ? "border-[#f7c600]" : index === 1 ? "border-[#123d73]" : "border-[#c92d39]"}`}>
+                <h2 className="font-serif text-2xl font-bold">{title}</h2>
+                <p className="mt-4 leading-7 text-[#62594f]">{description}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-12 flex flex-wrap gap-4">
+            <Link href={buildRoutePath("menu", locale)} className="rounded-full bg-[#123d73] px-6 py-3 font-bold text-white">{locale === "pl" ? "Zobacz menu" : locale === "es" ? "Ver menú" : "View menu"}</Link>
+            <Link href={`/${locale}/canales-pedido`} className="rounded-full bg-[#f7c600] px-6 py-3 font-bold">{locale === "pl" ? "Zamów jedzenie" : locale === "es" ? "Pedir comida" : "Order food"}</Link>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   const sectionShortcut = getPublishedSectionShortcut(locale, slug);
