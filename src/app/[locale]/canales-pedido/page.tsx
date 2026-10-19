@@ -3,6 +3,11 @@ import { isSeoProductionEnvironment } from "@/config/seo";
 import { notFound } from "next/navigation";
 
 type Locale = "pl" | "es" | "en";
+const newTabLabel: Record<Locale, string> = {
+  pl: "otwiera się w nowej karcie",
+  es: "se abre en una pestaña nueva",
+  en: "opens in a new tab",
+};
 const labels = {
   pl: { promoTitle: "Promocja RC ORDERA", promoDesc: "Zamów z odbiorem osobistym przez RC ORDERA i zainstaluj aplikację: odbierz jedną empanadę gratis! Przyjdź z przyjacielem i odbierz darmowy zestaw empanad. Poinformuj obsługę o promocji przy odbiorze. Oferta zależy od dostępności; szczegóły potwierdź w restauracji.", title: "Zamów w Rincón Colombiano", intro: "Wybierz wygodny sposób zamówienia.", direct: "Zamów bezpośrednio w restauracji", directDesc: "Zamów z odbiorem osobistym i zapłać gotówką w restauracji. Płatności online w RC ORDERA nie są jeszcze aktywne. Sprawdź dostępność odbioru przed potwierdzeniem.", platforms: "Zamów dostawę przez naszych partnerów", pay: "Zamów bezpośrednio i zapłać online", payDesc: "Zamów bezpośrednio w sklepie internetowym Rincón Colombiano na SumUp. Dostępne metody płatności i warunki zamówienia sprawdzisz przed finalizacją w sklepie. RC ORDERA pozostaje opcją odbioru z płatnością na miejscu.", booking: "Zamów i zapłać online · SumUp", pickupCta: "Zamów z odbiorem · RC ORDERA", promoBadge: "Oferta specjalna", back: "Powrót na stronę" },
   es: { promoTitle: "¡EMPANADAS GRATIS CON RC ORDERA!", promoDesc: "Pide para recoger en el restaurante mediante RC ORDERA e instala la aplicación: ¡recibe una empanada gratis! Si vienes con un amigo, recibe un combo de empanadas gratis. Muestra tu pedido y solicita la promoción al recogerlo. Sujeto a disponibilidad; confirma las condiciones en el restaurante.", title: "Pide en Rincón Colombiano", intro: "Elige cómo prefieres hacer tu pedido.", direct: "Pide directamente al restaurante", directDesc: "Haz tu pedido para recoger en el local y paga en efectivo en el restaurante. Los pagos en línea de RC ORDERA todavía no están habilitados. Confirma la opción de recogida antes de finalizar.", platforms: "Pide a domicilio con nuestras aplicaciones de reparto", pay: "Pide directamente y paga en línea", payDesc: "También puedes pedir directamente a Rincón Colombiano desde nuestra tienda SumUp. Consulta los métodos de pago disponibles y las condiciones antes de confirmar tu compra. RC ORDERA sigue disponible para recoger y pagar en el restaurante.", booking: "Pedir y pagar en línea · SumUp", pickupCta: "Pedir para recoger · RC ORDERA", promoBadge: "Oferta especial", back: "Volver al inicio" },
@@ -36,7 +41,7 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[#f7c600]">RC ORDERA · {t.promoBadge}</p>
           <h2 className="mt-3 text-3xl font-black leading-tight text-[#f7c600] sm:text-4xl">{t.promoTitle}</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white sm:text-lg">{t.promoDesc}</p>
-          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-[#f7c600] px-6 py-3 font-black text-[#123d73] hover:bg-[#ffe064] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">RC ORDERA ↗</a>
+          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label={`RC ORDERA (${newTabLabel[locale as Locale]})`} className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-[#f7c600] px-6 py-3 font-black text-[#123d73] hover:bg-[#ffe064] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">RC ORDERA ↗</a>
         </aside>
         <section className="mt-10 rounded-3xl border-2 border-[#f7c600] bg-white p-6 sm:p-8">
           <h2 className="text-2xl font-bold">{t.direct}</h2>
@@ -52,7 +57,7 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
           <h2 id="delivery-heading" className="text-2xl font-bold">{t.platforms}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {delivery.map(({ name, url }) => (
-              <a key={name} href={url} target="_blank" rel="noopener noreferrer" className="flex min-h-16 items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-4 text-lg font-bold shadow-sm hover:border-[#123d73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
+              <a key={name} href={url} target="_blank" rel="noopener noreferrer" aria-label={`${name} (${newTabLabel[locale as Locale]})`} className="flex min-h-16 items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-4 text-lg font-bold shadow-sm hover:border-[#123d73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
                 {name}<span aria-hidden="true">↗</span>
               </a>
             ))}
