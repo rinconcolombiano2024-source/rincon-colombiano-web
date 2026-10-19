@@ -2783,7 +2783,7 @@ export default async function HomePage({
             "
           >
             <a
-              href="#menu"
+              href={`/${locale}/menu`}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.menu}
@@ -2966,7 +2966,7 @@ export default async function HomePage({
                 >
                   {[
                     [
-                      "#menu",
+                      `/${locale}/menu`,
                       copy.nav.menu,
                     ],
                     [
@@ -3846,7 +3846,7 @@ export default async function HomePage({
                 </a>
 
                 <a
-                  href="#menu"
+                  href={`/${locale}/menu`}
                   className="
                     inline-flex
                     min-h-12
@@ -5980,7 +5980,7 @@ export default async function HomePage({
                 Rincón
               </strong>
 
-              <a href="#menu">
+              <a href={`/${locale}/menu`}>
                 {copy.nav.menu}
               </a>
 
