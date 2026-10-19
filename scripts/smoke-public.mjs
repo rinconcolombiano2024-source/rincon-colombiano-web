@@ -362,7 +362,7 @@ async function checkServiceShortcuts(locale) {
       const dedicated = dedicatedSegments[locale].includes(segment);
       if (dedicated) {
         const html = await response.text();
-        report(response.status === 200 && /<main\\b/i.test(html) && /<h1\\b/i.test(html),
+        report(response.status === 200 && /<main\b/i.test(html) && /<h1\b/i.test(html),
           `${path} muestra página independiente con título y contenido, en ${locale}`);
         continue;
       }
