@@ -354,6 +354,13 @@ async function checkServiceShortcuts(locale) {
         signal: AbortSignal.timeout(15000),
       });
       const target = new URL(response.headers.get("location") ?? "", origin);
+      const dedicated = new Set(["services", "locations", "stories", "community", "rewards"]).has(anchor);
+      if (dedicated) {
+        const html = await response.text();
+        report(response.status === 200 && /<main\\b/i.test(html) && /<h1\\b/i.test(html),
+          `${path} muestra página independiente con título y contenido, en ${locale}`);
+        continue;
+      }
       report(
         [302, 303, 307, 308].includes(response.status) &&
         target.origin === new URL(origin).origin &&
