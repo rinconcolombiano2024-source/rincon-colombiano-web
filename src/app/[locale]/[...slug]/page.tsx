@@ -695,7 +695,9 @@ const DEDICATED_SECTIONS = {
 function getDedicatedSection(locale: AppLocale, slugSegments: readonly string[]) {
   for (const key of ["services", "about", "community", "loyalty", "locations"] as const) {
     const expected = getDecodedRouteSegments(buildRoutePath(key, locale)).slice(1);
-    if (routeSegmentsMatch(slugSegments, expected)) return { key, copy: DEDICATED_SECTIONS[key][locale] };
+    if (routeSegmentsMatch(slugSegments, expected)) {
+      return { key, copy: DEDICATED_SECTIONS[key][locale] };
+    }
   }
   return null;
 }
@@ -1065,7 +1067,12 @@ export function generateStaticParams():
       ],
     }));
 
-    return [...restaurantPaths, ...supportedRedirects];
+    const dedicatedPaths = (["services", "about", "community", "loyalty", "locations"] as const).map((key) => ({
+      locale,
+      slug: [...getDecodedRouteSegments(buildRoutePath(key, locale)).slice(1)],
+    }));
+
+    return [...restaurantPaths, ...supportedRedirects, ...dedicatedPaths];
   });
 }
 
