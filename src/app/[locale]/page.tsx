@@ -2797,35 +2797,35 @@ export default async function HomePage({
             </a>
 
             <a
-              href="#services"
+              href={buildRoutePath("services", locale)}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.services}
             </a>
 
             <a
-              href="#stories"
+              href={buildRoutePath("about", locale)}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.stories}
             </a>
 
             <a
-              href="#community"
+              href={buildRoutePath("community", locale)}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.community}
             </a>
 
             <a
-              href="#rewards"
+              href={buildRoutePath("loyalty", locale)}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.rewards}
             </a>
 
             <a
-              href="#locations"
+              href={buildRoutePath("locations", locale)}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
               {copy.nav.locations}
@@ -2981,23 +2981,23 @@ export default async function HomePage({
                       copy.nav.menu,
                     ],
                     [
-                      "#services",
+                      buildRoutePath("services", locale),
                       copy.nav.services,
                     ],
                     [
-                      "#stories",
+                      buildRoutePath("about", locale),
                       copy.nav.stories,
                     ],
                     [
-                      "#community",
+                      buildRoutePath("community", locale),
                       copy.nav.community,
                     ],
                     [
-                      "#rewards",
+                      buildRoutePath("loyalty", locale),
                       copy.nav.rewards,
                     ],
                     [
-                      "#locations",
+                      buildRoutePath("locations", locale),
                       copy.nav.locations,
                     ],
                   ].map(
@@ -3207,7 +3207,7 @@ export default async function HomePage({
                 </a>
 
                 <a
-                  href="#services"
+                  href={buildRoutePath("services", locale)}
                   className="
                     inline-flex
                     min-h-13
@@ -4450,7 +4450,7 @@ export default async function HomePage({
               </div>
 
               <a
-                href="#stories"
+                href={buildRoutePath("about", locale)}
                 className="
                   mt-8
                   inline-flex
@@ -5995,15 +5995,15 @@ export default async function HomePage({
                 {copy.nav.menu}
               </a>
 
-              <a href="#services">
+              <a href={buildRoutePath("services", locale)}>
                 {copy.nav.services}
               </a>
 
-              <a href="#community">
+              <a href={buildRoutePath("community", locale)}>
                 {copy.nav.community}
               </a>
 
-              <a href="#rewards">
+              <a href={buildRoutePath("loyalty", locale)}>
                 {copy.nav.rewards}
               </a>
             </nav>
@@ -6025,7 +6025,7 @@ export default async function HomePage({
                 {locale === "pl" ? "Informacje" : locale === "es" ? "Información" : "Information"}
               </strong>
 
-              <a href="#locations">
+              <a href={buildRoutePath("locations", locale)}>
                 {copy.nav.locations}
               </a>
 
@@ -6041,7 +6041,7 @@ export default async function HomePage({
                 }
               </a>
 
-              <a href="#stories">
+              <a href={buildRoutePath("about", locale)}>
                 {copy.nav.stories}
               </a>
             </nav>
