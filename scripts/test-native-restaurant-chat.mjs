@@ -97,3 +97,15 @@ test('native assistant maintains conversational continuity without inventing liv
     assert.match(instructions, /I prefer vegetarian dishes/);
   }
 });
+
+
+test("restaurant assistant never promises unverified payments or invents operational facts", () => {
+  for (const locale of ["es", "pl", "en"]) {
+    const instructions = restaurantInstructions(locale, []);
+    assert.match(instructions, /Online payment in RC ORDERA has not been validated/);
+    assert.match(instructions, /Never invent current prices, stock, opening hours, allergens, delivery times or Google ratings/);
+    assert.match(instructions, /You cannot place orders, process payments, change bookings or publish reviews/);
+    assert.match(instructions, /Never request passwords, card details or sensitive personal data/);
+    assert.match(instructions, /not a human employee/);
+  }
+});
