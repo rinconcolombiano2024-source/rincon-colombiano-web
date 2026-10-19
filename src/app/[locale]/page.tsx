@@ -2783,6 +2783,13 @@ export default async function HomePage({
             "
           >
             <a
+              href={`/${locale}`}
+              aria-current="page"
+              className="text-sm font-semibold hover:text-[#123d73]"
+            >
+              {locale === "pl" ? "Strona główna" : locale === "es" ? "Inicio" : "Home"}
+            </a>
+            <a
               href={`/${locale}/menu`}
               className="text-sm font-semibold hover:text-[#123d73]"
             >
@@ -2965,6 +2972,10 @@ export default async function HomePage({
                   "
                 >
                   {[
+                    [
+                      `/${locale}`,
+                      locale === "pl" ? "Strona główna" : locale === "es" ? "Inicio" : "Home",
+                    ],
                     [
                       `/${locale}/menu`,
                       copy.nav.menu,
