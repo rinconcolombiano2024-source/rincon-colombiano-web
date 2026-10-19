@@ -14,8 +14,8 @@ test("production HSTS remains conditional", () => {
   assert.match(config, /if\s*\(\s*isProduction\s*\)\s*\{\s*securityHeaders\.push/);
 });
 test("robots excludes administrative and API routes", () => {
-  for (const path of ["/admin", "/api"]) {
-    assert.ok(robots.includes(`"${path}"`));
+  for (const path of ["/admin", "/admin/", "/api", "/api/", "/r", "/r/"]) {
+    assert.ok(robots.includes(`"${path}"`), `Missing private route ${path}`);
   }
 });
 test("nonproduction robots disallows crawling", () => {
@@ -25,4 +25,10 @@ test("nonproduction robots disallows crawling", () => {
 test("legacy redirect never sends checkout to an unverified target", () => {
   assert.ok(config.includes('source: "/produkty"'));
   assert.ok(!/source:\s*"\/(?:checkout|payment|cart)"/.test(config));
+});
+
+test("production robots uses the canonical sitemap host", () => {
+  assert.match(robots, /SEO_PRODUCTION_ORIGIN/);
+  assert.match(robots, /sitemap\.xml/);
+  assert.match(robots, /host:\s*SEO_PRODUCTION_ORIGIN/);
 });
