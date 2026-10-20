@@ -17,6 +17,7 @@ import {
   buildBreadcrumbJsonLd,
   buildRestaurantJsonLd,
   buildRestaurantMetadata,
+  buildRouteMetadata,
   serializeJsonLd,
 } from "@/config/seo";
 
@@ -1098,6 +1099,16 @@ export async function generateMetadata({
     )
   ) {
     return {};
+  }
+
+  // Dedicated commercial pages must provide their own canonical, hreflang
+  // and environment-aware robots metadata, not inherit the generic layout.
+  const dedicated = getDedicatedSection(rawLocale, slug);
+  if (dedicated) {
+    return buildRouteMetadata(dedicated.key, rawLocale, {
+      title: dedicated.copy.title,
+      description: dedicated.copy.intro,
+    });
   }
 
   const restaurant =
