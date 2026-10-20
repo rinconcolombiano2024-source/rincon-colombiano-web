@@ -9,7 +9,10 @@ export const rewardCampaign = {
   currency: "PLN",
   maxGrandPrizeValuePln: 500,
   grandPrizeMaxPeople: 2,
-  // CEO must decide whether milestones count individual visits or total customers.\n  // Never award prizes using these illustrative thresholds until clarified.\n  milestoneBasis: "undecided" as const,\n  customerMilestones: [
+  // CEO must decide whether milestones count individual visits or total customers.
+  // Never award prizes using these illustrative thresholds until clarified.
+  milestoneBasis: "undecided" as const,
+  customerMilestones: [
     { verifiedVisits: 1, suggestedRewards: ["coffee", "empanada", "small_arepa"] },
     { verifiedVisits: 100, suggestedRewards: ["main_course"] },
     { verifiedVisits: 200, suggestedRewards: ["meal_for_two"] },
@@ -22,7 +25,10 @@ export const rewardCampaign = {
     serverSideAtomicRedemption: true,
     auditTrail: true,
     antiReplay: true,
-    // Loyalty participation and optional marketing subscriptions are separate.\n    marketingOptInMustBeSeparate: true,\n    prizeBudgetAndInventoryControls: true,\n    onePrizePerEligiblePurchase: true,
+    // Loyalty participation and optional marketing subscriptions are separate.
+    marketingOptInMustBeSeparate: true,
+    prizeBudgetAndInventoryControls: true,
+    onePrizePerEligiblePurchase: true,
     publishedTermsAndEligibility: true,
     legalReviewBeforeLaunch: true,
   },
@@ -36,11 +42,16 @@ export function canLaunchRewardCampaign(input: {
   legalApproved: boolean;
   termsPublished: boolean;
   atomicRedemptionReady: boolean;
-  qrVerificationReady: boolean;\n  milestoneRulesApproved: boolean;\n  prizeBudgetApproved: boolean;
+  qrVerificationReady: boolean;
+  milestoneRulesApproved: boolean;
+  prizeBudgetApproved: boolean;
 }): boolean {
   return rewardCampaign.enabled &&
     input.legalApproved &&
     input.termsPublished &&
     input.atomicRedemptionReady &&
-    input.qrVerificationReady &&\n    input.milestoneRulesApproved &&\n    input.prizeBudgetApproved &&\n    rewardCampaign.milestoneBasis !== "undecided";
+    input.qrVerificationReady &&
+    input.milestoneRulesApproved &&
+    input.prizeBudgetApproved &&
+    rewardCampaign.milestoneBasis !== "undecided";
 }
