@@ -6,9 +6,9 @@ import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { useParams } from "next/navigation";
 
 const messages = {
-  pl: { title: "Konto klienta", intro: "Zaloguj się bez hasła, korzystając z bezpiecznego linku wysłanego e-mailem.", order: "Zamów na wynos w RC ORDERA", email: "Adres e-mail", send: "Wyślij link do logowania", sending: "Wysyłanie…", sent: "Sprawdź pocztę, aby się zalogować.", signout: "Wyloguj się", welcome: "Zalogowano jako", unavailable: "Logowanie jest obecnie niedostępne.", invalid: "Wpisz poprawny adres e-mail." },
-  es: { title: "Mi cuenta", intro: "Entra sin contraseña con un enlace seguro enviado a tu correo.", order: "Pedir para recoger con RC ORDERA", email: "Correo electrónico", send: "Enviarme un enlace para entrar", sending: "Enviando…", sent: "Revisa tu correo para iniciar sesión.", signout: "Cerrar sesión", welcome: "Sesión iniciada como", unavailable: "El acceso no está disponible en este momento.", invalid: "Introduce un correo electrónico válido." },
-  en: { title: "My account", intro: "Sign in without a password using a secure link sent to your email.", order: "Order pickup with RC ORDERA", email: "Email address", send: "Email me a sign-in link", sending: "Sending…", sent: "Check your email to sign in.", signout: "Sign out", welcome: "Signed in as", unavailable: "Sign-in is currently unavailable.", invalid: "Enter a valid email address." },
+  pl: { title: "Konto klienta", intro: "Zaloguj się bez hasła, korzystając z bezpiecznego linku wysłanego e-mailem.", order: "Zamów na wynos w RC ORDERA", pickup: "Zamów wcześniej, odbierz w restauracji i zapłać na miejscu.", gift: "Zamów przez RC ORDERA i odbierz darmową empanadę. Przyjdź z przyjacielem, aby skorzystać z promocji na zestaw empanad — zapytaj obsługę o warunki.", email: "Adres e-mail", send: "Wyślij link do logowania", sending: "Wysyłanie…", sent: "Sprawdź pocztę, aby się zalogować.", signout: "Wyloguj się", welcome: "Zalogowano jako", unavailable: "Logowanie jest obecnie niedostępne.", invalid: "Wpisz poprawny adres e-mail." },
+  es: { title: "Mi cuenta", intro: "Entra sin contraseña con un enlace seguro enviado a tu correo.", order: "Pedir para recoger con RC ORDERA", pickup: "Pide con anticipación, recoge en el restaurante y paga allí.", gift: "Pide por RC ORDERA y recibe una empanada gratis. Si vienes con un amigo, pregunta por la promoción del combo de empanadas.", email: "Correo electrónico", send: "Enviarme un enlace para entrar", sending: "Enviando…", sent: "Revisa tu correo para iniciar sesión.", signout: "Cerrar sesión", welcome: "Sesión iniciada como", unavailable: "El acceso no está disponible en este momento.", invalid: "Introduce un correo electrónico válido." },
+  en: { title: "My account", intro: "Sign in without a password using a secure link sent to your email.", order: "Order pickup with RC ORDERA", pickup: "Order ahead, collect at the restaurant and pay there.", gift: "Order through RC ORDERA and receive a free empanada. Coming with a friend? Ask our team about the empanada combo offer.", email: "Email address", send: "Email me a sign-in link", sending: "Sending…", sent: "Check your email to sign in.", signout: "Sign out", welcome: "Signed in as", unavailable: "Sign-in is currently unavailable.", invalid: "Enter a valid email address." },
 } as const;
 
 export default function CustomerAccountPage() {
@@ -87,6 +87,7 @@ export default function CustomerAccountPage() {
             {notice && <p role="status" aria-live="polite">{notice}</p>}
           </form>
         )}
+        <div className="mt-7 rounded-2xl border border-[#f7c600] bg-[#fff9db] p-4 text-sm leading-6 text-[#12100e]"><p className="font-bold">{copy.pickup}</p><p className="mt-2">{copy.gift}</p></div>
         <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[#123d73] px-5 py-3 font-semibold text-[#123d73] hover:bg-blue-50">{copy.order}</a>
       </section>
     </main>
