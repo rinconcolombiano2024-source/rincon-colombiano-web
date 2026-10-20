@@ -25,11 +25,14 @@ export default function CustomerAccountPage() {
   useEffect(() => {
     if (!supabaseUrl || !supabaseKey) { return; }
     const client = createBrowserClient(supabaseUrl, supabaseKey);
-    void client.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+    let active = true;
+    void client.auth.getUser()
+      .then(({ data }) => { if (active) { setUserEmail(data.user?.email ?? null); } })
+      .catch(() => { if (active) { setUserEmail(null); } });
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email ?? null);
     });
-    return () => listener.subscription.unsubscribe();
+    return () => { active = false; listener.subscription.unsubscribe(); };
   }, [supabaseUrl, supabaseKey]);
   async function sendLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,20 +43,31 @@ export default function CustomerAccountPage() {
     }
     setPending(true);
     setNotice("");
-    const client = createBrowserClient(config.url, config.key);
-    const redirectTo = new URL(window.location.pathname, window.location.origin).toString();
-    const { error } = await client.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
-    });
-    setNotice(error ? copy.unavailable : copy.sent);
-    setPending(false);
+    try {
+      const client = createBrowserClient(config.url, config.key);
+      const redirectTo = new URL(window.location.pathname, window.location.origin).toString();
+      const { error } = await client.auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
+      });
+      setNotice(error ? copy.unavailable : copy.sent);
+    } catch {
+      setNotice(copy.unavailable);
+    } finally {
+      setPending(false);
+    }
   }
   async function signOut() {
     if (!config) { return; }
-    const client = createBrowserClient(config.url, config.key);
-    await client.auth.signOut();
-    setUserEmail(null);
+    try {
+      const client = createBrowserClient(config.url, config.key);
+      const { error } = await client.auth.signOut();
+      if (error) { setNotice(copy.unavailable); return; }
+      setUserEmail(null);
+      setNotice("");
+    } catch {
+      setNotice(copy.unavailable);
+    }
   }
   return (
     <main id="main-content" className="mx-auto min-h-[65vh] max-w-xl px-5 py-16">
