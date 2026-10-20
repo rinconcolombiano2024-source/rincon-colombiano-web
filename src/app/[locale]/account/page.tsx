@@ -6,9 +6,9 @@ import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { useParams } from "next/navigation";
 
 const messages = {
-  pl: { title: "Konto klienta", email: "Adres e-mail", send: "Wyślij link do logowania", sending: "Wysyłanie…", sent: "Sprawdź pocztę, aby się zalogować.", signout: "Wyloguj się", welcome: "Zalogowano jako", unavailable: "Logowanie jest obecnie niedostępne.", invalid: "Wpisz poprawny adres e-mail." },
-  es: { title: "Mi cuenta", email: "Correo electrónico", send: "Enviarme un enlace para entrar", sending: "Enviando…", sent: "Revisa tu correo para iniciar sesión.", signout: "Cerrar sesión", welcome: "Sesión iniciada como", unavailable: "El acceso no está disponible en este momento.", invalid: "Introduce un correo electrónico válido." },
-  en: { title: "My account", email: "Email address", send: "Email me a sign-in link", sending: "Sending…", sent: "Check your email to sign in.", signout: "Sign out", welcome: "Signed in as", unavailable: "Sign-in is currently unavailable.", invalid: "Enter a valid email address." },
+  pl: { title: "Konto klienta", intro: "Zaloguj się bez hasła, korzystając z bezpiecznego linku wysłanego e-mailem.", order: "Zamów na wynos w RC ORDERA", email: "Adres e-mail", send: "Wyślij link do logowania", sending: "Wysyłanie…", sent: "Sprawdź pocztę, aby się zalogować.", signout: "Wyloguj się", welcome: "Zalogowano jako", unavailable: "Logowanie jest obecnie niedostępne.", invalid: "Wpisz poprawny adres e-mail." },
+  es: { title: "Mi cuenta", intro: "Entra sin contraseña con un enlace seguro enviado a tu correo.", order: "Pedir para recoger con RC ORDERA", email: "Correo electrónico", send: "Enviarme un enlace para entrar", sending: "Enviando…", sent: "Revisa tu correo para iniciar sesión.", signout: "Cerrar sesión", welcome: "Sesión iniciada como", unavailable: "El acceso no está disponible en este momento.", invalid: "Introduce un correo electrónico válido." },
+  en: { title: "My account", intro: "Sign in without a password using a secure link sent to your email.", order: "Order pickup with RC ORDERA", email: "Email address", send: "Email me a sign-in link", sending: "Sending…", sent: "Check your email to sign in.", signout: "Sign out", welcome: "Signed in as", unavailable: "Sign-in is currently unavailable.", invalid: "Enter a valid email address." },
 } as const;
 
 export default function CustomerAccountPage() {
@@ -58,7 +58,8 @@ export default function CustomerAccountPage() {
   return (
     <main id="main-content" className="mx-auto min-h-[65vh] max-w-xl px-5 py-16">
       <section className="rounded-3xl border border-[#e7e1d7] bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-3xl font-bold text-[#123d73]">{copy.title}</h1>
+        <h1 className="mb-3 text-3xl font-bold text-[#123d73]">{copy.title}</h1>
+        <p className="mb-6 text-sm leading-6 text-slate-700">{copy.intro}</p>
         {!config ? <p role="status">{copy.unavailable}</p> : userEmail ? (
           <div className="space-y-5">
             <p>{copy.welcome} <strong>{userEmail}</strong></p>
@@ -72,6 +73,7 @@ export default function CustomerAccountPage() {
             {notice && <p role="status" aria-live="polite">{notice}</p>}
           </form>
         )}
+        <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[#123d73] px-5 py-3 font-semibold text-[#123d73] hover:bg-blue-50">{copy.order}</a>
       </section>
     </main>
   );
