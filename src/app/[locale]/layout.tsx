@@ -12,6 +12,7 @@ import {
 } from "next/navigation";
 
 import "../globals.css";
+import { PublicPageNavigation } from "@/components/commercial/PublicPageNavigation";
 import { CookieConsent } from "@/components/commercial/CookieConsent";
 import { ConsentAnalytics } from "@/components/commercial/ConsentAnalytics";
 
@@ -240,6 +241,7 @@ export default async function LocaleLayout({
           }
         </a>
 
+        <PublicPageNavigation locale={locale} />
         {children}
         <CookieConsent locale={locale} />
         <ConsentAnalytics />
