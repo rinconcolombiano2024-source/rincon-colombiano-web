@@ -30,7 +30,7 @@ export default function CustomerAccountPage() {
       .then(({ data }) => { if (active) { setUserEmail(data.user?.email ?? null); } })
       .catch(() => { if (active) { setUserEmail(null); } });
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email ?? null);
+      if (active) { setUserEmail(session?.user?.email ?? null); }
     });
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, [supabaseUrl, supabaseKey]);
