@@ -11,6 +11,8 @@ const labels = {
   en: ["Home", "Menu", "Services", "Our story", "Community", "Rewards", "Restaurants"],
 } as const;
 
+const accountLabels = { pl: "Zaloguj się", es: "Iniciar sesión", en: "Sign in" } as const;
+
 const keys = ["home", "menu", "services", "about", "community", "loyalty", "locations"] as const;
 
 /** Shared across public pages; never renders on private admin routes. */
@@ -31,6 +33,7 @@ export function CommercialNavigation({ locale }: { readonly locale: AppLocale })
             </Link>
           );
         })}
+        <Link href={`/${locale}/account`} className="shrink-0 rounded-lg bg-[#123d73] px-4 py-2 text-sm font-bold text-white hover:bg-[#194f91] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{accountLabels[locale]}</Link>
       </div>
     </nav>
   );
