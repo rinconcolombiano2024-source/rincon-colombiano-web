@@ -9,7 +9,7 @@ export const rewardCampaign = {
   currency: "PLN",
   maxGrandPrizeValuePln: 500,
   grandPrizeMaxPeople: 2,
-  customerMilestones: [
+  // CEO must decide whether milestones count individual visits or total customers.\n  // Never award prizes using these illustrative thresholds until clarified.\n  milestoneBasis: "undecided" as const,\n  customerMilestones: [
     { verifiedVisits: 1, suggestedRewards: ["coffee", "empanada", "small_arepa"] },
     { verifiedVisits: 100, suggestedRewards: ["main_course"] },
     { verifiedVisits: 200, suggestedRewards: ["meal_for_two"] },
@@ -22,7 +22,7 @@ export const rewardCampaign = {
     serverSideAtomicRedemption: true,
     auditTrail: true,
     antiReplay: true,
-    explicitConsentForMarketing: true,
+    // Loyalty participation and optional marketing subscriptions are separate.\n    marketingOptInMustBeSeparate: true,\n    prizeBudgetAndInventoryControls: true,\n    onePrizePerEligiblePurchase: true,
     publishedTermsAndEligibility: true,
     legalReviewBeforeLaunch: true,
   },
@@ -36,11 +36,11 @@ export function canLaunchRewardCampaign(input: {
   legalApproved: boolean;
   termsPublished: boolean;
   atomicRedemptionReady: boolean;
-  qrVerificationReady: boolean;
+  qrVerificationReady: boolean;\n  milestoneRulesApproved: boolean;\n  prizeBudgetApproved: boolean;
 }): boolean {
   return rewardCampaign.enabled &&
     input.legalApproved &&
     input.termsPublished &&
     input.atomicRedemptionReady &&
-    input.qrVerificationReady;
+    input.qrVerificationReady &&\n    input.milestoneRulesApproved &&\n    input.prizeBudgetApproved &&\n    rewardCampaign.milestoneBasis !== "undecided";
 }
