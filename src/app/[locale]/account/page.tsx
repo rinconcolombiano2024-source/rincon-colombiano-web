@@ -16,22 +16,24 @@ export default function CustomerAccountPage() {
   const locale = params.locale === "pl" || params.locale === "en" ? params.locale : "es";
   const copy = messages[locale];
   const config = getSupabasePublicConfig();
+  const supabaseUrl = config?.url;
+  const supabaseKey = config?.key;
   const [email, setEmail] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState("");
   useEffect(() => {
-    if (!config) return;
-    const client = createBrowserClient(config.url, config.key);
+    if (!supabaseUrl || !supabaseKey) { return; }
+    const client = createBrowserClient(supabaseUrl, supabaseKey);
     void client.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email ?? null);
     });
     return () => listener.subscription.unsubscribe();
-  }, [config?.url, config?.key]);
+  }, [supabaseUrl, supabaseKey]);
   async function sendLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!config || pending) return;
+    if (!config || pending) { return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setNotice(copy.invalid);
       return;
@@ -48,7 +50,7 @@ export default function CustomerAccountPage() {
     setPending(false);
   }
   async function signOut() {
-    if (!config) return;
+    if (!config) { return; }
     const client = createBrowserClient(config.url, config.key);
     await client.auth.signOut();
     setUserEmail(null);
