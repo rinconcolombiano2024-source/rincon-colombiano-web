@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buildRoutePath } from "@/config/routes";
 
 type Locale = "pl" | "es" | "en";
 type Choice = "accepted" | "rejected";
@@ -40,8 +41,8 @@ export function CookieConsent({ locale }: { locale: Locale }) {
           <h2 id="rc-cookie-dialog-title" className="text-lg font-extrabold text-[#123d73]">{t.title}</h2>
           <p id="rc-cookie-dialog-description" className="mt-2 text-sm leading-6">{t.body}</p>
           <div className="mt-3 flex flex-wrap gap-4 text-sm">
-            <a href={`/${locale}/polityka-prywatnosci`} className="underline underline-offset-4">{t.policy}</a>
-            <a href={`/${locale}/polityka-cookies`} className="underline underline-offset-4">{t.cookies}</a>
+            <a href={buildRoutePath("privacy", locale)} className="underline underline-offset-4">{t.policy}</a>
+            <a href={buildRoutePath("cookies", locale)} className="underline underline-offset-4">{t.cookies}</a>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
             <button type="button" onClick={() => save("rejected")} className="min-h-11 rounded-xl border-2 border-[#123d73] px-5 py-2 font-bold text-[#123d73]">{t.reject}</button>
