@@ -42,11 +42,7 @@ const PUBLISHED_STATIC_ROUTE_KEYS =
   [
     "home",
     "menu",
-    "services",
-    "about",
-    "community",
-    "loyalty",
-    "locations",
+
   ] as const satisfies
     readonly RouteKey[];
 
