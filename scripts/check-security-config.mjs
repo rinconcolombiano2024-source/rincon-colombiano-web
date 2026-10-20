@@ -32,3 +32,24 @@ test("production robots uses the canonical sitemap host", () => {
   assert.match(robots, /sitemap\.xml/);
   assert.match(robots, /host:\s*SEO_PRODUCTION_ORIGIN/);
 });
+
+test("customer sign-in is visible in homepage desktop and mobile navigation", () => {
+  const homepage = readFileSync(new URL("../src/app/[locale]/page.tsx", import.meta.url), "utf8");
+  const accountLinks = homepage.match(/href=\{\`\/\$\{locale\}\/account\`\}/g) ?? [];
+  assert.ok(accountLinks.length >= 2, "Homepage must expose account links in desktop and mobile headers");
+  for (const label of ["Iniciar sesión", "Zaloguj się", "Sign in"]) {
+    assert.ok(homepage.includes(label), `Missing localized sign-in label: ${label}`);
+  }
+});
+
+test("commercial navigation keeps a customer account link", () => {
+  const navigation = readFileSync(new URL("../src/components/commercial/CommercialNavigation.tsx", import.meta.url), "utf8");
+  assert.ok(navigation.includes("account"), "Commercial pages must retain customer account navigation");
+});
+
+test("cookie consent uses the localized legal route registry", () => {
+  const consent = readFileSync(new URL("../src/components/commercial/CookieConsent.tsx", import.meta.url), "utf8");
+  assert.ok(consent.includes('buildRoutePath("privacy", locale)'));
+  assert.ok(consent.includes('buildRoutePath("cookies", locale)'));
+  assert.ok(!consent.includes('href={`/${locale}/polityka-prywatnosci`}'), "Polish privacy slug must not be hardcoded for all languages");
+});
