@@ -40,11 +40,14 @@ test("translated labels and empty symbols never duplicate or lose products", () 
   assert.deepEqual(output.map((entry) => entry.products), [[1], [2], [3], [4], [5]]);
 });
 
-test("menu uses the same unique ID for visible links and anchor destinations", () => {
+test("menu uses the same unique ID for category controls and destinations", () => {
   const page = readFileSync("src/app/[locale]/menu/page.tsx", "utf8");
   assert.match(page, /withMenuCategoryAnchors\(/);
-  assert.match(page, /href=\{\s*`#\$\{category\.anchorId\}`\s*\}/);
+  assert.match(page, /id:\s*category\.anchorId/);
+  const browser = readFileSync("src/components/commercial/MenuCategoryBrowser.tsx", "utf8");
+  assert.match(browser, /aria-controls=\{category\.id\}/);
+  assert.match(browser, /aria-pressed=\{selected === index\}/);
   assert.match(page, /id=\{\s*category\.anchorId\s*\}/);
-  assert.ok((page.match(/key=\{\s*category\.anchorId\s*\}/g) ?? []).length >= 2);
+  assert.match(browser, /key=\{category\.id\}/);
   assert.doesNotMatch(page, /buildCategoryId\(/);
 });
