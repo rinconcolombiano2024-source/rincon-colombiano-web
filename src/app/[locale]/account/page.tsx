@@ -27,8 +27,8 @@ export default function CustomerAccountPage() {
     const client = createBrowserClient(supabaseUrl, supabaseKey);
     let active = true;
     void client.auth.getUser()
-      .then(({ data }) => { if (active) setUserEmail(data.user?.email ?? null); })
-      .catch(() => { if (active) setUserEmail(null); });
+      .then(({ data }) => { if (active) { setUserEmail(data.user?.email ?? null); } })
+      .catch(() => { if (active) { setUserEmail(null); } });
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email ?? null);
     });
