@@ -53,3 +53,19 @@ test("cookie consent uses the localized legal route registry", () => {
   assert.ok(consent.includes('buildRoutePath("cookies", locale)'));
   assert.ok(!consent.includes('href={`/${locale}/polityka-prywatnosci`}'), "Polish privacy slug must not be hardcoded for all languages");
 });
+
+test("customer OTP login recovers from network errors and never traps the submit button", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  assert.match(account, /await client\.auth\.signInWithOtp\(/);
+  assert.match(account, /catch\s*\{\s*setNotice\(copy\.unavailable\)/);
+  assert.match(account, /finally\s*\{\s*setPending\(false\)/);
+  assert.match(account, /if\s*\(error\)\s*\{\s*setNotice\(copy\.unavailable\);\s*return;/);
+  assert.match(account, /listener\.subscription\.unsubscribe\(\)/);
+});
+
+test("customer ordering remains external until payments are verified", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  assert.ok(account.includes("https://rincon-colombiano-pedidosapp.vercel.app/"));
+  assert.ok(account.includes('rel="noopener noreferrer"'));
+  assert.ok(!account.includes("service_role"), "No privileged database key should be used by client account UI");
+});
