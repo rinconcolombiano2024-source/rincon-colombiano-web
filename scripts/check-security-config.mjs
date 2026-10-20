@@ -69,3 +69,14 @@ test("customer ordering remains external until payments are verified", () => {
   assert.ok(account.includes('rel="noopener noreferrer"'));
   assert.ok(!account.includes("service_role"), "No privileged database key should be used by client account UI");
 });
+
+test("scratch-and-win rewards remain disabled until legal and secure redemption are ready", () => {
+  const rewards = readFileSync(new URL("../src/config/reward-campaign.ts", import.meta.url), "utf8");
+  assert.match(rewards, /enabled:\s*false/);
+  assert.match(rewards, /maxGrandPrizeValuePln:\s*500/);
+  assert.match(rewards, /grandPrizeMaxPeople:\s*2/);
+  for (const safeguard of ["oneTimeServerIssuedToken", "serverSideAtomicRedemption", "antiReplay", "legalReviewBeforeLaunch", "verifiedPurchaseOrStaffAuthorization"]) {
+    assert.ok(rewards.includes(safeguard), `Missing campaign safeguard: ${safeguard}`);
+  }
+  assert.match(rewards, /return rewardCampaign\.enabled\s*&&/);
+});
