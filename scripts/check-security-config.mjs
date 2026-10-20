@@ -80,3 +80,12 @@ test("scratch-and-win rewards remain disabled until legal and secure redemption 
   }
   assert.match(rewards, /return rewardCampaign\.enabled\s*&&/);
 });
+
+test("rewards cannot launch with undefined milestone rules or unapproved prize budget", () => {
+  const rewards = readFileSync(new URL("../src/config/reward-campaign.ts", import.meta.url), "utf8");
+  assert.match(rewards, /milestoneBasis:\s*"undecided"/);
+  assert.match(rewards, /milestoneRulesApproved:\s*boolean/);
+  assert.match(rewards, /prizeBudgetApproved:\s*boolean/);
+  assert.match(rewards, /rewardCampaign\.milestoneBasis !== "undecided"/);
+  assert.match(rewards, /marketingOptInMustBeSeparate:\s*true/);
+});
