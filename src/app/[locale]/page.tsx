@@ -2830,6 +2830,9 @@ export default async function HomePage({
             >
               {copy.nav.locations}
             </a>
+            <Link href={`/${locale}/account`} className="rounded-full bg-[#123d73] px-4 py-2 text-sm font-bold text-white hover:bg-[#194f91] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
+              {locale === "pl" ? "Zaloguj się" : locale === "es" ? "Iniciar sesión" : "Sign in"}
+            </Link>
           </nav>
 
 
@@ -3004,6 +3007,10 @@ export default async function HomePage({
                     [
                       buildRoutePath("locations", locale),
                       copy.nav.locations,
+                    ],
+                    [
+                      `/${locale}/account`,
+                      locale === "pl" ? "Zaloguj się" : locale === "es" ? "Iniciar sesión" : "Sign in",
                     ],
                   ].map(
                     (
