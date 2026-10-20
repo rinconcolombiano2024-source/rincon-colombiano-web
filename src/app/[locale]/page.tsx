@@ -2926,6 +2926,7 @@ export default async function HomePage({
             <details
               className="
                 relative
+                z-[80]
                 lg:hidden
               "
             >
@@ -2956,7 +2957,11 @@ export default async function HomePage({
                   absolute
                   right-0
                   top-14
+                  z-[80]
+                  max-h-[min(70dvh,32rem)]
                   w-[min(20rem,calc(100vw-2rem))]
+                  overflow-y-auto
+                  overscroll-contain
                   rounded-3xl
                   border
                   border-[#e7e1d7]
