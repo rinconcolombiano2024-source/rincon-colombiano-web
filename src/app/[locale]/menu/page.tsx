@@ -1,3 +1,4 @@
+import { MenuCategoryBrowser } from "@/components/commercial/MenuCategoryBrowser";
 import type {
   Metadata,
 } from "next";
@@ -1156,61 +1157,7 @@ export default async function MenuPage({
                   </p>
 
 
-                  {/* CATEGORY NAVIGATION */}
-
-                  <nav
-                    className="
-                      mt-8
-                      flex
-                      flex-wrap
-                      gap-2
-                    "
-                    aria-label={
-                      copy.liveTitle
-                    }
-                  >
-                    {
-                      categories.map(
-                        (
-                          category,
-                        ) => (
-                          <a
-                            key={
-                              category.anchorId
-                            }
-                            href={
-                              `#${category.anchorId}`
-                            }
-                            className="
-                              rounded-full
-                              border
-                              border-[#d8d0c5]
-                              bg-[#faf9f6]
-                              px-4
-                              py-2
-                              text-xs
-                              font-bold
-                              transition
-                              hover:border-[#123d73]
-                              hover:text-[#123d73]
-                            "
-                          >
-                            {category.name}
-                          </a>
-                        ),
-                      )
-                    }
-                  </nav>
-
-
-                  {/* CATEGORIES */}
-
-                  <div
-                    className="
-                      mt-12
-                      space-y-14
-                    "
-                  >
+                  <MenuCategoryBrowser label={copy.liveTitle} categories={categories.map(category => ({ id: category.anchorId, name: category.name }))}>
                     {
                       categories.map(
                         (
@@ -1408,7 +1355,7 @@ export default async function MenuPage({
                         ),
                       )
                     }
-                  </div>
+                  </MenuCategoryBrowser>
                 </div>
               </section>
             )
