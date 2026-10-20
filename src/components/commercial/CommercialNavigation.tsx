@@ -22,11 +22,15 @@ export function CommercialNavigation({ locale }: { readonly locale: AppLocale })
   return (
     <nav aria-label={locale === "pl" ? "Nawigacja główna" : locale === "es" ? "Navegación principal" : "Main navigation"} className="border-b border-[#e7e1d7] bg-white">
       <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 sm:justify-center sm:gap-5">
-        {keys.map((key, index) => (
-          <Link key={key} href={buildRoutePath(key, locale)} className="shrink-0 rounded-lg px-2 py-2 text-sm font-semibold text-[#12100e] transition-colors hover:bg-[#f7c600]/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
-            {labels[locale][index]}
-          </Link>
-        ))}
+        {keys.map((key, index) => {
+          const href = buildRoutePath(key, locale);
+          const isActive = pathname === href || pathname === `${href}/`;
+          return (
+            <Link key={key} href={href} aria-current={isActive ? "page" : undefined} className={`shrink-0 rounded-lg px-2 py-2 text-sm font-semibold text-[#12100e] transition-colors hover:bg-[#f7c600]/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] ${isActive ? "bg-[#f7c600]/25 underline decoration-[#123d73] decoration-2 underline-offset-4" : ""}`}>
+              {labels[locale][index]}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
