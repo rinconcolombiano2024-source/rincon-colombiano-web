@@ -89,3 +89,9 @@ test("rewards cannot launch with undefined milestone rules or unapproved prize b
   assert.match(rewards, /rewardCampaign\.milestoneBasis !== "undecided"/);
   assert.match(rewards, /marketingOptInMustBeSeparate:\s*true/);
 });
+
+test("customer auth listener ignores events after component unmount", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  assert.match(account, /onAuthStateChange\(\(_event, session\) => \{\s*if \(active\) \{ setUserEmail/);
+  assert.match(account, /return \(\) => \{ active = false; listener\.subscription\.unsubscribe\(\); \}/);
+});
