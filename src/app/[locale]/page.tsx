@@ -2926,6 +2926,13 @@ export default async function HomePage({
             </a>
 
 
+            <Link
+              href={`/${locale}/account`}
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#123d73] bg-[#123d73] px-3 text-xs font-extrabold text-white transition hover:bg-[#194f91] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] lg:hidden"
+            >
+              {locale === "pl" ? "Zaloguj się" : locale === "es" ? "Iniciar sesión" : "Sign in"}
+            </Link>
+
             <details
               className="
                 relative
