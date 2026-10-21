@@ -279,6 +279,42 @@ export function menuProductCount(menu: RcEditableMenu): number {
   return Object.values(menu).reduce((count, group) => count + group.length, 0);
 }
 
+export interface RcMenuSearchHit {
+  readonly category: string;
+  readonly product: RcMenuProduct;
+}
+
+/**
+ * Fast local owner-menu search; it never queries Supabase or exposes menu data
+ * outside the already-authorized editor. Search all three translations and
+ * match accents and case without rewriting real RC ORDERA product metadata.
+ */
+export function searchMenuProducts(
+  menu: RcEditableMenu,
+  text: string,
+  maxResults = 24,
+): RcMenuSearchHit[] {
+  const normalized = (value: string) =>
+    value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+  const query = normalized(text.trim().slice(0, 120));
+  if (!query) { return []; }
+  const cap = Number.isSafeInteger(maxResults) ? Math.min(Math.max(maxResults, 0), 50) : 24;
+  const matches: RcMenuSearchHit[] = [];
+  for (const [category, products] of Object.entries(menu)) {
+    for (const product of products) {
+      const names = [
+        category, product.id, product.name,
+        ...SUPPORTED_TRANSLATION_LOCALES.map((locale) => getProductTranslation(product, locale).name),
+      ];
+      if (names.some((value) => normalized(value).includes(query))) {
+        matches.push({ category, product });
+        if (matches.length >= cap) { return matches; }
+      }
+    }
+  }
+  return matches;
+}
+
 /** Category edits are local drafts and never alter live RC ORDERA without the owner RPC. */
 export function addMenuCategory(menu: RcEditableMenu, rawName: string): RcEditableMenu {
   const name = rawName.trim().replace(/\s+/gu, " ");
@@ -456,6 +492,12 @@ export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown)
   const originalGroups = Object.keys(original);
   const nextGroups = Object.keys(next);
   const oldNames = new Set(originalGroups);
+  // IDs are identities across the ENTIRE restaurant menu. Once saved, a
+  // product (including one created by this editor) must not be disguised
+  // as a newly-created item in another category or assigned a new station.
+  const originalProductCategories = new Map(
+    originalGroups.flatMap((name) => (original[name] ?? []).map((product) => [product.id, name] as const)),
+  );
   const addedCategories = nextGroups.filter((name) => !oldNames.has(name));
   const removedCategories = originalGroups.filter((name) => !Object.hasOwn(next, name));
   // One new category and one removed EMPTY category at most per save.
@@ -484,6 +526,9 @@ export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown)
     for (const product of after) {
       const existing = beforeById.get(product.id);
       if (!existing) {
+        if (originalProductCategories.has(product.id)) {
+          return false; // A moved/copied saved ID is never a new product.
+        }
         encounteredNew = true;
         added++;
         if (!NEW_PRODUCT_ID.test(product.id) ||
