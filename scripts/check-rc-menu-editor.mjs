@@ -5,6 +5,7 @@ import {
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
   getProductTranslation, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
+  summarizeMenuChanges, undoMenuProductChange,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
 
@@ -54,6 +55,15 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const changedSummary = summarizeMenuChanges(menu, changed);
+assert.equal(changedSummary.length, 1, "one changed product is one review row");
+assert.equal(changedSummary[0].kind, "product_updated");
+assert.deepEqual(changedSummary[0].fields, ["Precio", "Disponibilidad", "Fotografía"],
+  "the review lists ALL edited product fields without exposing private metadata");
+assert.equal(changedSummary[0].previousPrice, 60);
+assert.equal(changedSummary[0].nextPrice, 62.5);
+assert.deepEqual(undoMenuProductChange(menu, changed, "PLATOS PRINCIPALES", "prod-bandeja"),
+  menu, "single-product undo restores exact old station, translations and modifiers");
 const storedWebProduct = {
   id: "prod-web-00000000-0000-4000-8000-000000000099",
   name: "Arepa tradicional", description: "Con queso",
@@ -80,6 +90,8 @@ assert.equal(isSafeMenuRevision(previouslyPublished, {
   DRINKS: [previouslyPublished.DRINKS[0], storedWebProduct],
 }), false, "an existing ID cannot be duplicated in another category");
 const newCategory = addMenuCategory(menu, " Entradas   y  sopas ");
+assert.ok(summarizeMenuChanges(menu, newCategory).some((event) =>
+  event.kind === "category_added" && event.category === "Entradas y sopas"));
 assert.deepEqual(newCategory["Entradas y sopas"], [], "new categories start empty");
 assert.equal(isSafeMenuRevision(menu, newCategory), true, "owner may safely publish one empty category");
 assert.equal(Object.hasOwn(menu, "Entradas y sopas"), false, "category edit never mutates source");
@@ -93,6 +105,11 @@ const populatedNewCategory = addMenuProduct(newCategory, "Entradas y sopas", {
 });
 assert.equal(isSafeMenuRevision(menu, populatedNewCategory), true,
   "new category may contain a validated new dish and preserve existing products");
+assert.ok(summarizeMenuChanges(menu, populatedNewCategory).some((event) =>
+  event.kind === "product_added" && event.productName === "Sancocho"));
+assert.deepEqual(undoMenuProductChange(menu, populatedNewCategory, "Entradas y sopas",
+  "prod-web-00000000-0000-4000-8000-000000000101"), newCategory,
+  "undoing a new product leaves the newly drafted category untouched");
 assert.equal(isSafeMenuRevision(menu, { "PLATOS PRINCIPALES": [], "Entradas y sopas": menu.BEBIDAS }), false,
   "existing populated categories cannot disappear");
 assert.throws(() => removeEmptyMenuCategory(menu, "BEBIDAS"), /vacías/i,
@@ -195,6 +212,8 @@ const createFields = (id, name) => ({
 const firstAdded = addMenuProduct(menu, "BEBIDAS",
   createFields(makeId("000000000001"), "Limonada colombiana"));
 assert.equal(firstAdded.BEBIDAS.length, 2);
+assert.deepEqual(undoMenuProductChange(menu, firstAdded, "BEBIDAS",
+  makeId("000000000001")), menu, "undo a new product without losing stored items");
 const withTranslatedNew = updateProduct(firstAdded, "BEBIDAS",
   makeId("000000000001"), {
     translations: {
@@ -222,6 +241,19 @@ assert.throws(() => addMenuProduct(firstAdded, "BEBIDAS",
 
 const oneRemoved = removeMenuProduct(menu, "BEBIDAS", "prod-masato");
 assert.equal(isSafeMenuRevision(menu, oneRemoved), true, "one removal is safe");
+assert.equal(summarizeMenuChanges(menu, oneRemoved)[0].kind, "product_removed",
+  "review clearly labels a deleted product");
+assert.deepEqual(undoMenuProductChange(menu, oneRemoved, "BEBIDAS", "prod-masato"),
+  menu, "restore a deleted product at its original relative position");
+const originalThree = normalizeMenu({ MAIN: [
+  { id: "a", name: "A", price: 11, available: true, station: "kitchen" },
+  { id: "b", name: "B", price: 12, available: true, station: "kitchen" },
+  { id: "c", name: "C", price: 13, available: true, station: "kitchen" },
+] });
+assert.ok(originalThree);
+const withMiddleRemoved = removeMenuProduct(originalThree, "MAIN", "b");
+assert.deepEqual(undoMenuProductChange(originalThree, withMiddleRemoved, "MAIN", "b")
+  .MAIN.map((item) => item.id), ["a", "b", "c"], "restoring a removed item retains relative ordering");
 assert.equal(oneRemoved.BEBIDAS.length, 0, "empty category is allowed");
 const removedTwice = removeMenuProduct(
   removeMenuProduct(firstAdded, "BEBIDAS", "prod-masato"),
@@ -354,6 +386,13 @@ for (const guard of [
   "createCategory(event",
   "searchMenuProducts(draft, productSearch)",
   "Vista previa · borrador local",
+  "Revisa los cambios antes de guardar",
+  "Confirmar y guardar en RC ORDERA",
+  "reviewedDraftFingerprint === draftFingerprint",
+  "setVerificationUncertain(true)",
+  "if (verificationUncertain)",
+  "undoMenuProductChange(original, draft, categoryName, id)",
+  "menuChanges.slice(0, 100)",
   "publishedSelected.price !== selected.price",
   "setDraft(updateProduct(draft, activeCategory, id, data))",
   "removeEmptyMenuCategory(draft, activeCategory)",
