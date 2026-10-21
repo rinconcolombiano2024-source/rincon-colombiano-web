@@ -393,6 +393,8 @@ for (const guard of [
   "if (verificationUncertain)",
   "undoMenuProductChange(original, draft, categoryName, id)",
   "menuChanges.slice(0, 100)",
+  "menuChanges.length > 100",
+  "disabled={!dirty || hasUnappliedInputs || busy || verificationUncertain || menuChanges.length > 100}",
   "publishedSelected.price !== selected.price",
   "setDraft(updateProduct(draft, activeCategory, id, data))",
   "removeEmptyMenuCategory(draft, activeCategory)",
