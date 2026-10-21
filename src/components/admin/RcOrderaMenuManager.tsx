@@ -270,11 +270,20 @@ function ProductCard({
   );
 }
 
+function newProductFormHasInput(form: HTMLFormElement): boolean {
+  const values = new FormData(form);
+  return ["name", "description", "price"].some((key) =>
+    String(values.get(key) ?? "").trim().length > 0
+  ) || values.get("station") === "bar";
+}
+
 function AddProductForm({
   busy,
   onCreate,
+  onUnappliedChange,
 }: {
   readonly busy: boolean;
+  readonly onUnappliedChange: (dirty: boolean) => void;
   readonly onCreate: (fields: {
     name: string;
     description: string;
@@ -297,11 +306,15 @@ function AddProductForm({
     });
     if (success) {
       form.reset();
+      onUnappliedChange(false);
     }
   }
 
   return (
-    <form onSubmit={create} className="mt-4 grid gap-3 rounded-2xl bg-[#faf9f6] p-5 sm:grid-cols-2">
+    <form onSubmit={create}
+      onInput={(event) => onUnappliedChange(newProductFormHasInput(event.currentTarget))}
+      onChange={(event) => onUnappliedChange(newProductFormHasInput(event.currentTarget))}
+      className="mt-4 grid gap-3 rounded-2xl bg-[#faf9f6] p-5 sm:grid-cols-2">
       <div>
         <label htmlFor="ordera-new-name" className="block text-sm font-bold">Nuevo producto</label>
         <input id="ordera-new-name" name="name" required maxLength={160} disabled={busy}
@@ -367,11 +380,14 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   // refresh must replace its inputs even when the selected ID is unchanged.
   const [serverSnapshotEpoch, setServerSnapshotEpoch] = useState(0);
   const [unappliedChanges, setUnappliedChanges] = useState(false);
+  const [newProductFormDirty, setNewProductFormDirty] = useState(false);
+  const hasUnappliedInputs = unappliedChanges || newProductFormDirty;
   const reportUnappliedChanges = useCallback((hasChanges: boolean) => {
     setUnappliedChanges(hasChanges);
   }, []);
-  const unappliedWarning =
-    "Primero pulsa «Aplicar al borrador» en el producto; hay datos editados sin aplicar.";
+  const unappliedWarning = unappliedChanges
+    ? "Primero pulsa «Aplicar al borrador» en el producto; hay datos editados sin aplicar."
+    : "Tienes campos escritos en «Crear producto». Pulsa «Agregar al borrador» o borra esos datos antes de continuar.";
 
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -397,6 +413,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setProductId("");
       setServerSnapshotEpoch((value) => value + 1);
       setConnected(true);
+      setNewProductFormDirty(false);
       setMessage("Conexión autorizada con RC ORDERA. Descarga la copia de seguridad antes de editar.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo autenticar la cuenta propietaria.");
@@ -404,6 +421,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setDraft(null);
       setOriginal(null);
       setRevision(null);
+      setNewProductFormDirty(false);
       await client.auth.signOut().catch(() => undefined);
     } finally {
       setBusy(false);
@@ -412,13 +430,14 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
 
   async function logout(force = false) {
     // Guard both unsaved form fields AND applied-but-unpublished menu edits.
-    if (!force && (unappliedChanges ||
+    if (!force && (hasUnappliedInputs ||
       (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
       setPendingLogout(true);
       return;
     }
     setPendingLogout(false);
     setUnappliedChanges(false);
+    setNewProductFormDirty(false);
     setBusy(true);
     try {
       await client.auth.signOut();
@@ -437,7 +456,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function reload(force = false) {
-    if (!force && (unappliedChanges ||
+    if (!force && (hasUnappliedInputs ||
       (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
       setPendingReload(true);
       return;
@@ -452,6 +471,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setDraft(current.menu);
       setRevision(current.revision);
       setUnappliedChanges(false);
+      setNewProductFormDirty(false);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
       setProductSearch("");
@@ -467,7 +487,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   function createCategory(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !original || busy || !connected) { return; }
-    if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
     try {
       const next = addMenuCategory(draft, newCategoryName);
       if (!isSafeMenuRevision(original, next)) {
@@ -488,7 +508,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
 
   function removeCategory() {
     if (!draft || !original || busy || !connected) { return; }
-    if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
     try {
       const next = removeEmptyMenuCategory(draft, activeCategory);
       if (!isSafeMenuRevision(original, next)) {
@@ -539,7 +559,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     if (!draft || !original || busy || !connected) {
       return;
     }
-    if (unappliedChanges) {
+    if (hasUnappliedInputs) {
       setErrorMessage(unappliedWarning);
       return;
     }
@@ -625,7 +645,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     if (!original || !draft || revision === null || busy) {
       return;
     }
-    if (unappliedChanges) {
+    if (hasUnappliedInputs) {
       setErrorMessage(unappliedWarning);
       return;
     }
@@ -678,7 +698,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
   useEffect(() => {
-    if (!dirty && !busy && !unappliedChanges) {
+    if (!dirty && !busy && !hasUnappliedInputs) {
       return;
     }
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -688,7 +708,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     };
     window.addEventListener("beforeunload", warnBeforeUnload);
     return () => window.removeEventListener("beforeunload", warnBeforeUnload);
-  }, [dirty, busy, unappliedChanges]);
+  }, [dirty, busy, hasUnappliedInputs]);
 
   return (
     <section aria-labelledby="ordera-edit-title" className="mt-8 rounded-[2rem] border border-[#d9dfe9] bg-white p-6 shadow-sm sm:p-8">
@@ -749,7 +769,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               className="min-h-11 rounded-full border px-5 text-sm font-bold disabled:opacity-50">
               Desconectar
             </button>
-            {pendingLogout && (unappliedChanges || dirty) ? (
+            {pendingLogout && (hasUnappliedInputs || dirty) ? (
               <div role="alert" className="w-full rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
                 <p className="font-bold">Hay modificaciones pendientes sin publicar.</p>
                 <p className="mt-2">Desconectar ahora descartará los cambios del formulario y del borrador del menú.</p>
@@ -770,7 +790,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
           <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-[#e4dccf] bg-[#fff8e4] p-4">
             <p className="text-sm font-bold">
               {menuProductCount(draft ?? {})} productos · {categories.length} categorías ·
-              {unappliedChanges ? " · formulario sin aplicar" : dirty ? " cambios pendientes" : " sin cambios"}
+              {hasUnappliedInputs ? " · campos sin aplicar" : dirty ? " cambios pendientes" : " sin cambios"}
             </p>
             <button type="button" disabled={!original || revision === null}
               onClick={() => original && revision !== null && downloadBackup(original, revision, config.restaurantId)}
@@ -813,7 +833,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                     <li key={product.id}>
                       <button type="button" disabled={busy}
                         onClick={() => {
-                          if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+                          if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
                           setCategory(foundCategory);
                           setProductId(product.id);
                           setProductSearch("");
@@ -839,7 +859,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               <label className="block text-sm font-bold" htmlFor="ordera-category">Categoría</label>
               <select id="ordera-category" value={activeCategory} disabled={busy}
                 onChange={(event) => {
-                  if (unappliedChanges) {
+                  if (hasUnappliedInputs) {
                     setErrorMessage(unappliedWarning);
                     return;
                   }
@@ -855,7 +875,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               <label className="block text-sm font-bold" htmlFor="ordera-product">Producto</label>
               <select id="ordera-product" value={selected?.id ?? ""} disabled={busy || !selected}
                 onChange={(event) => {
-                  if (unappliedChanges) {
+                  if (hasUnappliedInputs) {
                     setErrorMessage(unappliedWarning);
                     return;
                   }
@@ -873,10 +893,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               Retirar categoría vacía «{activeCategory}» del borrador
             </button>
           ) : null}
-          {unappliedChanges ? (
+          {hasUnappliedInputs ? (
             <p role="alert" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-950">
-              Hay cambios del formulario todavía sin aplicar. Pulsa «Aplicar al borrador»
-              antes de seleccionar otro producto, guardar o recargar el menú.
+              {unappliedWarning}
             </p>
           ) : null}
           {selected ? (
@@ -949,18 +968,20 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               adicionales en RC ORDERA cuando estén disponibles.
               Se incorporarán al menú sólo cuando guardes el borrador.
             </p>
-            <AddProductForm busy={busy} onCreate={addProduct} />
+            <AddProductForm key={`${activeCategory}:${serverSnapshotEpoch}`}
+              busy={busy} onCreate={addProduct} onUnappliedChange={setNewProductFormDirty} />
           </details>
           <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-            <button type="button" disabled={(!dirty && !unappliedChanges) || busy} onClick={() => void save()}
+            <button type="button" disabled={(!dirty && !hasUnappliedInputs) || busy} onClick={() => void save()}
               className="inline-flex min-h-12 items-center rounded-full bg-[#f7c600] px-6 text-sm font-black text-[#12100e] disabled:cursor-not-allowed disabled:opacity-50">
               {busy ? "Guardando…" : "Guardar en RC ORDERA"}
             </button>
-            <button type="button" disabled={(!dirty && !unappliedChanges) || busy}
+            <button type="button" disabled={(!dirty && !hasUnappliedInputs) || busy}
               onClick={() => {
                 setDraft(original);
                 setProductId("");
                 setUnappliedChanges(false);
+                setNewProductFormDirty(false);
                 setServerSnapshotEpoch((value) => value + 1);
                 setMessage("Borrador local descartado.");
               }}
