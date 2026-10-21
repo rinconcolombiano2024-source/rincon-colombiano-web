@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
-  addMenuProduct, removeMenuProduct,
+  addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
   getProductTranslation, hasUnappliedProductChanges,
   normalizeMenu, updateProduct, validProductImageUrl,
@@ -43,6 +43,29 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const newCategory = addMenuCategory(menu, " Entradas   y  sopas ");
+assert.deepEqual(newCategory["Entradas y sopas"], [], "new categories start empty");
+assert.equal(isSafeMenuRevision(menu, newCategory), true, "owner may safely publish one empty category");
+assert.equal(Object.hasOwn(menu, "Entradas y sopas"), false, "category edit never mutates source");
+assert.throws(() => addMenuCategory(menu, "bebidas"), /duplicado/i, "case-insensitive duplicate rejected");
+assert.throws(() => addMenuCategory(menu, "__proto__"), /inválido/i, "prototype pollution blocked");
+assert.equal(isSafeMenuRevision(menu, addMenuCategory(newCategory, "Postres")), false,
+  "at most one added category per publication");
+const populatedNewCategory = addMenuProduct(newCategory, "Entradas y sopas", {
+  id: "prod-web-00000000-0000-4000-8000-000000000101",
+  name: "Sancocho", description: "Tradicional", price: 45, station: "kitchen",
+});
+assert.equal(isSafeMenuRevision(menu, populatedNewCategory), true,
+  "new category may contain a validated new dish and preserve existing products");
+assert.equal(isSafeMenuRevision(menu, { "PLATOS PRINCIPALES": [], "Entradas y sopas": menu.BEBIDAS }), false,
+  "existing populated categories cannot disappear");
+assert.throws(() => removeEmptyMenuCategory(menu, "BEBIDAS"), /vacías/i,
+  "cannot delete a populated category");
+const removedNewEmptyCategory = removeEmptyMenuCategory(newCategory, "Entradas y sopas");
+assert.equal(isSafeMenuRevision(menu, removedNewEmptyCategory), true, "create then remove is a no-op");
+assert.equal(isSafeMenuRevision(menu, { ...menu, "Entradas y sopas": [], "Nueva categoría 2": [] }), false,
+  "unsafe extra categories cannot be smuggled in");
+
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 13), true,
   "read-back with advanced revision confirms actual persisted menu");
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 12), false,
@@ -274,6 +297,9 @@ for (const guard of [
   "setErrorMessage(unappliedWarning)",
   "onUnappliedChange(false)",
   "setPendingLogout(true)",
+  "pendingLogout && (unappliedChanges || dirty)",
+  "createCategory(event",
+  "removeEmptyMenuCategory(draft, activeCategory)",
   "isConfirmedMenuSave(draft, current.menu, revision, current.revision)",
   "applied-but-unpublished menu edits",
   "Sí, desconectar y descartar",
