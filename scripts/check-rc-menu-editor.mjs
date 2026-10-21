@@ -62,8 +62,8 @@ assert.deepEqual(changedSummary[0].fields, ["Precio", "Disponibilidad", "Fotogra
   "the review lists ALL edited product fields without exposing private metadata");
 assert.equal(changedSummary[0].previousPrice, 60);
 assert.equal(changedSummary[0].nextPrice, 62.5);
-assert.deepEqual(undoMenuProductChange(menu, changed, "PLATOS PRINCIPALES", "prod-bandeja"),
-  menu, "single-product undo restores exact old station, translations and modifiers");
+assert.deepEqual(Object.entries(undoMenuProductChange(menu, changed, "PLATOS PRINCIPALES", "prod-bandeja")),
+  Object.entries(menu), "single-product undo restores exact old station, translations and modifiers");
 const storedWebProduct = {
   id: "prod-web-00000000-0000-4000-8000-000000000099",
   name: "Arepa tradicional", description: "Con queso",
@@ -212,8 +212,8 @@ const createFields = (id, name) => ({
 const firstAdded = addMenuProduct(menu, "BEBIDAS",
   createFields(makeId("000000000001"), "Limonada colombiana"));
 assert.equal(firstAdded.BEBIDAS.length, 2);
-assert.deepEqual(undoMenuProductChange(menu, firstAdded, "BEBIDAS",
-  makeId("000000000001")), menu, "undo a new product without losing stored items");
+assert.deepEqual(Object.entries(undoMenuProductChange(menu, firstAdded, "BEBIDAS",
+  makeId("000000000001"))), Object.entries(menu), "undo a new product without losing stored items");
 const withTranslatedNew = updateProduct(firstAdded, "BEBIDAS",
   makeId("000000000001"), {
     translations: {
@@ -243,8 +243,8 @@ const oneRemoved = removeMenuProduct(menu, "BEBIDAS", "prod-masato");
 assert.equal(isSafeMenuRevision(menu, oneRemoved), true, "one removal is safe");
 assert.equal(summarizeMenuChanges(menu, oneRemoved)[0].kind, "product_removed",
   "review clearly labels a deleted product");
-assert.deepEqual(undoMenuProductChange(menu, oneRemoved, "BEBIDAS", "prod-masato"),
-  menu, "restore a deleted product at its original relative position");
+assert.deepEqual(Object.entries(undoMenuProductChange(menu, oneRemoved, "BEBIDAS", "prod-masato")),
+  Object.entries(menu), "restore a deleted product at its original relative position");
 const originalThree = normalizeMenu({ MAIN: [
   { id: "a", name: "A", price: 11, available: true, station: "kitchen" },
   { id: "b", name: "B", price: 12, available: true, station: "kitchen" },
