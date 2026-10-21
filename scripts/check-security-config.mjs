@@ -127,3 +127,12 @@ test("menu category controls target labeled category panels", () => {
   assert.match(menu, /aria-label=\{categories\[index\]\?\.name\}/);
   assert.match(menu, /hidden=\{selected !== index\}/);
 });
+
+test("optional cookie consent fails closed when browser storage is unavailable", () => {
+  const cookies = readFileSync(new URL("../src/components/commercial/CookieConsent.tsx", import.meta.url), "utf8");
+  assert.match(cookies, /let persisted = false/);
+  assert.match(cookies, /localStorage\.setItem\(KEY, next\); persisted = true/);
+  assert.match(cookies, /persisted \? next : "rejected"/);
+  assert.match(cookies, /setChoice\(persisted \? next : null\)/);
+  assert.match(cookies, /detail: effectiveChoice/);
+});

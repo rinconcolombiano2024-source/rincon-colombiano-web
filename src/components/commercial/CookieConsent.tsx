@@ -36,9 +36,12 @@ export function CookieConsent({ locale }: { locale: Locale }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
   function save(next: Choice) {
-    try { localStorage.setItem(KEY, next); } catch { /* Private browsing may block storage. */ }
-    setChoice(next);
-    window.dispatchEvent(new CustomEvent("rc-consent-change", { detail: next }));
+    let persisted = false;
+    try { localStorage.setItem(KEY, next); persisted = true; } catch { /* Private browsing may block storage. */ }
+    // Never activate optional cookies when consent cannot be persisted.
+    const effectiveChoice: Choice = persisted ? next : "rejected";
+    setChoice(persisted ? next : null);
+    window.dispatchEvent(new CustomEvent("rc-consent-change", { detail: effectiveChoice }));
   }
   return (
     <>
