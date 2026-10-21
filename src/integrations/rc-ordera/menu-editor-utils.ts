@@ -363,6 +363,131 @@ export function isConfirmedMenuSave(
   return canonical(requested) === canonical(persisted);
 }
 
+/**
+ * A read-only change register for the CEO before any owner RPC is called.
+ * Prices always come from the two snapshots, never from estimated tax or
+ * automated calculations. Internal metadata is not exposed in the preview.
+ */
+export type RcMenuChangeKind =
+  "category_added" | "category_removed" | "product_added" |
+  "product_removed" | "product_updated";
+
+export interface RcMenuChange {
+  readonly kind: RcMenuChangeKind;
+  readonly category: string;
+  readonly productId?: string;
+  readonly productName: string;
+  readonly fields: readonly string[];
+  readonly previousPrice?: number;
+  readonly nextPrice?: number;
+}
+
+export function summarizeMenuChanges(
+  original: RcEditableMenu,
+  draft: RcEditableMenu,
+): RcMenuChange[] {
+  const changes: RcMenuChange[] = [];
+  for (const category of Object.keys(original)) {
+    if (!Object.hasOwn(draft, category)) {
+      changes.push({ kind: "category_removed", category, productName: category, fields: [] });
+    }
+  }
+  for (const [category, products] of Object.entries(draft)) {
+    if (!Object.hasOwn(original, category)) {
+      changes.push({ kind: "category_added", category, productName: category, fields: [] });
+    }
+    const previous = new Map((original[category] ?? []).map((item) => [item.id, item]));
+    for (const product of products) {
+      const before = previous.get(product.id);
+      if (!before) {
+        changes.push({
+          kind: "product_added", category, productId: product.id,
+          productName: product.name, fields: [], nextPrice: product.price,
+        });
+        continue;
+      }
+      const fields: string[] = [];
+      if (before.name !== product.name) { fields.push("Nombre"); }
+      if ((before.description ?? "") !== (product.description ?? "")) { fields.push("Descripción"); }
+      if (before.price !== product.price) { fields.push("Precio"); }
+      if (before.available !== product.available) { fields.push("Disponibilidad"); }
+      if ((before.imageUrl ?? "") !== (product.imageUrl ?? "")) { fields.push("Fotografía"); }
+      for (const locale of SUPPORTED_TRANSLATION_LOCALES) {
+        const oldTranslation = getProductTranslation(before, locale);
+        const newTranslation = getProductTranslation(product, locale);
+        if (oldTranslation.name !== newTranslation.name ||
+          oldTranslation.description !== newTranslation.description) {
+          fields.push(`Traducción ${locale.toUpperCase()}`);
+        }
+      }
+      if (fields.length > 0) {
+        changes.push({
+          kind: "product_updated", category, productId: product.id,
+          productName: product.name, fields,
+          previousPrice: before.price, nextPrice: product.price,
+        });
+      }
+    }
+    const currentIds = new Set(products.map((product) => product.id));
+    for (const before of original[category] ?? []) {
+      if (!currentIds.has(before.id)) {
+        changes.push({
+          kind: "product_removed", category, productId: before.id,
+          productName: before.name, fields: [], previousPrice: before.price,
+        });
+      }
+    }
+  }
+  return changes;
+}
+
+/**
+ * Undo exactly one product in a LOCAL draft, preserving untouched entries and
+ * restoring a removed product to its original relative order. New products
+ * are removed instead. A final safe-revision check guards invariants.
+ */
+export function undoMenuProductChange(
+  original: RcEditableMenu,
+  draft: RcEditableMenu,
+  category: string,
+  productId: string,
+): RcEditableMenu {
+  if (!Object.hasOwn(draft, category)) {
+    throw new Error("Categoría inexistente en el borrador.");
+  }
+  const originalProducts = original[category] ?? [];
+  const restored = originalProducts.find((item) => item.id === productId);
+  const group = draft[category] ?? [];
+  const currentIndex = group.findIndex((item) => item.id === productId);
+  let next: RcMenuProduct[];
+  if (restored) {
+    if (currentIndex !== -1) {
+      next = group.map((item, i) => i === currentIndex ? { ...restored } : item);
+    } else {
+      const originalIndex = originalProducts.findIndex((item) => item.id === productId);
+      const originalPositions = new Map(originalProducts.map((item, i) => [item.id, i]));
+      const beforeIndex = group.findIndex((item) => {
+        const position = originalPositions.get(item.id);
+        return position === undefined || position > originalIndex;
+      });
+      next = [...group];
+      next.splice(beforeIndex < 0 ? next.length : beforeIndex, 0, { ...restored });
+    }
+  } else if (currentIndex !== -1) {
+    if (menuProductCount(draft) <= 1) {
+      throw new Error("No se puede eliminar el último producto.");
+    }
+    next = group.filter((item) => item.id !== productId);
+  } else {
+    throw new Error("El producto no está en los cambios pendientes.");
+  }
+  const candidate = { ...draft, [category]: next };
+  if (!isSafeMenuRevision(original, candidate)) {
+    throw new Error("No se puede deshacer este cambio sin alterar el menú protegido.");
+  }
+  return candidate;
+}
+
 export function updateProduct(
   menu: RcEditableMenu,
   category: string,
