@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
   addMenuProduct, removeMenuProduct,
-  detectProductImageMime, isSafeMenuRevision,
+  detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
   getProductTranslation, hasUnappliedProductChanges,
   normalizeMenu, updateProduct, validProductImageUrl,
   menuProductCount,
@@ -43,6 +43,31 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 13), true,
+  "read-back with advanced revision confirms actual persisted menu");
+assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 12), false,
+  "a stale read cannot claim the menu was saved");
+assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 11), false,
+  "a lower revision cannot confirm a write");
+assert.equal(isConfirmedMenuSave(changed, menu, 12, 13), false,
+  "successful RPC with unchanged persisted prices must not show a false success");
+assert.equal(isConfirmedMenuSave(changed, {
+  ...changed, "PLATOS PRINCIPALES": [{...changed["PLATOS PRINCIPALES"][0], station: "bar"}],
+}, 12, 13), false, "saving must preserve kitchen stations");
+assert.equal(isConfirmedMenuSave(changed, {
+  BEBIDAS: changed.BEBIDAS,
+  "PLATOS PRINCIPALES": changed["PLATOS PRINCIPALES"].map(product => ({
+    modifiers: product.modifiers,
+    translations: product.translations,
+    station: product.station,
+    imageUrl: product.imageUrl,
+    available: product.available,
+    price: product.price,
+    description: product.description,
+    name: product.name,
+    id: product.id,
+  })),
+}, 12, 13), true, "JSONB object-key reordering is not a failed save");
 const translated = updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", {
   translations: {
     pl: { name: "Kolumbijska bandeja paisa", description: "Kolumbijskie danie" },
@@ -249,6 +274,8 @@ for (const guard of [
   "setErrorMessage(unappliedWarning)",
   "onUnappliedChange(false)",
   "setPendingLogout(true)",
+  "isConfirmedMenuSave(draft, current.menu, revision, current.revision)",
+  "applied-but-unpublished menu edits",
   "Sí, desconectar y descartar",
 ]) {
   assert.ok(managerSource.includes(guard), `Missing unsaved-editor UX guard: ${guard}`);
