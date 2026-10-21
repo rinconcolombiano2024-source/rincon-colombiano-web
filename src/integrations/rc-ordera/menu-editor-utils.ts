@@ -279,6 +279,32 @@ export function menuProductCount(menu: RcEditableMenu): number {
   return Object.values(menu).reduce((count, group) => count + group.length, 0);
 }
 
+/**
+ * The owner RPC can report success even when a subsequent read is stale or
+ * unexpected. Confirm the saved revision advanced AND the complete JSON menu
+ * round-tripped without losing product IDs, kitchen stations or metadata.
+ * PostgreSQL JSONB may reorder object keys, but array order is significant.
+ */
+export function isConfirmedMenuSave(
+  requested: RcEditableMenu,
+  persisted: RcEditableMenu,
+  previousRevision: number,
+  persistedRevision: number,
+): boolean {
+  if (!Number.isSafeInteger(previousRevision) ||
+    !Number.isSafeInteger(persistedRevision) ||
+    persistedRevision <= previousRevision) {
+    return false;
+  }
+  const canonical = (menu: RcEditableMenu) => JSON.stringify(menu, (_key, value: unknown) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return value;
+    }
+    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  });
+  return canonical(requested) === canonical(persisted);
+}
+
 export function updateProduct(
   menu: RcEditableMenu,
   category: string,
