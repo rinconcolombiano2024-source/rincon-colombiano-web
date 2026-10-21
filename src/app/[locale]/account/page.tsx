@@ -84,9 +84,9 @@ export default function CustomerAccountPage() {
             <label htmlFor="customer-email" className="block font-semibold">{copy.email}</label>
             <input id="customer-email" type="email" required autoComplete="email" maxLength={254} value={email} onChange={event => setEmail(event.target.value)} className="w-full rounded-xl border border-slate-400 px-4 py-3 text-slate-950" />
             <button disabled={pending} type="submit" className="w-full rounded-xl bg-[#f7c600] px-5 py-3 font-bold text-[#12100e] disabled:opacity-50">{pending ? copy.sending : copy.send}</button>
-            {notice && <p role="status" aria-live="polite">{notice}</p>}
           </form>
         )}
+        {notice && <p role="status" aria-live="polite" className="mt-4 text-sm text-[#123d73]">{notice}</p>}
         <div className="mt-7 rounded-2xl border border-[#f7c600] bg-[#fff9db] p-4 text-sm leading-6 text-[#12100e]"><p className="font-bold">{copy.pickup}</p><p className="mt-2">{copy.gift}</p></div>
         <a href="https://rincon-colombiano-pedidosapp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex min-h-11 items-center rounded-xl border border-[#123d73] px-5 py-3 font-semibold text-[#123d73] hover:bg-blue-50">{copy.order}</a>
       </section>
