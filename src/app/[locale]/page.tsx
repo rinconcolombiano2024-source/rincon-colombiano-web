@@ -1404,10 +1404,10 @@ const homeContent:
         "Celebraciones y empresas",
 
       title:
-        "Cuéntanos qué estás planeando. Rincón construye la experiencia.",
+        "Celebra tus momentos especiales con sabor colombiano.",
 
       description:
-        "¿Organizas un cumpleaños, una reunión familiar o un evento de empresa? Cuéntanos tu idea y prepara una celebración con sabor colombiano.",
+        "¿Preparas un cumpleaños, una reunión familiar o un evento de empresa en Varsovia? Llevamos la cocina colombiana a tu celebración con nuestro servicio de catering.",
 
       categories: [
         "Catering",

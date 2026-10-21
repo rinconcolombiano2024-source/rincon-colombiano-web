@@ -10,6 +10,7 @@ const forbidden = [
   "Secure QR / token",
   "Escalamiento a una persona",
   "Un punto central para solicitudes",
+  "Rincón construye la experiencia",
   "Perfiles de usuarios",
   "User profiles",
   "Profile użytkowników",
