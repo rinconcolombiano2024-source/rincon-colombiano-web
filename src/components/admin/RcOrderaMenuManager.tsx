@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   addMenuProduct,
@@ -760,12 +760,16 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
-  const menuChanges = original && draft ? summarizeMenuChanges(original, draft) : [];
+  const menuChanges = useMemo(() =>
+    original && draft ? summarizeMenuChanges(original, draft) : [],
+    [original, draft],
+  );
   const draftFingerprint = draft && revision !== null ? `${revision}:${JSON.stringify(draft)}` : null;
   const readyToPublish = Boolean(draftFingerprint && reviewedDraftFingerprint === draftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
-  const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
+  const priceFormat = useMemo(() =>
+    new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }), []);
 
   useEffect(() => {
     if (!dirty && !busy && !hasUnappliedInputs) {
@@ -1072,7 +1076,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                     </div>
                     {item.productId ? (
                       <button type="button" disabled={busy || hasUnappliedInputs}
-                        onClick={() => undoProduct(item.category, item.productId!)}
+                        onClick={() => undoProduct(item.category, item.productId ?? "")}
                         className="min-h-11 rounded-full border border-[#123d73] px-4 text-xs font-black text-[#123d73] hover:bg-[#eef3ff] disabled:opacity-40">
                         Deshacer sólo este producto
                       </button>
@@ -1105,7 +1109,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 setUnappliedChanges(false);
                 setNewProductFormDirty(false);
                 setReviewedDraftFingerprint(null);
-                setVerificationUncertain(false);
+                // A previous RPC may already have persisted this menu: only a
+                // successful server reload can resolve unknown publication.
                 setServerSnapshotEpoch((value) => value + 1);
                 setMessage("Borrador local descartado.");
               }}
