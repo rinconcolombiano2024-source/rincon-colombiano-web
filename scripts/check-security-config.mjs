@@ -102,3 +102,11 @@ test("customer account shows authentication errors even when already signed in",
   assert.equal(account.split(notice).length - 1, 1, "Auth notice should be rendered once");
   assert.ok(account.indexOf(notice) > account.indexOf('</form>'), "Notice must remain visible after sign-out failure");
 });
+
+test("cookie consent updates are broadcast across browser tabs", () => {
+  const cookies = readFileSync(new URL("../src/components/commercial/CookieConsent.tsx", import.meta.url), "utf8");
+  assert.match(cookies, /event\.key === KEY \|\| event\.key === null/);
+  assert.match(cookies, /event\.newValue/);
+  assert.match(cookies, /next === "accepted" \? "accepted" : "rejected"/);
+  assert.equal(cookies.split('new CustomEvent("rc-consent-change"').length - 1, 2);
+});
