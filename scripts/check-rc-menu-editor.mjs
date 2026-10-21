@@ -3,7 +3,7 @@ import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/inte
 import {
   addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
-  getProductTranslation, hasUnappliedProductChanges,
+  getProductTranslation, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
@@ -324,6 +324,17 @@ assert.equal(hasUnappliedProductChanges(editorBase, {
 assert.equal(hasUnappliedProductChanges(editorBase, {
   ...unchangedFields, imageUrl: "https://example.com/new-photo.jpg",
 }), true, "Photo URL change must be applied before changing products");
+const emptyNewProductForm = { name: "", description: "", priceText: "", station: "kitchen" };
+assert.equal(hasUnappliedNewProductFields(emptyNewProductForm), false,
+  "freshly opened new-product form is safe to navigate away from");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, name: " Arepa " }), true,
+  "new product name typed but not added must block navigation");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, priceText: "0" }), true,
+  "even a free-price draft is meaningful unsaved text");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, description: "Queso" }), true,
+  "new-product description must not disappear on reload");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, station: "bar" }), true,
+  "an unsubmitted station edit is an unsaved form change");
 const { readFile } = await import("node:fs/promises");
 const managerSource = await readFile("src/components/admin/RcOrderaMenuManager.tsx", "utf8");
 for (const guard of [
@@ -333,7 +344,13 @@ for (const guard of [
   "setErrorMessage(unappliedWarning)",
   "onUnappliedChange(false)",
   "setPendingLogout(true)",
-  "pendingLogout && (unappliedChanges || dirty)",
+  "pendingLogout && (hasUnappliedInputs || dirty)",
+  "newProductFormHasInput(form",
+  "onInput={(event) => onUnappliedChange(newProductFormHasInput",
+  "onUnappliedChange={setNewProductFormDirty}",
+  "hasUnappliedInputs = unappliedChanges || newProductFormDirty",
+  "setNewProductFormDirty(false)",
+  "disabled={(!dirty && !hasUnappliedInputs) || busy}",
   "createCategory(event",
   "searchMenuProducts(draft, productSearch)",
   "Vista previa · borrador local",
