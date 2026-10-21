@@ -151,3 +151,9 @@ test("customer account waits for session verification before showing sign-in", (
   assert.match(account, /setCheckingSession\(false\)/);
   assert.match(account, /checking: "Comprobando tu sesión…"/);
 });
+
+test("customer account loading ends only after verified getUser resolution", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  assert.match(account, /getUser\(\)[\s\S]*?setCheckingSession\(false\)/);
+  assert.match(account, /onAuthStateChange\(\(_event, session\) => \{\s*if \(active\) \{ setUserEmail\(session\?\.user\?\.email \?\? null\); \}/);
+});
