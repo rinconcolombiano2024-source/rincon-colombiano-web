@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   addMenuProduct,
+  addMenuCategory,
+  removeEmptyMenuCategory,
   removeMenuProduct,
   detectProductImageMime,
   getProductTranslation,
@@ -351,6 +353,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [draft, setDraft] = useState<RcEditableMenu | null>(null);
   const [revision, setRevision] = useState<number | null>(null);
   const [category, setCategory] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [productId, setProductId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -453,6 +456,47 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setErrorMessage(error instanceof Error ? error.message : "No se pudo actualizar el menú.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  function createCategory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!draft || !original || busy || !connected) { return; }
+    if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+    try {
+      const next = addMenuCategory(draft, newCategoryName);
+      if (!isSafeMenuRevision(original, next)) {
+        throw new Error("Sólo puedes añadir una categoría por guardado. Publica primero la anterior.");
+      }
+      const name = Object.keys(next).find((item) => !Object.hasOwn(draft, item));
+      if (!name) { throw new Error("No se pudo determinar la nueva categoría."); }
+      setDraft(next);
+      setCategory(name);
+      setProductId("");
+      setNewCategoryName("");
+      setErrorMessage("");
+      setMessage("Categoría añadida al borrador. Agrega productos o guarda en RC ORDERA.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Categoría no válida.");
+    }
+  }
+
+  function removeCategory() {
+    if (!draft || !original || busy || !connected) { return; }
+    if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+    try {
+      const next = removeEmptyMenuCategory(draft, activeCategory);
+      if (!isSafeMenuRevision(original, next)) {
+        throw new Error("Sólo se puede retirar una categoría vacía por guardado.");
+      }
+      setDraft(next);
+      setCategory(Object.keys(next)[0] ?? "");
+      setProductId("");
+      setPendingRemoval(null);
+      setErrorMessage("");
+      setMessage("Categoría vacía retirada del borrador. No cambia RC ORDERA hasta guardar.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo retirar la categoría.");
     }
   }
 
@@ -695,10 +739,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               className="min-h-11 rounded-full border px-5 text-sm font-bold disabled:opacity-50">
               Desconectar
             </button>
-            {pendingLogout && unappliedChanges ? (
+            {pendingLogout && (unappliedChanges || dirty) ? (
               <div role="alert" className="w-full rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
-                <p className="font-bold">Hay datos escritos que aún no has aplicado al borrador.</p>
-                <p className="mt-2">Desconectar ahora descartará esos datos del formulario.</p>
+                <p className="font-bold">Hay modificaciones pendientes sin publicar.</p>
+                <p className="mt-2">Desconectar ahora descartará los cambios del formulario y del borrador del menú.</p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   <button type="button" disabled={busy}
                     onClick={() => void logout(true)}
@@ -724,6 +768,20 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               Descargar copia de seguridad JSON
             </button>
           </div>
+          <form onSubmit={createCategory} className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[#e4dccf] bg-white p-4">
+            <div className="min-w-[min(100%,16rem)] flex-1">
+              <label htmlFor="ordera-new-category" className="block text-sm font-bold">Nueva categoría del menú</label>
+              <input id="ordera-new-category" type="text" maxLength={120} required value={newCategoryName}
+                onChange={(event) => setNewCategoryName(event.target.value)}
+                disabled={busy} placeholder="Por ejemplo: Entradas"
+                className="mt-2 min-h-11 w-full rounded-xl border px-3 py-2 text-sm" />
+            </div>
+            <button type="submit" disabled={busy || !connected}
+              className="min-h-11 rounded-xl bg-[#123d73] px-5 font-bold text-white disabled:opacity-50">
+              + Crear categoría
+            </button>
+            <p className="w-full text-xs text-[#62594f]">Máximo una categoría nueva por guardado. Los cambios siguen siendo un borrador hasta publicarlos.</p>
+          </form>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-bold" htmlFor="ordera-category">Categoría</label>
@@ -757,6 +815,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               </select>
             </div>
           </div>
+          {products.length === 0 && categories.length > 1 ? (
+            <button type="button" disabled={busy} onClick={removeCategory}
+              className="mt-4 min-h-11 rounded-xl border border-red-300 px-4 text-sm font-bold text-red-800 disabled:opacity-50">
+              Retirar categoría vacía «{activeCategory}» del borrador
+            </button>
+          ) : null}
           {unappliedChanges ? (
             <p role="alert" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-950">
               Hay cambios del formulario todavía sin aplicar. Pulsa «Aplicar al borrador»
@@ -826,7 +890,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </button>
           </div>
           <p className="mt-3 text-xs leading-6 text-[#62594f]">
-            Puedes modificar, crear o retirar productos sin borrar categorías.
+            Puedes crear categorías y retirar únicamente categorías vacías;
+            ninguna categoría con productos se puede eliminar desde este panel.
             Los productos existentes conservan identificadores, traducciones,
             modificadores y estaciones de cocina. Hasta tres altas y una baja por guardado.
             Una fotografía subida no aparece en pedidos hasta guardar el menú.
