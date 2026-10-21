@@ -299,6 +299,7 @@ export function searchMenuProducts(
   const query = normalized(text.trim().slice(0, 120));
   if (!query) { return []; }
   const cap = Number.isSafeInteger(maxResults) ? Math.min(Math.max(maxResults, 0), 50) : 24;
+  if (cap === 0) { return []; }
   const matches: RcMenuSearchHit[] = [];
   for (const [category, products] of Object.entries(menu)) {
     for (const product of products) {
