@@ -475,7 +475,7 @@ const homeContent:
         "Smak Kolumbii w sercu Warszawy.",
 
       description:
-        "Poczuj smak prawdziwej Kolumbii! Zapraszamy na pełne aromatu tradycyjne dania, przygotowywane z sercem. Wpadnij na rodzinny obiad, zamów ulubione smaki online lub powierz nam catering na wyjątkową okazję.",
+        "Poczuj smak prawdziwej Kolumbii! Zapraszamy na pełne aromatu tradycyjne dania, przygotowywane z sercem. Wpadnij na rodzinny obiad, zamów ulubione smaki online lub ciesz się naszymi kolumbijskimi przysmakami podczas swoich wydarzeń.",
 
       primaryAction:
         "Zamów online",
@@ -1629,7 +1629,7 @@ const homeContent:
         "Authentic Colombian flavours in Warsaw.",
 
       description:
-        "Discover the warmth and unforgettable flavours of Colombia, right here in Warsaw. Gather around our table for authentic Colombian food, order your favourites online, or make your next celebration special with our catering.",
+        "Discover the warmth and unforgettable flavours of Colombia, right here in Warsaw. Gather around our table for authentic Colombian food, order your favourites online, or enjoy our Colombian specialities at your events.",
 
       primaryAction:
         "Order online",
