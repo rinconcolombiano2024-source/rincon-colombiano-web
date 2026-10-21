@@ -24,7 +24,13 @@ export function CookieConsent({ locale }: { locale: Locale }) {
     };
     queueMicrotask(sync);
     const onStorage = (event: StorageEvent) => {
-      if (event.key === KEY || event.key === null) { sync(); }
+      if (event.key === KEY || event.key === null) {
+        sync();
+        const next = event.key === null ? "rejected" : event.newValue;
+        window.dispatchEvent(new CustomEvent("rc-consent-change", {
+          detail: next === "accepted" ? "accepted" : "rejected",
+        }));
+      }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
