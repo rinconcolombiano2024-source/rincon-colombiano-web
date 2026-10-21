@@ -95,3 +95,10 @@ test("customer auth listener ignores events after component unmount", () => {
   assert.match(account, /onAuthStateChange\(\(_event, session\) => \{\s*if \(active\) \{ setUserEmail/);
   assert.match(account, /return \(\) => \{ active = false; listener\.subscription\.unsubscribe\(\); \}/);
 });
+
+test("customer account shows authentication errors even when already signed in", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  const notice = '{notice && <p role="status" aria-live="polite"';
+  assert.equal(account.split(notice).length - 1, 1, "Auth notice should be rendered once");
+  assert.ok(account.indexOf(notice) > account.indexOf('</form>'), "Notice must remain visible after sign-out failure");
+});
