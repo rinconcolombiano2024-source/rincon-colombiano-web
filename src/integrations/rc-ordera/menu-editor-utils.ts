@@ -279,6 +279,27 @@ export function menuProductCount(menu: RcEditableMenu): number {
   return Object.values(menu).reduce((count, group) => count + group.length, 0);
 }
 
+/** Category edits are local drafts and never alter live RC ORDERA without the owner RPC. */
+export function addMenuCategory(menu: RcEditableMenu, rawName: string): RcEditableMenu {
+  const name = rawName.trim().replace(/\s+/gu, " ");
+  if (!name || name.length > 120 ||
+    ["__proto__", "constructor", "prototype"].includes(name.toLowerCase()) ||
+    Object.keys(menu).some((current) => current.toLocaleLowerCase() === name.toLocaleLowerCase()) ||
+    Object.keys(menu).length >= 80) {
+    throw new Error("Nombre de categoría inválido, duplicado o límite de categorías alcanzado.");
+  }
+  return { ...menu, [name]: [] };
+}
+
+/** Refuse deletion of populated categories even when the UI makes a mistake. */
+export function removeEmptyMenuCategory(menu: RcEditableMenu, name: string): RcEditableMenu {
+  if (!Object.hasOwn(menu, name) || !Array.isArray(menu[name]) ||
+    menu[name].length > 0 || Object.keys(menu).length <= 1) {
+    throw new Error("Sólo puedes retirar categorías vacías, conservando al menos una.");
+  }
+  return Object.fromEntries(Object.entries(menu).filter(([category]) => category !== name));
+}
+
 /**
  * The owner RPC can report success even when a subsequent read is stale or
  * unexpected. Confirm the saved revision advanced AND the complete JSON menu
@@ -434,13 +455,26 @@ export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown)
   }
   const originalGroups = Object.keys(original);
   const nextGroups = Object.keys(next);
-  if (originalGroups.length !== nextGroups.length ||
-    originalGroups.some((category, i) => nextGroups[i] !== category)) {
+  const oldNames = new Set(originalGroups);
+  const addedCategories = nextGroups.filter((name) => !oldNames.has(name));
+  const removedCategories = originalGroups.filter((name) => !Object.hasOwn(next, name));
+  // One new category and one removed EMPTY category at most per save.
+  // Existing categories and their products never move or change names.
+  if (addedCategories.length > 1 || removedCategories.length > 1 ||
+    removedCategories.some((name) => (original[name]?.length ?? 0) !== 0) ||
+    originalGroups.filter((name) => Object.hasOwn(next, name)).some(
+      (name, i) => nextGroups[i] !== name
+    ) ||
+    addedCategories.some((name) =>
+      !name.trim() || name.length > 120 ||
+      ["__proto__", "constructor", "prototype"].includes(name.toLowerCase()) ||
+      originalGroups.some((old) => old.toLocaleLowerCase() === name.toLocaleLowerCase())
+    )) {
     return false;
   }
   let added = 0;
   let removed = 0;
-  for (const category of originalGroups) {
+  for (const category of nextGroups) {
     const before = original[category] ?? [];
     const after = next[category] ?? [];
     const beforeById = new Map(before.map((item, index) => [item.id, { item, index }]));
@@ -474,6 +508,11 @@ export function isSafeMenuRevision(original: RcEditableMenu, candidate: unknown)
     if (added > 3 || removed > 1) {
       return false;
     }
+  }
+  // New categories may contain new products but cannot smuggle in a
+  // previously-existing product ID, since the old-group removals are counted.
+  for (const category of removedCategories) {
+    if ((original[category]?.length ?? 0) !== 0) { return false; }
   }
   return true;
 }
