@@ -31,7 +31,7 @@ export default function CustomerAccountPage() {
       .then(({ data }) => { if (active) { setUserEmail(data.user?.email ?? null); setCheckingSession(false); } })
       .catch(() => { if (active) { setUserEmail(null); setCheckingSession(false); } });
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
-      if (active) { setUserEmail(session?.user?.email ?? null); setCheckingSession(false); }
+      if (active) { setUserEmail(session?.user?.email ?? null); }
     });
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, [supabaseUrl, supabaseKey]);
