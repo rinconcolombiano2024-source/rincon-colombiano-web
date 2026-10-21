@@ -45,7 +45,8 @@ test("menu uses the same unique ID for category controls and destinations", () =
   assert.match(page, /withMenuCategoryAnchors\(/);
   assert.match(page, /id:\s*category\.anchorId/);
   const browser = readFileSync("src/components/commercial/MenuCategoryBrowser.tsx", "utf8");
-  assert.match(browser, /aria-controls=\{category\.id\}/);
+  assert.match(browser, /aria-controls=\{`menu-panel-\$\{index\}`\}/);
+  assert.match(browser, /id=\{`menu-panel-\$\{index\}`\}/);
   assert.match(browser, /aria-pressed=\{selected === index\}/);
   assert.match(page, /id=\{\s*category\.anchorId\s*\}/);
   assert.match(browser, /key=\{category\.id\}/);
