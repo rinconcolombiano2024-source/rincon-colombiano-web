@@ -136,3 +136,10 @@ test("optional cookie consent fails closed when browser storage is unavailable",
   assert.match(cookies, /setChoice\(persisted \? next : null\)/);
   assert.match(cookies, /detail: effectiveChoice/);
 });
+
+test("menu category selection survives reorder and removed categories", () => {
+  const menu = readFileSync(new URL("../src/components/commercial/MenuCategoryBrowser.tsx", import.meta.url), "utf8");
+  assert.match(menu, /useState<string \| null>\(null\)/);
+  assert.match(menu, /Math\.max\(0, categories\.findIndex\(\(category\) => category\.id === selectedId\)\)/);
+  assert.match(menu, /setSelectedId\(category\.id\)/);
+});
