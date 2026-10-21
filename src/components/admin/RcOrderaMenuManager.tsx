@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   addMenuProduct,
@@ -764,16 +764,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
-  const menuChanges = useMemo(() =>
-    original && draft ? summarizeMenuChanges(original, draft) : [],
-    [original, draft],
-  );
+  const menuChanges = original && draft ? summarizeMenuChanges(original, draft) : [];
   const draftFingerprint = draft && revision !== null ? `${revision}:${JSON.stringify(draft)}` : null;
   const readyToPublish = Boolean(draftFingerprint && reviewedDraftFingerprint === draftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
-  const priceFormat = useMemo(() =>
-    new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }), []);
+  const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
   useEffect(() => {
     if (!dirty && !busy && !hasUnappliedInputs) {
