@@ -9,6 +9,7 @@ import {
   getProductTranslation,
   hasUnappliedProductChanges,
   isSafeMenuRevision,
+  isConfirmedMenuSave,
   menuProductCount,
   normalizeMenu,
   updateProduct,
@@ -404,7 +405,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   }
 
   async function logout(force = false) {
-    if (unappliedChanges && !force) {
+    // Guard both unsaved form fields AND applied-but-unpublished menu edits.
+    if (!force && (unappliedChanges ||
+      (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
       setPendingLogout(true);
       return;
     }
@@ -599,6 +602,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
         throw new Error("RC ORDERA rechazó los cambios. Revisa la sesión propietaria y vuelve a consultar el menú.");
       }
       const current = await loadSnapshot(client, config.restaurantId);
+      if (!isConfirmedMenuSave(draft, current.menu, revision, current.revision)) {
+        throw new Error("RC ORDERA aceptó la solicitud, pero no pudimos verificar el menú publicado. No vuelvas a guardar sin recargar y comparar los datos.");
+      }
       setOriginal(current.menu);
       setDraft(current.menu);
       setRevision(current.revision);
