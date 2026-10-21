@@ -43,6 +43,21 @@ for (const phrase of forbidden) {
   assert.ok(!home.includes(phrase), `Developer-facing marketing copy is back: ${phrase}`);
 }
 
+const eventCopy = [
+  "Haz tu pedido en línea o disfruta de tus eventos con nuestros productos.",
+  "ciesz się naszymi kolumbijskimi przysmakami podczas swoich wydarzeń.",
+  "enjoy our Colombian specialities at your events.",
+];
+for (const phrase of eventCopy) {
+  assert.ok(home.includes(phrase), `Missing guest-facing PL/ES/EN home event copy: ${phrase}`);
+}
+assert.ok(!home.includes("Pide en línea o celebra con nuestro catering en Varsovia."),
+  "The rejected Spanish catering phrase must not return to the homepage");
+assert.ok(!home.includes("powierz nam catering na wyjątkową okazję."),
+  "The old Polish catering wording must not return");
+assert.ok(!home.includes("make your next celebration special with our catering."),
+  "The old English catering wording must not return");
+
 for (const phrase of [
   "Zamów kolumbijskie jedzenie wygodnie online.",
   "Pide tus platos colombianos favoritos en línea.",
