@@ -15,6 +15,8 @@ import {
   isConfirmedMenuSave,
   menuProductCount,
   searchMenuProducts,
+  summarizeMenuChanges,
+  undoMenuProductChange,
   normalizeMenu,
   updateProduct,
   validProductImageUrl,
@@ -380,6 +382,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [pendingRemoval, setPendingRemoval] = useState<string | null>(null);
   const [pendingLogout, setPendingLogout] = useState(false);
   const [pendingReload, setPendingReload] = useState(false);
+  const [reviewedDraftFingerprint, setReviewedDraftFingerprint] = useState<string | null>(null);
+  const [verificationUncertain, setVerificationUncertain] = useState(false);
   // ProductCard holds controlled input state; a successful server
   // refresh must replace its inputs even when the selected ID is unchanged.
   const [serverSnapshotEpoch, setServerSnapshotEpoch] = useState(0);
@@ -418,6 +422,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setServerSnapshotEpoch((value) => value + 1);
       setConnected(true);
       setNewProductFormDirty(false);
+      setReviewedDraftFingerprint(null);
+      setVerificationUncertain(false);
       setMessage("Conexión autorizada con RC ORDERA. Descarga la copia de seguridad antes de editar.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo autenticar la cuenta propietaria.");
@@ -426,6 +432,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(null);
       setRevision(null);
       setNewProductFormDirty(false);
+      setReviewedDraftFingerprint(null);
+      setVerificationUncertain(false);
       await client.auth.signOut().catch(() => undefined);
     } finally {
       setBusy(false);
@@ -442,6 +450,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     setPendingLogout(false);
     setUnappliedChanges(false);
     setNewProductFormDirty(false);
+    setReviewedDraftFingerprint(null);
+    setVerificationUncertain(false);
     setBusy(true);
     try {
       await client.auth.signOut();
@@ -476,6 +486,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setRevision(current.revision);
       setUnappliedChanges(false);
       setNewProductFormDirty(false);
+      setReviewedDraftFingerprint(null);
+      setVerificationUncertain(false);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
       setProductSearch("");
@@ -589,6 +601,24 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
+  function undoProduct(categoryName: string, id: string): void {
+    if (!original || !draft || busy || !connected) { return; }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    try {
+      const next = undoMenuProductChange(original, draft, categoryName, id);
+      setDraft(next);
+      setCategory(categoryName);
+      setProductId(next[categoryName]?.some((item) => item.id === id) ? id : "");
+      setServerSnapshotEpoch((value) => value + 1);
+      setReviewedDraftFingerprint(null);
+      setPendingRemoval(null);
+      setMessage("Cambio deshecho sólo en el borrador. El resto de productos sigue intacto.");
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo deshacer el producto.");
+    }
+  }
+
   function patchProduct(id: string, data: RcProductUpdate): boolean {
     if (!draft || busy) {
       return false;
@@ -645,8 +675,35 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
+  function reviewSave() {
+    if (!original || !draft || revision === null || busy || verificationUncertain) {
+      setErrorMessage("Primero recarga el menú desde RC ORDERA para verificar su estado.");
+      return;
+    }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    if (!isSafeMenuRevision(original, draft) || menuProductCount(draft) === 0) {
+      setErrorMessage("Edición bloqueada: el menú tiene productos o categorías inválidos.");
+      return;
+    }
+    if (JSON.stringify(original) === JSON.stringify(draft)) {
+      setMessage("No hay cambios pendientes de publicación.");
+      return;
+    }
+    setReviewedDraftFingerprint(`${revision}:${JSON.stringify(draft)}`);
+    setErrorMessage("");
+    setMessage("Revisa el resumen de cambios. Confirma la publicación sólo cuando los datos sean correctos.");
+  }
+
   async function save() {
     if (!original || !draft || revision === null || busy) {
+      return;
+    }
+    if (verificationUncertain) {
+      setErrorMessage("No se conoce el estado del último guardado. Recarga desde RC ORDERA antes de publicar de nuevo.");
+      return;
+    }
+    if (!readyToPublish) {
+      setErrorMessage("El borrador ha cambiado. Revisa de nuevo el resumen antes de publicar.");
       return;
     }
     if (hasUnappliedInputs) {
@@ -676,6 +733,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
         }
         throw new Error("RC ORDERA rechazó los cambios. Revisa la sesión propietaria y vuelve a consultar el menú.");
       }
+      // RPC returned success, but a timeout/stale response from the read-back
+      // must NOT enable another write until the owner reloads and reconciles.
+      setVerificationUncertain(true);
       const current = await loadSnapshot(client, config.restaurantId);
       if (!isConfirmedMenuSave(draft, current.menu, revision, current.revision)) {
         throw new Error("RC ORDERA aceptó la solicitud, pero no pudimos verificar el menú publicado. No vuelvas a guardar sin recargar y comparar los datos.");
@@ -683,11 +743,14 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(current.menu);
       setDraft(current.menu);
       setRevision(current.revision);
+      setReviewedDraftFingerprint(null);
+      setVerificationUncertain(false);
       setServerSnapshotEpoch((value) => value + 1);
       setMessage("Menú guardado en RC ORDERA. La web comercial puede tardar unos minutos en actualizar el catálogo público.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo guardar el menú.");
     } finally {
+      setReviewedDraftFingerprint(null);
       setBusy(false);
     }
   }
@@ -697,6 +760,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
+  const menuChanges = original && draft ? summarizeMenuChanges(original, draft) : [];
+  const draftFingerprint = draft && revision !== null ? `${revision}:${JSON.stringify(draft)}` : null;
+  const readyToPublish = Boolean(draftFingerprint && reviewedDraftFingerprint === draftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
@@ -975,10 +1041,62 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             <AddProductForm key={`${activeCategory}:${serverSnapshotEpoch}`}
               busy={busy} onCreate={addProduct} onUnappliedChange={setNewProductFormDirty} />
           </details>
+          {dirty && menuChanges.length > 0 ? (
+            <section aria-label="Cambios pendientes de publicación" className="mt-6 rounded-2xl border-2 border-[#123d73] bg-[#f5f9ff] p-4 sm:p-6">
+              <h3 className="text-xl font-black text-[#123d73]">Revisa los cambios antes de guardar</h3>
+              <p className="mt-2 text-sm text-[#62594f]">
+                {menuChanges.length} modificaciones pendientes. Nada de esta lista se ha publicado todavía en RC ORDERA.
+                {menuChanges.length > 100 ? " Se muestran las primeras 100; publica cambios por lotes pequeños." : ""}
+              </p>
+              <ul className="mt-4 max-h-96 space-y-2 overflow-y-auto">
+                {menuChanges.slice(0, 100).map((item, index) => (
+                  <li key={`${item.kind}:${item.category}:${item.productId ?? index}`}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d9dfe9] bg-white p-3">
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-black">{item.productName}</p>
+                      <p className="mt-1 text-xs text-[#62594f]">{item.category} · {
+                        item.kind === "category_added" ? "Nueva categoría" :
+                        item.kind === "category_removed" ? "Categoría vacía retirada" :
+                        item.kind === "product_added" ? "Nuevo producto" :
+                        item.kind === "product_removed" ? "Producto retirado" :
+                        `Producto editado: ${item.fields.join(", ")}`
+                      }</p>
+                      {(item.fields.includes("Precio") ||
+                        item.kind === "product_added" || item.kind === "product_removed") ? (
+                        <p className="mt-1 text-xs font-bold text-[#123d73]">
+                          {item.previousPrice === undefined ? "Nuevo" : priceFormat.format(item.previousPrice)}
+                          {" → "}
+                          {item.nextPrice === undefined ? "Retirado" : priceFormat.format(item.nextPrice)}
+                        </p>
+                      ) : null}
+                    </div>
+                    {item.productId ? (
+                      <button type="button" disabled={busy || hasUnappliedInputs}
+                        onClick={() => undoProduct(item.category, item.productId!)}
+                        className="min-h-11 rounded-full border border-[#123d73] px-4 text-xs font-black text-[#123d73] hover:bg-[#eef3ff] disabled:opacity-40">
+                        Deshacer sólo este producto
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              {readyToPublish ? (
+                <p role="status" className="mt-4 rounded-xl bg-amber-100 p-3 text-sm font-bold text-amber-950">
+                  Resumen revisado. La siguiente confirmación escribirá el menú en RC ORDERA con la cuenta propietaria.
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+          {verificationUncertain ? (
+            <p role="alert" className="mt-4 rounded-xl border border-amber-500 bg-amber-50 p-4 text-sm font-bold text-amber-950">
+              No se pudo verificar la última publicación. Descarga una copia y consulta «Recargar desde RC ORDERA» antes de intentar otro guardado.
+            </p>
+          ) : null}
           <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-            <button type="button" disabled={(!dirty && !hasUnappliedInputs) || busy} onClick={() => void save()}
+            <button type="button" disabled={!dirty || hasUnappliedInputs || busy || verificationUncertain}
+              onClick={() => readyToPublish ? void save() : reviewSave()}
               className="inline-flex min-h-12 items-center rounded-full bg-[#f7c600] px-6 text-sm font-black text-[#12100e] disabled:cursor-not-allowed disabled:opacity-50">
-              {busy ? "Guardando…" : "Guardar en RC ORDERA"}
+              {busy ? "Guardando…" : readyToPublish ? "Confirmar y guardar en RC ORDERA" : "Revisar antes de guardar en RC ORDERA"}
             </button>
             <button type="button" disabled={(!dirty && !hasUnappliedInputs) || busy}
               onClick={() => {
@@ -986,6 +1104,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 setProductId("");
                 setUnappliedChanges(false);
                 setNewProductFormDirty(false);
+                setReviewedDraftFingerprint(null);
+                setVerificationUncertain(false);
                 setServerSnapshotEpoch((value) => value + 1);
                 setMessage("Borrador local descartado.");
               }}
