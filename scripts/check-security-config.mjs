@@ -143,3 +143,11 @@ test("menu category selection survives reorder and removed categories", () => {
   assert.match(menu, /Math\.max\(0, categories\.findIndex\(\(category\) => category\.id === selectedId\)\)/);
   assert.match(menu, /setSelectedId\(category\.id\)/);
 });
+
+test("customer account waits for session verification before showing sign-in", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  assert.match(account, /useState\(Boolean\(config\)\)/);
+  assert.match(account, /checkingSession \? \(/);
+  assert.match(account, /setCheckingSession\(false\)/);
+  assert.match(account, /checking: "Comprobando tu sesión…"/);
+});
