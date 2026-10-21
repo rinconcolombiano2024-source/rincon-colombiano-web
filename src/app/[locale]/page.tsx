@@ -1052,7 +1052,7 @@ const homeContent:
         "El auténtico sabor de Colombia en Varsovia.",
 
       description:
-        "Déjate conquistar por los sabores que nos hacen sentir en casa. Disfruta la auténtica cocina colombiana, comparte momentos inolvidables y lleva un pedacito de Colombia a tu mesa. Pide en línea o celebra con nuestro catering en Varsovia.",
+        "Déjate conquistar por los sabores que nos hacen sentir en casa. Disfruta la auténtica cocina colombiana, comparte momentos inolvidables y lleva un pedacito de Colombia a tu mesa. Haz tu pedido en línea o disfruta de tus eventos con nuestros productos.",
 
       primaryAction:
         "Pedir online",
