@@ -13,6 +13,7 @@ import {
   isSafeMenuRevision,
   isConfirmedMenuSave,
   menuProductCount,
+  searchMenuProducts,
   normalizeMenu,
   updateProduct,
   validProductImageUrl,
@@ -354,6 +355,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [revision, setRevision] = useState<number | null>(null);
   const [category, setCategory] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [productSearch, setProductSearch] = useState("");
   const [productId, setProductId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -391,6 +393,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setDraft(snapshot.menu);
       setRevision(snapshot.revision);
       setCategory(Object.keys(snapshot.menu)[0] ?? "");
+      setProductSearch("");
       setProductId("");
       setServerSnapshotEpoch((value) => value + 1);
       setConnected(true);
@@ -425,6 +428,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(null);
       setRevision(null);
       setCategory("");
+      setProductSearch("");
       setProductId("");
       setServerSnapshotEpoch((value) => value + 1);
       setMessage("");
@@ -450,6 +454,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setUnappliedChanges(false);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
+      setProductSearch("");
       setServerSnapshotEpoch((value) => value + 1);
       setMessage("Menú actualizado con la versión más reciente de RC ORDERA.");
     } catch (error) {
@@ -565,7 +570,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       return false;
     }
     try {
-      setDraft(updateProduct(draft, category, id, data));
+      // Use the actually displayed category; stale category state must never
+      // redirect a draft edit to another product of the same ID.
+      setDraft(updateProduct(draft, activeCategory, id, data));
       setMessage("Producto cambiado en el borrador local, aún no publicado.");
       setErrorMessage("");
       return true;
@@ -666,6 +673,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
   const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
+  const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
+  const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
+  const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
   useEffect(() => {
     if (!dirty && !busy && !unappliedChanges) {
@@ -782,6 +792,48 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </button>
             <p className="w-full text-xs text-[#62594f]">Máximo una categoría nueva por guardado. Los cambios siguen siendo un borrador hasta publicarlos.</p>
           </form>
+          <section aria-label="Buscar productos del menú" className="mt-6 rounded-2xl border border-[#d9dfe9] bg-[#f6f9ff] p-4 sm:p-5">
+            <label htmlFor="ordera-search-product" className="block text-sm font-black text-[#123d73]">
+              Buscar un plato en todas las categorías
+            </label>
+            <input id="ordera-search-product" type="search" maxLength={120}
+              value={productSearch} disabled={busy}
+              onChange={(event) => setProductSearch(event.target.value)}
+              autoComplete="off" placeholder="Escribe bandeja, masato, bebida o un nombre en polaco…"
+              className="mt-2 min-h-12 w-full rounded-xl border border-[#c8d4e4] bg-white px-4 py-2 text-sm"
+            />
+            {productSearch.trim() ? (
+              <div className="mt-3" role="region" aria-label="Resultados de búsqueda">
+                <p className="text-xs font-semibold text-[#62594f]">
+                  {matchingProducts.length === 0 ? "No se encontraron productos." :
+                    `Mostrando ${matchingProducts.length} coincidencias (máximo 24).`}
+                </p>
+                <ul className="mt-2 grid max-h-64 gap-2 overflow-y-auto sm:grid-cols-2">
+                  {matchingProducts.map(({ category: foundCategory, product }) => (
+                    <li key={product.id}>
+                      <button type="button" disabled={busy}
+                        onClick={() => {
+                          if (unappliedChanges) { setErrorMessage(unappliedWarning); return; }
+                          setCategory(foundCategory);
+                          setProductId(product.id);
+                          setProductSearch("");
+                          setPendingRemoval(null);
+                          setErrorMessage("");
+                        }}
+                        className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-[#d9dfe9] bg-white p-3 text-left text-sm hover:border-[#123d73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] disabled:opacity-50">
+                        <span className="min-w-0"><strong className="block break-words">{product.name}</strong>
+                          <span className="text-xs text-[#62594f]">{foundCategory}</span></span>
+                        <span className="shrink-0 text-right font-bold text-[#123d73]">
+                          {priceFormat.format(product.price)}
+                          {!product.available ? <span className="block text-xs text-red-800">Agotado</span> : null}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </section>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-bold" htmlFor="ordera-category">Categoría</label>
@@ -829,6 +881,33 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
           ) : null}
           {selected ? (
             <>
+              <section aria-label="Vista previa del borrador seleccionado" className="mt-6 rounded-2xl border-2 border-[#f7c600] bg-[#fffbea] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-[#123d73]">Vista previa · borrador local</p>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${selected.available ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900"}`}>
+                    {selected.available ? "Disponible" : "No disponible"}
+                  </span>
+                </div>
+                <h3 className="mt-3 break-words text-xl font-extrabold text-[#171717]">{selected.name}</h3>
+                <p className="mt-2 text-2xl font-extrabold text-[#123d73]">{priceFormat.format(selected.price)}</p>
+                {selected.description ? <p className="mt-2 whitespace-pre-wrap break-words text-sm">{selected.description}</p> : null}
+                <p className="mt-3 text-xs text-[#62594f]">
+                  {publishedSelected
+                    ? (publishedSelected.price !== selected.price || publishedSelected.available !== selected.available
+                      ? `Antes de editar: ${priceFormat.format(publishedSelected.price)} · ${publishedSelected.available ? "Disponible" : "No disponible"}`
+                      : "Precio y disponibilidad coinciden con la última versión consultada.")
+                    : "Producto nuevo: no existe en la última versión consultada de RC ORDERA."}
+                </p>
+                {selected.imageUrl && validProductImageUrl(selected.imageUrl) ? (
+                  <a href={selected.imageUrl} target="_blank" rel="noopener noreferrer"
+                    className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-[#123d73] underline underline-offset-4">
+                    Ver fotografía del producto ↗
+                  </a>
+                ) : null}
+                <p className="mt-3 text-xs font-semibold text-[#655a38]">
+                  Esta vista no publica cambios: aplica el formulario y después pulsa «Guardar en RC ORDERA».
+                </p>
+              </section>
               <ProductCard
                 key={`${activeCategory}:${selected.id}:${serverSnapshotEpoch}`}
                 product={selected}
