@@ -58,7 +58,9 @@ export default function CustomerAccountPage() {
     }
   }
   async function signOut() {
-    if (!config) { return; }
+    if (!config || pending) { return; }
+    setPending(true);
+    setNotice("");
     try {
       const client = createBrowserClient(config.url, config.key);
       const { error } = await client.auth.signOut();
@@ -67,6 +69,8 @@ export default function CustomerAccountPage() {
       setNotice("");
     } catch {
       setNotice(copy.unavailable);
+    } finally {
+      setPending(false);
     }
   }
   return (
@@ -77,7 +81,7 @@ export default function CustomerAccountPage() {
         {!config ? <p role="status">{copy.unavailable}</p> : userEmail ? (
           <div className="space-y-5">
             <p>{copy.welcome} <strong>{userEmail}</strong></p>
-            <button type="button" onClick={signOut} className="rounded-xl bg-[#123d73] px-5 py-3 font-semibold text-white">{copy.signout}</button>
+            <button type="button" onClick={signOut} disabled={pending} className="rounded-xl bg-[#123d73] px-5 py-3 font-semibold text-white">{copy.signout}</button>
           </div>
         ) : (
           <form onSubmit={sendLink} className="space-y-5">

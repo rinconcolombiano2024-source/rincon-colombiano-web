@@ -110,3 +110,12 @@ test("cookie consent updates are broadcast across browser tabs", () => {
   assert.match(cookies, /next === "accepted" \? "accepted" : "rejected"/);
   assert.equal(cookies.split('new CustomEvent("rc-consent-change"').length - 1, 2);
 });
+
+test("customer sign-out prevents duplicate requests and clears pending after failures", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/page.tsx", import.meta.url), "utf8");
+  const signout = account.slice(account.indexOf("async function signOut()"), account.indexOf("\n  return (", account.indexOf("async function signOut()")));
+  assert.match(signout, /if \(!config \|\| pending\) \{ return; \}/);
+  assert.match(signout, /setPending\(true\)/);
+  assert.match(signout, /finally \{\s*setPending\(false\)/);
+  assert.match(account, /onClick=\{signOut\} disabled=\{pending\}/);
+});
