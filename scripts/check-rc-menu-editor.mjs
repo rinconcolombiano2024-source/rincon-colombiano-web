@@ -4,7 +4,7 @@ import {
   addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
   getProductTranslation, hasUnappliedProductChanges,
-  normalizeMenu, updateProduct, validProductImageUrl,
+  normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
 
@@ -32,6 +32,17 @@ const original = {
 const menu = normalizeMenu(original);
 assert.ok(menu, "Original owner menu must parse");
 assert.equal(menuProductCount(menu), 2);
+assert.deepEqual(searchMenuProducts(menu, "BEBIDAS").map((hit) => hit.product.id), ["prod-masato"],
+  "search by category returns the real product, not an invented catalog copy");
+assert.deepEqual(searchMenuProducts(menu, "tradycyjna").map((hit) => hit.product.id), [],
+  "description fields are not accidentally used as an uncontrolled search surface");
+assert.deepEqual(searchMenuProducts(menu, "Bándeja").map((hit) => hit.product.id), ["prod-bandeja"],
+  "search handles accents and case");
+assert.deepEqual(searchMenuProducts(menu, " prod-Masato ").map((hit) => hit.product.id), ["prod-masato"],
+  "search exact existing product IDs");
+assert.equal(searchMenuProducts(menu, "").length, 0, "no result list for empty search");
+assert.equal(searchMenuProducts(menu, "prod-", 1).length, 1, "limit bounds result count");
+assert.equal(searchMenuProducts(menu, "prod-", 0).length, 0, "explicit zero limit blocks results");
 const changed = updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", {
   price: 62.5,
   available: false,
@@ -43,6 +54,31 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const storedWebProduct = {
+  id: "prod-web-00000000-0000-4000-8000-000000000099",
+  name: "Arepa tradicional", description: "Con queso",
+  price: 15, available: true, imageUrl: "", station: "kitchen",
+  translations: { pl: { name: "Arepa", description: "" } },
+};
+const previouslyPublished = normalizeMenu({
+  MAIN: [storedWebProduct],
+  DRINKS: [{ id: "saved-drink", name: "Masato", price: 15, available: true, station: "bar" }],
+});
+assert.ok(previouslyPublished);
+const movedStoredProduct = {
+  MAIN: [],
+  DRINKS: [
+    previouslyPublished.DRINKS[0],
+    { ...storedWebProduct, price: 1, station: "bar",
+      translations: { pl: { name: "Fake", description: "" } } },
+  ],
+};
+assert.equal(isSafeMenuRevision(previouslyPublished, movedStoredProduct), false,
+  "a previously saved prod-web UUID cannot masquerade as a new dish in another category");
+assert.equal(isSafeMenuRevision(previouslyPublished, {
+  MAIN: [storedWebProduct],
+  DRINKS: [previouslyPublished.DRINKS[0], storedWebProduct],
+}), false, "an existing ID cannot be duplicated in another category");
 const newCategory = addMenuCategory(menu, " Entradas   y  sopas ");
 assert.deepEqual(newCategory["Entradas y sopas"], [], "new categories start empty");
 assert.equal(isSafeMenuRevision(menu, newCategory), true, "owner may safely publish one empty category");
@@ -299,6 +335,10 @@ for (const guard of [
   "setPendingLogout(true)",
   "pendingLogout && (unappliedChanges || dirty)",
   "createCategory(event",
+  "searchMenuProducts(draft, productSearch)",
+  "Vista previa · borrador local",
+  "publishedSelected.price !== selected.price",
+  "setDraft(updateProduct(draft, activeCategory, id, data))",
   "removeEmptyMenuCategory(draft, activeCategory)",
   "isConfirmedMenuSave(draft, current.menu, revision, current.revision)",
   "applied-but-unpublished menu edits",
