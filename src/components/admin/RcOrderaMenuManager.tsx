@@ -10,6 +10,7 @@ import {
   detectProductImageMime,
   getProductTranslation,
   hasUnappliedProductChanges,
+  hasUnappliedNewProductFields,
   isSafeMenuRevision,
   isConfirmedMenuSave,
   menuProductCount,
@@ -272,9 +273,12 @@ function ProductCard({
 
 function newProductFormHasInput(form: HTMLFormElement): boolean {
   const values = new FormData(form);
-  return ["name", "description", "price"].some((key) =>
-    String(values.get(key) ?? "").trim().length > 0
-  ) || values.get("station") === "bar";
+  return hasUnappliedNewProductFields({
+    name: String(values.get("name") ?? ""),
+    description: String(values.get("description") ?? ""),
+    priceText: String(values.get("price") ?? ""),
+    station: String(values.get("station") ?? "kitchen"),
+  });
 }
 
 function AddProductForm({
