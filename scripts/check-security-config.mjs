@@ -119,3 +119,11 @@ test("customer sign-out prevents duplicate requests and clears pending after fai
   assert.match(signout, /finally \{\s*setPending\(false\)/);
   assert.match(account, /onClick=\{signOut\} disabled=\{pending\}/);
 });
+
+test("menu category controls target labeled category panels", () => {
+  const menu = readFileSync(new URL("../src/components/commercial/MenuCategoryBrowser.tsx", import.meta.url), "utf8");
+  assert.match(menu, /aria-controls=\{`menu-panel-\$\{index\}`\}/);
+  assert.match(menu, /id=\{`menu-panel-\$\{index\}`\}/);
+  assert.match(menu, /aria-label=\{categories\[index\]\?\.name\}/);
+  assert.match(menu, /hidden=\{selected !== index\}/);
+});
