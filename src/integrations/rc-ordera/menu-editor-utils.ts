@@ -399,6 +399,21 @@ export function updateProduct(
  * existing menu format is preserved (stations and PL/ES/EN translations).
  * No backend writes occur until the owner explicitly saves the whole draft.
  */
+/** Detect keystrokes made in the new-product form BEFORE a product exists in
+ * the editable draft; this form must be guarded independently from ProductCard.
+ */
+export function hasUnappliedNewProductFields(fields: {
+  readonly name: string;
+  readonly description: string;
+  readonly priceText: string;
+  readonly station: string;
+}): boolean {
+  return fields.name.trim().length > 0 ||
+    fields.description.trim().length > 0 ||
+    fields.priceText.trim().length > 0 ||
+    fields.station !== "kitchen";
+}
+
 export interface RcNewProductFields {
   readonly id: string;
   readonly name: string;
