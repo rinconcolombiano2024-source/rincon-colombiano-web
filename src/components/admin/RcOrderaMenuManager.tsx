@@ -681,6 +681,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       return;
     }
     if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    if (menuChanges.length > 100) {
+      setErrorMessage("Hay más de 100 cambios. Publica primero un lote pequeño para revisar cada modificación.");
+      return;
+    }
     if (!isSafeMenuRevision(original, draft) || menuProductCount(draft) === 0) {
       setErrorMessage("Edición bloqueada: el menú tiene productos o categorías inválidos.");
       return;
@@ -1097,7 +1101,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             </p>
           ) : null}
           <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-            <button type="button" disabled={!dirty || hasUnappliedInputs || busy || verificationUncertain}
+            <button type="button" disabled={!dirty || hasUnappliedInputs || busy || verificationUncertain || menuChanges.length > 100}
               onClick={() => readyToPublish ? void save() : reviewSave()}
               className="inline-flex min-h-12 items-center rounded-full bg-[#f7c600] px-6 text-sm font-black text-[#12100e] disabled:cursor-not-allowed disabled:opacity-50">
               {busy ? "Guardando…" : readyToPublish ? "Confirmar y guardar en RC ORDERA" : "Revisar antes de guardar en RC ORDERA"}
