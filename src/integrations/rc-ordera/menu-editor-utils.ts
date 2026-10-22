@@ -518,6 +518,52 @@ export function classifyMenuSaveOutcome(
   return "unverified";
 }
 
+/**
+ * Recover only a LOCAL unpublished draft exported by this owner menu editor.
+ * Never accept a copied live/server backup as an editable draft: those files
+ * have a different status marker. A restoration never performs a database write.
+ *
+ * The current owner revision and restaurant ID must match exactly; legacy
+ * drafts that predate this metadata need deliberate manual re-entry instead
+ * of bypassing the owner revision guard.
+ */
+export function restoreUnpublishedMenuDraft(
+  archive: unknown,
+  current: RcEditableMenu,
+  currentRevision: number,
+  restaurantId: string,
+): RcEditableMenu {
+  if (!isObject(archive)) {
+    throw new Error("El archivo no contiene un borrador de menú válido.");
+  }
+  // Verify named fields as unknown; typed field names satisfy strict
+  // TypeScript index-signature access and ESLint without trusting user JSON.
+  const fields = archive as {
+    readonly status?: unknown;
+    readonly restaurantId?: unknown;
+    readonly menuRevision?: unknown;
+    readonly menu?: unknown;
+  };
+  if (fields.status !== "UNPUBLISHED_DRAFT" ||
+    fields.restaurantId !== restaurantId ||
+    fields.menuRevision !== currentRevision ||
+    !Number.isSafeInteger(currentRevision) || currentRevision < 0) {
+    throw new Error(
+      "Este archivo no es un borrador de esta sede y revisión. Descarga un respaldo actual y revisa los cambios manualmente.",
+    );
+  }
+  const restored = normalizeMenu(fields.menu);
+  if (!restored || !isSafeMenuRevision(current, restored)) {
+    throw new Error(
+      "El borrador cambió productos, estaciones, identificadores o categorías protegidos. No se importó nada.",
+    );
+  }
+  if (summarizeMenuChanges(current, restored).length > 100) {
+    throw new Error("El borrador tiene más de 100 modificaciones. Divide los cambios antes de publicarlos.");
+  }
+  return restored;
+}
+
 export function updateProduct(
   menu: RcEditableMenu,
   category: string,

@@ -41,7 +41,49 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Reject high severity production dependency advisories
-        run: npm audit --omit=dev --audit-level=high
+        # Do not suppress findings. NPM's audit API has returned 400 and
+        # timed out in CI despite npm ci succeeding. Only transport failures
+        # use an independent, stricter OSV scan of the committed lockfile.
+        run: |
+          set -euo pipefail
+          for attempt in 1 2; do
+            audit_log="$(mktemp)"
+            if npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=10000 >"$audit_log" 2>&1; then
+              cat "$audit_log"
+              rm -f "$audit_log"
+              exit 0
+            fi
+            cat "$audit_log"
+            if ! grep -Eq 'audit network timeout|audit endpoint returned an error|audit 400 Bad Request' "$audit_log"; then
+              echo "::error::NPM reported dependency findings or a non-transport failure; fail closed."
+              rm -f "$audit_log"
+              exit 1
+            fi
+            rm -f "$audit_log"
+            if [ "$attempt" -eq 1 ]; then
+              echo "::warning::NPM advisory endpoint unreachable; retrying once."
+              sleep 5
+            fi
+          done
+          echo "::warning::NPM audit unavailable; enforce independent OSV vulnerability scan."
+          curl --fail --location --silent --show-error --retry 2 --max-time 90 \
+            https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_amd64 \
+            -o "$RUNNER_TEMP/osv-scanner"
+          chmod 755 "$RUNNER_TEMP/osv-scanner"
+          "$RUNNER_TEMP/osv-scanner" --version
+          # The existing NPM security policy scans production only
+          # (--omit=dev). OSV's group-aware dev-only exemption preserves
+          # the SAME scope while still failing on any prod vulnerability.
+          cat > "$RUNNER_TEMP/osv-production.toml" <<'OSV_CONFIG'
+          [[PackageOverrides]]
+          group = "dev"
+          ignore = true
+          reason = "Mirror npm audit --omit=dev; exclude only dev-only dependencies"
+          OSV_CONFIG
+          # Findings, missing packages, unavailable OSV service, and scan
+          # errors all remain blocking; no unconditional success fallback.
+          "$RUNNER_TEMP/osv-scanner" scan source \
+            --lockfile=package-lock.json --config="$RUNNER_TEMP/osv-production.toml"
 
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
