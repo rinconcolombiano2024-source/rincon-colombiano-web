@@ -41,22 +41,39 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Reject high severity production dependency advisories
-        # npm registry's audit/quick endpoint can intermittently return 400
-        # "Invalid package tree" on an otherwise successful locked npm ci.
-        # Retry only as a transport resilience measure. Every unsuccessful
-        # audit (including a real vulnerability) remains a failing gate.
+        # Do not suppress findings. NPM's audit API has returned 400 and
+        # timed out in CI despite npm ci succeeding. Only transport failures
+        # use an independent, stricter OSV scan of the committed lockfile.
         run: |
-          for attempt in 1 2 3; do
-            if npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=25000; then
+          set -euo pipefail
+          for attempt in 1 2; do
+            audit_log="$(mktemp)"
+            if npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=10000 >"$audit_log" 2>&1; then
+              cat "$audit_log"
+              rm -f "$audit_log"
               exit 0
             fi
-            if [ "$attempt" -eq 3 ]; then
-              echo "::error::Production dependency security audit did not pass after three attempts."
+            cat "$audit_log"
+            if ! grep -Eq 'audit network timeout|audit endpoint returned an error|audit 400 Bad Request' "$audit_log"; then
+              echo "::error::NPM reported dependency findings or a non-transport failure; fail closed."
+              rm -f "$audit_log"
               exit 1
             fi
-            echo "::warning::Audit attempt $attempt failed; retrying without bypassing security."
-            sleep $((attempt * 5))
+            rm -f "$audit_log"
+            if [ "$attempt" -eq 1 ]; then
+              echo "::warning::NPM advisory endpoint unreachable; retrying once."
+              sleep 5
+            fi
           done
+          echo "::warning::NPM audit unavailable; enforce independent OSV vulnerability scan."
+          curl --fail --location --silent --show-error --retry 2 --max-time 90 \
+            https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_amd64 \
+            -o "$RUNNER_TEMP/osv-scanner"
+          chmod 755 "$RUNNER_TEMP/osv-scanner"
+          "$RUNNER_TEMP/osv-scanner" --version
+          # Scan ALL entries including dev dependencies. Findings, missing
+          # packages, unavailable OSV service, and scanner errors fail CI.
+          "$RUNNER_TEMP/osv-scanner" scan source --lockfile=package-lock.json
 
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
