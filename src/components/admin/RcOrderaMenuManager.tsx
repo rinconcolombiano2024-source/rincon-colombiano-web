@@ -296,6 +296,18 @@ function ProductCard({
   );
 }
 
+function readNewProductTranslations(values: FormData): RcProductTranslationUpdates {
+  const translations: RcProductTranslationUpdates = {};
+  for (const locale of ["pl", "es", "en"] as const) {
+    const name = String(values.get(`translation-${locale}-name`) ?? "").trim();
+    const description = String(values.get(`translation-${locale}-description`) ?? "").trim();
+    if (name || description) {
+      translations[locale] = { name, description };
+    }
+  }
+  return translations;
+}
+
 function newProductFormHasInput(form: HTMLFormElement): boolean {
   const values = new FormData(form);
   return hasUnappliedNewProductFields({
@@ -303,6 +315,7 @@ function newProductFormHasInput(form: HTMLFormElement): boolean {
     description: String(values.get("description") ?? ""),
     priceText: String(values.get("price") ?? ""),
     station: String(values.get("station") ?? "kitchen"),
+    translations: readNewProductTranslations(values),
   });
 }
 
@@ -318,6 +331,7 @@ function AddProductForm({
     description: string;
     price: number;
     station: "kitchen" | "bar";
+    translations: RcProductTranslationUpdates;
   }) => boolean;
 }) {
   function create(event: React.FormEvent<HTMLFormElement>): void {
@@ -332,6 +346,7 @@ function AddProductForm({
       description: String(fields.get("description") ?? "").trim(),
       price,
       station,
+      translations: readNewProductTranslations(fields),
     });
     if (success) {
       form.reset();
@@ -363,6 +378,38 @@ function AddProductForm({
           rows={2} disabled={busy}
           className="mt-2 w-full rounded-xl border px-3 py-2 text-sm" />
       </div>
+      <details className="rounded-xl border border-[#d9dfe9] bg-white p-4 sm:col-span-2">
+        <summary className="cursor-pointer text-sm font-black text-[#123d73]">
+          Traducciones del producto nuevo · Polski / Español / English
+        </summary>
+        <p className="mt-3 text-xs text-[#62594f]">
+          Puedes crear las tres traducciones ahora mismo. Si dejas un idioma vacío
+          aparecerá el texto original; el sistema no inventa traducciones.
+          También puedes modificar estos campos antes de publicar el menú.
+        </p>
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          {([
+            { locale: "pl", label: "Polski" },
+            { locale: "es", label: "Español" },
+            { locale: "en", label: "English" },
+          ] as const).map(({ locale, label }) => (
+            <fieldset key={locale} className="min-w-0 rounded-xl border border-[#e4dccf] p-3">
+              <legend className="px-2 text-sm font-black">{label}</legend>
+              <label htmlFor={`ordera-new-translation-name-${locale}`}
+                className="block text-xs font-bold">Nombre traducido</label>
+              <input id={`ordera-new-translation-name-${locale}`}
+                name={`translation-${locale}-name`} maxLength={160} disabled={busy}
+                className="mt-2 min-h-11 w-full rounded-lg border px-3 py-2 text-sm" />
+              <label htmlFor={`ordera-new-translation-description-${locale}`}
+                className="mt-3 block text-xs font-bold">Descripción traducida</label>
+              <textarea id={`ordera-new-translation-description-${locale}`}
+                name={`translation-${locale}-description`} maxLength={3000}
+                rows={2} disabled={busy}
+                className="mt-2 w-full rounded-lg border px-3 py-2 text-sm" />
+            </fieldset>
+          ))}
+        </div>
+      </details>
       <div>
         <label htmlFor="ordera-new-station" className="block text-sm font-bold">
           Estación de preparación
@@ -626,6 +673,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     description: string;
     price: number;
     station: "kitchen" | "bar";
+    translations: RcProductTranslationUpdates;
   }): boolean {
     if (!draft || !original || busy || !connected) {
       return false;
@@ -1249,9 +1297,9 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               + Crear un producto en «{activeCategory}»
             </summary>
             <p className="mt-3 text-sm text-[#62594f]">
-              Los nuevos productos se crean con un ID único. Completa traducciones
-              adicionales en RC ORDERA cuando estén disponibles.
-              Se incorporarán al menú sólo cuando guardes el borrador.
+              Los nuevos productos se crean con un ID único. Puedes añadir las
+              traducciones al polaco, español e inglés en este mismo formulario
+              y revisar cómo se mostrarán antes de publicar el menú en RC ORDERA.
             </p>
             <AddProductForm key={`${activeCategory}:${serverSnapshotEpoch}`}
               busy={busy} onCreate={addProduct} onUnappliedChange={setNewProductFormDirty} />
