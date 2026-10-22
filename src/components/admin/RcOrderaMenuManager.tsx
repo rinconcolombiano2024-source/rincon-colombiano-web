@@ -15,6 +15,8 @@ import {
   hasUnappliedProductChanges,
   hasUnappliedNewProductFields,
   isSafeMenuRevision,
+  areMenuSnapshotsEqual,
+  menuDraftFingerprint,
   classifyMenuSaveOutcome,
   menuProductCount,
   searchMenuProducts,
@@ -519,7 +521,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   async function logout(force = false) {
     // Guard both unsaved form fields AND applied-but-unpublished menu edits.
     if (!force && (hasUnappliedInputs ||
-      (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
+      (original && draft && !areMenuSnapshotsEqual(original, draft)))) {
       setPendingLogout(true);
       return;
     }
@@ -548,7 +550,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
 
   async function reload(force = false) {
     if (!force && (hasUnappliedInputs ||
-      (original && draft && JSON.stringify(original) !== JSON.stringify(draft)))) {
+      (original && draft && !areMenuSnapshotsEqual(original, draft)))) {
       setPendingReload(true);
       return;
     }
@@ -581,7 +583,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   async function importDraftFile(file: File | undefined): Promise<void> {
     if (!file || !connected || !original || revision === null || busy) { return; }
     if (hasUnappliedInputs ||
-      (draft && JSON.stringify(original) !== JSON.stringify(draft))) {
+      (draft && !areMenuSnapshotsEqual(original, draft))) {
       setErrorMessage("Primero guarda, descarta o aplica los cambios pendientes antes de recuperar otro borrador.");
       return;
     }
@@ -602,7 +604,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       // downloading the draft and restoring it, before any local edit occurs.
       const current = await loadSnapshot(client, config.restaurantId);
       if (current.revision !== revision ||
-        JSON.stringify(current.menu) !== JSON.stringify(original)) {
+        !areMenuSnapshotsEqual(current.menu, original)) {
         throw new Error("RC ORDERA cambió desde la última consulta. Descarga el borrador y recarga el menú antes de recuperar.");
       }
       const restored = restoreUnpublishedMenuDraft(parsed, current.menu, current.revision, config.restaurantId);
@@ -850,11 +852,11 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setErrorMessage("Edición bloqueada: el menú tiene productos o categorías inválidos.");
       return;
     }
-    if (JSON.stringify(original) === JSON.stringify(draft)) {
+    if (areMenuSnapshotsEqual(original, draft)) {
       setMessage("No hay cambios pendientes de publicación.");
       return;
     }
-    setReviewedDraftFingerprint(`${revision}:${JSON.stringify(draft)}`);
+    setReviewedDraftFingerprint(menuDraftFingerprint(draft, revision));
     setErrorMessage("");
     setMessage("Revisa el resumen de cambios. Confirma la publicación sólo cuando los datos sean correctos.");
   }
@@ -879,7 +881,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setErrorMessage("Edición bloqueada: estructura o productos inválidos. Recarga el menú.");
       return;
     }
-    if (JSON.stringify(original) === JSON.stringify(draft)) {
+    if (areMenuSnapshotsEqual(original, draft)) {
       setMessage("No hay cambios pendientes de publicación.");
       return;
     }
@@ -950,10 +952,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const activeCategory = categories.includes(category) ? category : categories[0] ?? "";
   const products = draft?.[activeCategory] ?? [];
   const selected = products.find((item) => item.id === productId) ?? products[0];
-  const dirty = Boolean(original && draft && JSON.stringify(original) !== JSON.stringify(draft));
+  const dirty = Boolean(original && draft && !areMenuSnapshotsEqual(original, draft));
   const menuChanges = original && draft ? summarizeMenuChanges(original, draft) : [];
-  const draftFingerprint = draft && revision !== null ? `${revision}:${JSON.stringify(draft)}` : null;
-  const readyToPublish = Boolean(draftFingerprint && reviewedDraftFingerprint === draftFingerprint);
+  const currentDraftFingerprint = draft && revision !== null ? menuDraftFingerprint(draft, revision) : null;
+  const readyToPublish = Boolean(currentDraftFingerprint && reviewedDraftFingerprint === currentDraftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });

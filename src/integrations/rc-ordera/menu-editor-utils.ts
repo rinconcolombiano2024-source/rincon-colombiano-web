@@ -374,6 +374,30 @@ export function removeEmptyMenuCategory(menu: RcEditableMenu, name: string): RcE
 }
 
 /**
+ * PostgreSQL JSONB (and JavaScript object spread) can re-order object keys
+ * without changing menu data. Compare full canonical snapshots, preserving
+ * ARRAY order: product ordering remains meaningful to the kitchen/customer.
+ * This is a comparison-only helper; never modify the stored menu objects.
+ */
+export function canonicalMenuSnapshot(menu: RcEditableMenu): string {
+  return JSON.stringify(menu, (_key, value: unknown) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return value;
+    }
+    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  });
+}
+
+export function areMenuSnapshotsEqual(a: RcEditableMenu, b: RcEditableMenu): boolean {
+  return canonicalMenuSnapshot(a) === canonicalMenuSnapshot(b);
+}
+
+/** Bind the explicit owner review to both menu data and its server revision. */
+export function menuDraftFingerprint(menu: RcEditableMenu, revision: number): string {
+  return `${revision}:${canonicalMenuSnapshot(menu)}`;
+}
+
+/**
  * The owner RPC can report success even when a subsequent read is stale or
  * unexpected. Confirm the saved revision advanced AND the complete JSON menu
  * round-tripped without losing product IDs, kitchen stations or metadata.
@@ -390,13 +414,7 @@ export function isConfirmedMenuSave(
     persistedRevision <= previousRevision) {
     return false;
   }
-  const canonical = (menu: RcEditableMenu) => JSON.stringify(menu, (_key, value: unknown) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      return value;
-    }
-    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
-  });
-  return canonical(requested) === canonical(persisted);
+  return areMenuSnapshotsEqual(requested, persisted);
 }
 
 /**
