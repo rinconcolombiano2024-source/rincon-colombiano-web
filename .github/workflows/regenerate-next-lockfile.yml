@@ -1,0 +1,43 @@
+name: Regenerate Next security lockfile (temporary)
+on:
+  push:
+    branches:
+      - feat/ceo-menu-translation-audit-20261022
+    paths:
+      - package.json
+      - .github/workflows/regenerate-next-lockfile.yml
+permissions:
+  contents: write
+jobs:
+  refresh-lockfile:
+    if: github.repository == 'rinconcolombiano2024-source/rincon-colombiano-web'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - name: Regenerate lockfile from pinned verified Next.js 16.4.2
+        run: |
+          set -euo pipefail
+          test "$(node -p 'require("./package.json").dependencies.next')" = "16.4.2"
+          test "$(node -p 'require("./package.json").devDependencies["eslint-config-next"]')" = "16.4.2"
+          npm install --package-lock-only --ignore-scripts --no-fund --no-audit --fetch-retries=3
+          test "$(node -p 'require("./package-lock.json").packages["node_modules/next"].version')" = "16.4.2"
+          test "$(node -p 'require("./package-lock.json").packages["node_modules/eslint-config-next"].version')" = "16.4.2"
+      - name: Commit only regenerated package-lock.json to feature branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- package-lock.json
+          if git diff --cached --quiet; then
+            echo "Already consistent"
+            exit 0
+          fi
+          git commit -m "fix(security): regenerate locked patched Next.js 16.4.2 dependencies"
+          git push origin HEAD:feat/ceo-menu-translation-audit-20261022
