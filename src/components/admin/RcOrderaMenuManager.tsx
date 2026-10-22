@@ -989,19 +989,18 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const readyToPublish = Boolean(currentDraftFingerprint && reviewedDraftFingerprint === currentDraftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   // Read-only, memoized audit. No additional calls or writes to RC ORDERA.
+  // Derive a valid page from current draft totals during render. No effect-
+  // driven state updates or extra Supabase queries; editing the last item
+  // automatically displays the first page instead of an empty list.
+  const translationTotals = useMemo(() => draft ? auditMenuTranslations(draft, 0) : null, [draft]);
+  const incompleteCount = translationReviewLocale && translationTotals
+    ? translationTotals[translationReviewLocale].incompleteProducts : 0;
+  const visibleTranslationReviewPage = translationReviewPage * 24 < incompleteCount
+    ? translationReviewPage : 0;
   const translationAudit = useMemo(() =>
-    draft ? auditMenuTranslations(draft, 24, translationReviewPage * 24) : null,
-    [draft, translationReviewPage],
+    draft ? auditMenuTranslations(draft, 24, visibleTranslationReviewPage * 24) : null,
+    [draft, visibleTranslationReviewPage],
   );
-  // The unfinished count can shrink after editing the menu. Do not strand
-  // the owner on a now-empty page of results.
-  useEffect(() => {
-    if (translationReviewLocale && translationAudit &&
-      translationReviewPage > 0 &&
-      translationAudit[translationReviewLocale].incompleteProducts <= translationReviewPage * 24) {
-      setTranslationReviewPage(0);
-    }
-  }, [translationAudit, translationReviewLocale, translationReviewPage]);
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
@@ -1236,8 +1235,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                   <p className="text-sm font-bold text-[#123d73]">
                     {translationAudit[translationReviewLocale].incompleteProducts} productos pendientes
                     {translationAudit[translationReviewLocale].incompleteProducts > 0
-                      ? ` · mostrando ${translationReviewPage * 24 + 1}–${Math.min(
-                        (translationReviewPage + 1) * 24,
+                      ? ` · mostrando ${visibleTranslationReviewPage * 24 + 1}–${Math.min(
+                        (visibleTranslationReviewPage + 1) * 24,
                         translationAudit[translationReviewLocale].incompleteProducts,
                       )} de ${translationAudit[translationReviewLocale].incompleteProducts}`
                       : ""}
@@ -1271,19 +1270,19 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                   {translationAudit[translationReviewLocale].incompleteProducts > 24 ? (
                     <nav aria-label="Páginas de traducciones pendientes"
                       className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                      <button type="button" disabled={busy || translationReviewPage === 0}
-                        onClick={() => setTranslationReviewPage((current) => Math.max(0, current - 1))}
+                      <button type="button" disabled={busy || visibleTranslationReviewPage === 0}
+                        onClick={() => setTranslationReviewPage(Math.max(0, visibleTranslationReviewPage - 1))}
                         className="min-h-11 rounded-full border border-[#123d73] px-4 text-sm font-bold text-[#123d73] disabled:opacity-40">
                         ← 24 anteriores
                       </button>
                       <span className="text-sm font-semibold text-[#123d73]">
-                        Página {translationReviewPage + 1} de {Math.ceil(
+                        Página {visibleTranslationReviewPage + 1} de {Math.ceil(
                           translationAudit[translationReviewLocale].incompleteProducts / 24)}
                       </span>
                       <button type="button"
-                        disabled={busy || (translationReviewPage + 1) * 24 >=
+                        disabled={busy || (visibleTranslationReviewPage + 1) * 24 >=
                           translationAudit[translationReviewLocale].incompleteProducts}
-                        onClick={() => setTranslationReviewPage((current) => current + 1)}
+                        onClick={() => setTranslationReviewPage(visibleTranslationReviewPage + 1)}
                         className="min-h-11 rounded-full border border-[#123d73] px-4 text-sm font-bold text-[#123d73] disabled:opacity-40">
                         24 siguientes →
                       </button>
