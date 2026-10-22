@@ -7,7 +7,9 @@ import type {
 /**
  * Locale-specific public read view of the RC ORDERA catalog. This does not
  * mutate the source/menu or call Supabase; it only uses authorized text that
- * the public catalog actually contains. Spanish source text is the fallback.
+ * the public catalog actually contains. Colombian dish names remain intact,
+ * but Spanish SOURCE descriptions must not be shown on Polish/English pages
+ * when the owner has not provided a real translation. No fabricated text.
  */
 export function localizeRcOrderaProduct(
   product: RcOrderaPublicProduct,
@@ -27,14 +29,19 @@ export function localizeRcOrderaProduct(
     return {
       ...product,
       name: "Lechona Tolimense",
-      ...(name && name.length <= 160
-        ? { description: translated?.description ?? "" }
-        : {}),
+      ...(locale !== "es" && (!name || name.length > 160)
+        ? { description: "" }
+        : name && name.length <= 160
+          ? { description: translated?.description ?? "" }
+          : {}),
     };
   }
 
   if (!name || name.length > 160) {
-    return product;
+    // Keep traditional dish names unchanged (Arepa, Tamal, etc.), but never
+    // silently label an untranslated Spanish description as Polish/English.
+    // The CEO translation audit guides owners to supply full localized copy.
+    return locale === "es" ? product : { ...product, description: "" };
   }
   return {
     ...product,

@@ -46,7 +46,7 @@ test("only the exact historic dish label is corrected; never rewrite unrelated p
       translations: undefined,
     }, "pl");
     assert.equal(actual.name, "Lechona Tolimense", title);
-    assert.equal(actual.description, product.description, "Original description preserved without translation");
+    assert.equal(actual.description, "", "Do not publish Spanish source descriptions to Polish visitors without translated text");
   }
 
   for (const title of [
@@ -63,6 +63,46 @@ test("only the exact historic dish label is corrected; never rewrite unrelated p
       "Other products must not be renamed",
     );
   }
+});
+
+test("PL and EN customers never see Spanish source descriptions disguised as translations", () => {
+  const original = {
+    id: "arepa-real-id",
+    name: "Arepa de pollo",
+    description: "Arepa rellena de pollo guisado.",
+    price: 15,
+    available: true,
+    station: "kitchen",
+    imageUrl: "https://images.example/arepa.webp",
+    translations: { pl: { name: "Arepa z kurczakiem", description: "Arepa z duszonym kurczakiem" } },
+  };
+  const polish = localizeRcOrderaProduct(original, "pl");
+  assert.equal(polish.name, "Arepa z kurczakiem");
+  assert.equal(polish.description, "Arepa z duszonym kurczakiem");
+  const english = localizeRcOrderaProduct(original, "en");
+  assert.equal(english.name, "Arepa de pollo",
+    "Keep authentic Colombian dish names without fabricating a translation");
+  assert.equal(english.description, "",
+    "Missing English translation must never inject Spanish source description");
+  const spanish = localizeRcOrderaProduct(original, "es");
+  assert.equal(spanish.description, original.description,
+    "Spanish source description remains available in its own locale");
+  const incompletePolish = localizeRcOrderaProduct({
+    ...original, translations: { pl: { name: "Arepa z kurczakiem", description: "" } },
+  }, "pl");
+  assert.equal(incompletePolish.description, "", "Missing PL body cannot fall back to Spanish");
+  const missingTitle = localizeRcOrderaProduct({
+    ...original, translations: { pl: { name: "", description: "Tylko opis" } },
+  }, "pl");
+  assert.equal(missingTitle.name, original.name);
+  assert.equal(missingTitle.description, "",
+    "Missing translated title never presents translated body with an untranslated source title");
+  for (const key of ["id", "price", "available", "station", "imageUrl"]) {
+    assert.deepEqual(english[key], original[key],
+      "read-only locale fallback preserves operational data");
+  }
+  assert.equal(original.description, "Arepa rellena de pollo guisado.",
+    "pure localization cannot change underlying RC ORDERA product data");
 });
 
 test("incorrect name in an individual locale translation is also corrected", () => {
