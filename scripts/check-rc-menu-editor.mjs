@@ -293,6 +293,33 @@ const createFields = (id, name) => ({
 });
 const firstAdded = addMenuProduct(menu, "BEBIDAS",
   createFields(makeId("000000000001"), "Limonada colombiana"));
+const translatedAtCreation = addMenuProduct(menu, "BEBIDAS", {
+  ...createFields(makeId("000000000023"), "Limonada colombiana"),
+  translations: {
+    pl: { name: "Kolumbijska lemoniada", description: "Orzeźwiająca cytryna" },
+    es: { name: "Limonada colombiana", description: "Limón natural y agua" },
+    en: { name: "Colombian lemonade", description: "Fresh lemonade" },
+  },
+});
+const newTranslated = translatedAtCreation.BEBIDAS[1];
+assert.deepEqual(newTranslated.translations, {
+  es: { name: "Limonada colombiana", description: "Limón natural y agua" },
+  pl: { name: "Kolumbijska lemoniada", description: "Orzeźwiająca cytryna" },
+  en: { name: "Colombian lemonade", description: "Fresh lemonade" },
+}, "all three owner-edited translations are included when adding a new product, without fabricated text");
+assert.equal(isSafeMenuRevision(menu, translatedAtCreation), true,
+  "creating a product with authentic PL/ES/EN translations satisfies the existing owner RPC guard");
+assert.equal(newTranslated.price, 0.29, "translation creation preserves exact original item price");
+assert.equal(newTranslated.station, "kitchen", "translation creation preserves kitchen routing");
+assert.equal(menu.BEBIDAS.length, 1, "trilingual creation never mutates real menu snapshot");
+assert.throws(() => addMenuProduct(menu, "BEBIDAS", {
+  ...createFields(makeId("000000000024"), "Arepa"),
+  translations: { de: { name: "Unsafe", description: "" } },
+}), /traducciones/i, "unknown language keys cannot bypass the new-product validator");
+assert.throws(() => addMenuProduct(menu, "BEBIDAS", {
+  ...createFields(makeId("000000000025"), "Arepa"),
+  translations: { pl: { name: "A".repeat(161), description: "" } },
+}), /traducciones/i, "unreasonably long translations cannot enter owner drafts");
 assert.equal(firstAdded.BEBIDAS.length, 2);
 assert.deepEqual(Object.entries(undoMenuProductChange(menu, firstAdded, "BEBIDAS",
   makeId("000000000001"))), Object.entries(menu), "undo a new product without losing stored items");
@@ -449,6 +476,15 @@ assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, description:
   "new-product description must not disappear on reload");
 assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, station: "bar" }), true,
   "an unsubmitted station edit is an unsaved form change");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, translations: {
+  pl: { name: " Nowy produkt ", description: "" },
+} }), true, "typing only a Polish translation must block unsaved navigation");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, translations: {
+  en: { name: "", description: "Traditional drink" },
+} }), true, "typing only a translated description must block reload, logout and navigation");
+assert.equal(hasUnappliedNewProductFields({ ...emptyNewProductForm, translations: {
+  es: { name: " ", description: "" },
+} }), false, "whitespace-only translation entries are not meaningful edits");
 const { readFile } = await import("node:fs/promises");
 const managerSource = await readFile("src/components/admin/RcOrderaMenuManager.tsx", "utf8");
 for (const guard of [
@@ -460,6 +496,11 @@ for (const guard of [
   "setPendingLogout(true)",
   "pendingLogout && (hasUnappliedInputs || dirty)",
   "newProductFormHasInput(form",
+  "readNewProductTranslations(values)",
+  "translation-${locale}-name",
+  "translation-${locale}-description",
+  "translations: readNewProductTranslations(fields)",
+  "Traducciones del producto nuevo · Polski / Español / English",
   "onInput={(event) => onUnappliedChange(newProductFormHasInput",
   "onUnappliedChange={setNewProductFormDirty}",
   "hasUnappliedInputs = unappliedChanges || newProductFormDirty",
