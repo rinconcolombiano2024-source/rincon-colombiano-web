@@ -141,7 +141,10 @@ test("menu category selection survives reorder and removed categories", () => {
   const menu = readFileSync(new URL("../src/components/commercial/MenuCategoryBrowser.tsx", import.meta.url), "utf8");
   assert.match(menu, /useState<string \| null>\(null\)/);
   assert.match(menu, /Math\.max\(0, categories\.findIndex\(\(category\) => category\.id === selectedId\)\)/);
-  assert.match(menu, /setSelectedId\(category\.id\)/);
+  assert.match(menu, /const selectCategory = \(id: string\) => \{[\s\S]*?setSelectedId\(id\)/,
+    "category selection must update state from a real category id");
+  assert.match(menu, /onClick=\{\(\) => selectCategory\(category\.id\)\}/,
+    "clicks must route through state and URL synchronization");
 });
 
 test("customer account waits for session verification before showing sign-in", () => {

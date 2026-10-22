@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { withMenuCategoryAnchors } from "../src/integrations/rc-ordera/menu-category-anchors.ts";
+import { resolveImportedMenuCategoryHash } from "../src/integrations/rc-ordera/menu-category-hash.ts";
 import { orderImportedMenuCategories } from "../src/integrations/rc-ordera/customer-menu-order.ts";
 import { localizeRcOrderaCategoryName, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 
@@ -164,4 +165,34 @@ test("all PL/ES/EN menus sort original keys before translating labels", () => {
   assert.match(page, /orderImportedMenuCategories\(withMenuCategoryAnchors\(catalog\.categories\)\)/);
   assert.match(page, /localizeRcOrderaCategoryName\(category\.name, locale\)/);
   assert.match(page, /filter\(\(product\) => product\.available\)/);
+});
+
+test("real menu bookmarks activate only known safe category tabs", () => {
+  const categories = [
+    { id: "category-entradas" },
+    { id: "category-platos-principales" },
+    { id: "category-bebidas" },
+  ];
+  assert.equal(resolveImportedMenuCategoryHash("#category-bebidas", categories),
+    "category-bebidas", "direct link must open the beverage tab");
+  assert.equal(resolveImportedMenuCategoryHash("#category-platos-principales", categories),
+    "category-platos-principales");
+  for (const invalid of ["", "#", "#missing", "#category-%broken",
+    "category-bebidas", "#".concat("X".repeat(350)), "#%3Cscript%3E"]) {
+    assert.equal(resolveImportedMenuCategoryHash(invalid, categories), null,
+      `malformed or absent fragment ${invalid.slice(0,30)} must not change tabs`);
+  }
+  assert.equal(resolveImportedMenuCategoryHash("#category-bebidas", []), null,
+    "catalog out of stock must not open a hidden or non-existent category");
+});
+
+test("mobile customer menu keeps category selection in URL and supports hashchange", () => {
+  const widget = readFileSync("src/components/commercial/MenuCategoryBrowser.tsx", "utf8");
+  assert.match(widget, /resolveImportedMenuCategoryHash\(window\.location\.hash, categories\)/);
+  assert.match(widget, /window\.addEventListener\("hashchange", activateBookmark\)/);
+  assert.match(widget, /window\.removeEventListener\("hashchange", activateBookmark\)/);
+  assert.match(widget, /window\.history\.replaceState\(window\.history\.state, "", url\.href\)/);
+  assert.match(widget, /onClick=\{\(\) => selectCategory\(category\.id\)\}/);
+  assert.match(widget, /scrollIntoView\(\{ block: "start" \}\)/);
+  assert.match(widget, /aria-pressed=\{selected === index\}/);
 });
