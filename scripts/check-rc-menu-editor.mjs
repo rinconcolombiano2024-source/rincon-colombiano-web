@@ -55,6 +55,19 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const soldOut = updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", { available: false });
+assert.equal(soldOut["PLATOS PRINCIPALES"][0].available, false,
+  "search shortcut only changes the selected product availability in the local draft");
+assert.equal(menu["PLATOS PRINCIPALES"][0].available, true, "source snapshot is immutable");
+assert.equal(soldOut["PLATOS PRINCIPALES"][0].price, 60, "quick stock toggle never changes the price");
+assert.equal(soldOut["PLATOS PRINCIPALES"][0].station, "kitchen",
+  "quick availability shortcut never changes kitchen routing");
+assert.deepEqual(soldOut["PLATOS PRINCIPALES"][0].modifiers, ["extra-arepa"],
+  "quick availability keeps existing internal product data");
+assert.equal(isSafeMenuRevision(menu, soldOut), true, "owner revision validator permits availability toggle");
+assert.equal(updateProduct(soldOut, "PLATOS PRINCIPALES", "prod-bandeja",
+  { available: true })["PLATOS PRINCIPALES"][0].available, true,
+  "a second toggle restores the previous availability without writing to the database");
 const validDraftArchive = {
   restaurantId: "restaurant-owner-123",
   menuRevision: 9,
@@ -434,6 +447,13 @@ for (const guard of [
   "disabled={(!dirty && !hasUnappliedInputs) || busy}",
   "createCategory(event",
   "searchMenuProducts(draft, productSearch)",
+  "function toggleAvailability(categoryName: string, id: string)",
+  "updateProduct(draft, categoryName, id, { available: !current.available })",
+  "if (!isSafeMenuRevision(original, next))",
+  "setServerSnapshotEpoch((epoch) => epoch + 1)",
+  "disabled={busy || hasUnappliedInputs || verificationUncertain}",
+  "Marcar agotado · borrador",
+  "Marcar disponible · borrador",
   "Vista previa · borrador local",
   "Revisa los cambios antes de guardar",
   "Confirmar y guardar en RC ORDERA",
