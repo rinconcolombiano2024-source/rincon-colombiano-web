@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import Image from "next/image";
 import {
   addMenuProduct,
   addMenuCategory,
@@ -10,6 +11,7 @@ import {
   restoreUnpublishedMenuDraft,
   detectProductImageMime,
   getProductTranslation,
+  getMenuLocalePreview,
   hasUnappliedProductChanges,
   hasUnappliedNewProductFields,
   isSafeMenuRevision,
@@ -265,6 +267,18 @@ function ProductCard({
             event.currentTarget.value = "";
           }}
           className="mt-2 block w-full rounded-xl border bg-white p-2 text-sm" />
+        {imageUrl.trim() && validProductImageUrl(imageUrl.trim()) ? (
+          <div className="mt-4 rounded-xl border border-[#d9dfe9] bg-white p-3" aria-label="Fotografía pendiente de aplicar">
+            <p className="mb-2 text-xs font-bold text-[#123d73]">Vista previa de fotografía · todavía sin aplicar</p>
+            <Image src={imageUrl.trim()} alt={`Fotografía propuesta: ${name}`}
+              width={240} height={180} unoptimized loading="lazy" referrerPolicy="no-referrer"
+              className="h-auto max-h-44 w-auto max-w-full rounded-lg object-contain" />
+          </div>
+        ) : imageUrl.trim() ? (
+          <p className="mt-2 text-xs font-semibold text-red-800" role="alert">
+            La dirección de fotografía no es una URL HTTPS válida.
+          </p>
+        ) : null}
       </div>
       <label className="flex items-center gap-3 text-sm font-bold">
         <input type="checkbox" checked={available} disabled={busy || uploading}
@@ -1147,11 +1161,53 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                     : "Producto nuevo: no existe en la última versión consultada de RC ORDERA."}
                 </p>
                 {selected.imageUrl && validProductImageUrl(selected.imageUrl) ? (
-                  <a href={selected.imageUrl} target="_blank" rel="noopener noreferrer"
-                    className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-[#123d73] underline underline-offset-4">
-                    Ver fotografía del producto ↗
-                  </a>
+                  <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <Image src={selected.imageUrl} alt={`Imagen del borrador: ${selected.name}`}
+                      width={180} height={136} unoptimized loading="lazy" referrerPolicy="no-referrer"
+                      className="h-auto max-h-40 w-auto max-w-full rounded-xl border border-[#e4dccf] bg-white object-contain" />
+                    <a href={selected.imageUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex min-h-11 items-center text-sm font-bold text-[#123d73] underline underline-offset-4">
+                      Ver fotografía a tamaño completo ↗
+                    </a>
+                  </div>
                 ) : null}
+                <div className="mt-5" aria-label="Vista previa de las tres traducciones">
+                  <h4 className="text-sm font-black text-[#123d73]">Comprueba los textos en los tres idiomas</h4>
+                  <p className="mt-1 text-xs text-[#62594f]">
+                    Es una revisión del borrador, no una traducción automática ni un guardado en RC ORDERA.
+                  </p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    {([
+                      { locale: "pl", label: "Polski" },
+                      { locale: "es", label: "Español" },
+                      { locale: "en", label: "English" },
+                    ] as const).map(({ locale, label }) => {
+                      const preview = getMenuLocalePreview(selected, locale);
+                      return (
+                        <section key={locale} lang={locale} className="min-w-0 rounded-xl border border-[#d9dfe9] bg-white p-3">
+                          <p className="text-xs font-black uppercase tracking-wider text-[#123d73]">{label}</p>
+                          <p className="mt-2 break-words text-sm font-bold">{preview.name}</p>
+                          {preview.description ? (
+                            <p className="mt-2 whitespace-pre-wrap break-words text-xs text-[#62594f]">{preview.description}</p>
+                          ) : null}
+                          {!preview.translated ? (
+                            <p className="mt-2 text-xs font-bold text-amber-800">
+                              Sin nombre traducido: se muestra el original.
+                            </p>
+                          ) : preview.descriptionMissing ? (
+                            <p className="mt-2 text-xs font-bold text-amber-800">
+                              Falta descripción traducida.
+                            </p>
+                          ) : (
+                            <p className="mt-2 text-xs font-bold text-emerald-800">
+                              Traducción del título disponible.
+                            </p>
+                          )}
+                        </section>
+                      );
+                    })}
+                  </div>
+                </div>
                 <p className="mt-3 text-xs font-semibold text-[#655a38]">
                   Esta vista no publica cambios: aplica el formulario y después pulsa «Guardar en RC ORDERA».
                 </p>
