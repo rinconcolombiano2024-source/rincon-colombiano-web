@@ -93,6 +93,12 @@ interface MenuPageCopy {
   readonly order:
     string;
 
+  readonly orderFromMenu:
+    string;
+
+  readonly orderFromMenuDetail:
+    string;
+
   readonly liveLabel:
     string;
 
@@ -163,6 +169,12 @@ const menuPageContent:
 
     order:
       "Zamów online",
+
+    orderFromMenu:
+      "Zamów na wynos ↗",
+
+    orderFromMenuDetail:
+      "Wybierz danie i zapłać przy odbiorze w restauracji.",
 
     liveLabel:
       "Aktualne menu restauracji",
@@ -280,6 +292,12 @@ const menuPageContent:
     order:
       "Pedir en línea",
 
+    orderFromMenu:
+      "Pedir para recoger ↗",
+
+    orderFromMenuDetail:
+      "Elige tu comida y paga al recoger en el restaurante.",
+
     liveLabel:
       "Menú actual del restaurante",
 
@@ -395,6 +413,12 @@ const menuPageContent:
 
     order:
       "Order online",
+
+    orderFromMenu:
+      "Order for pickup ↗",
+
+    orderFromMenuDetail:
+      "Choose your meal and pay when you pick it up.",
 
     liveLabel:
       "Today's restaurant menu",
@@ -1343,6 +1367,14 @@ export default async function MenuPage({
                                                 .available
                                             }
                                           </span>
+                                          <Link href={orderHref} target="_blank" rel="noopener noreferrer"
+                                            aria-label={`${copy.orderFromMenu}: ${product.name}`}
+                                            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#123d73] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#0b2a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">
+                                            {copy.orderFromMenu}
+                                          </Link>
+                                          <p className="mt-2 text-center text-xs leading-5 text-[#62594f]">
+                                            {copy.orderFromMenuDetail}
+                                          </p>
                                         </div>
                                       </article>
                                     ),
