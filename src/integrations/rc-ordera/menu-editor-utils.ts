@@ -740,6 +740,53 @@ export function addMenuProduct(
   };
 }
 
+/**
+ * Duplicate a dish for owner editing WITHOUT copying its operational identity.
+ * New dishes are always unavailable until the owner reviews price, recipe,
+ * photo, translations and explicitly enables them in the same local draft.
+ * We do not duplicate the source ID, photo URL, modifiers, stock or metadata:
+ * the original kitchen-station metadata remains untouched.
+ */
+export function duplicateMenuProductDraft(
+  menu: RcEditableMenu,
+  category: string,
+  sourceId: string,
+  newId: string,
+): RcEditableMenu {
+  const source = menu[category]?.find((product) => product.id === sourceId);
+  if (!source) {
+    throw new Error("No existe el producto de origen.");
+  }
+  if (source.station !== "kitchen" && source.station !== "bar") {
+    throw new Error("Este producto tiene una estación especial. Créalo manualmente para proteger la cocina.");
+  }
+  const withCopySuffix = (name: string, suffix: string): string => {
+    const trimmed = name.trim();
+    return trimmed ? `${trimmed.slice(0, 160 - suffix.length).trimEnd()}${suffix}` : "";
+  };
+  const originalName = withCopySuffix(source.name, " (copia)");
+  const translations: RcProductTranslationUpdates = {};
+  for (const locale of SUPPORTED_TRANSLATION_LOCALES) {
+    const value = getProductTranslation(source, locale);
+    const suffix = locale === "pl" ? " (kopia)" : locale === "en" ? " (copy)" : " (copia)";
+    if (value.name.trim() || value.description.trim()) {
+      translations[locale] = {
+        name: withCopySuffix(value.name, suffix),
+        description: value.description,
+      };
+    }
+  }
+  const added = addMenuProduct(menu, category, {
+    id: newId,
+    name: originalName,
+    description: source.description ?? "",
+    price: source.price,
+    station: source.station,
+    translations,
+  });
+  return updateProduct(added, category, newId, { available: false });
+}
+
 export function removeMenuProduct(
   menu: RcEditableMenu,
   category: string,
