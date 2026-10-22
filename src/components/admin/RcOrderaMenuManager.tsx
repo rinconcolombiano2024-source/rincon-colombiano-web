@@ -450,6 +450,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [newCategoryName, setNewCategoryName] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [translationReviewLocale, setTranslationReviewLocale] = useState<"pl" | "en" | null>(null);
+  const [translationReviewPage, setTranslationReviewPage] = useState(0);
   const [productId, setProductId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -988,7 +989,18 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const readyToPublish = Boolean(currentDraftFingerprint && reviewedDraftFingerprint === currentDraftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
   // Read-only, memoized audit. No additional calls or writes to RC ORDERA.
-  const translationAudit = useMemo(() => draft ? auditMenuTranslations(draft) : null, [draft]);
+  // Derive a valid page from current draft totals during render. No effect-
+  // driven state updates or extra Supabase queries; editing the last item
+  // automatically displays the first page instead of an empty list.
+  const translationTotals = useMemo(() => draft ? auditMenuTranslations(draft, 0) : null, [draft]);
+  const incompleteCount = translationReviewLocale && translationTotals
+    ? translationTotals[translationReviewLocale].incompleteProducts : 0;
+  const visibleTranslationReviewPage = translationReviewPage * 24 < incompleteCount
+    ? translationReviewPage : 0;
+  const translationAudit = useMemo(() =>
+    draft ? auditMenuTranslations(draft, 24, visibleTranslationReviewPage * 24) : null,
+    [draft, visibleTranslationReviewPage],
+  );
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
@@ -1206,7 +1218,10 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                       <button type="button"
                         aria-pressed={translationReviewLocale === locale}
                         disabled={busy || info.incompleteProducts === 0}
-                        onClick={() => setTranslationReviewLocale((current) => current === locale ? null : locale)}
+                        onClick={() => {
+                          setTranslationReviewPage(0);
+                          setTranslationReviewLocale((current) => current === locale ? null : locale);
+                        }}
                         className="mt-3 min-h-11 w-full rounded-xl border-2 border-[#123d73] bg-white px-4 py-2 text-sm font-black text-[#123d73] hover:bg-[#f7c600]/20 disabled:opacity-40">
                         {translationReviewLocale === locale ? "Ocultar pendientes" :
                           `Revisar ${info.incompleteProducts} pendientes`}
@@ -1219,8 +1234,12 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 <div className="mt-4" role="region" aria-label="Productos pendientes de traducción">
                   <p className="text-sm font-bold text-[#123d73]">
                     {translationAudit[translationReviewLocale].incompleteProducts} productos pendientes
-                    {translationAudit[translationReviewLocale].incompleteProducts > 24
-                      ? " · se muestran los primeros 24" : ""}
+                    {translationAudit[translationReviewLocale].incompleteProducts > 0
+                      ? ` · mostrando ${visibleTranslationReviewPage * 24 + 1}–${Math.min(
+                        (visibleTranslationReviewPage + 1) * 24,
+                        translationAudit[translationReviewLocale].incompleteProducts,
+                      )} de ${translationAudit[translationReviewLocale].incompleteProducts}`
+                      : ""}
                   </p>
                   <ul className="mt-3 grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">
                     {translationAudit[translationReviewLocale].issues.map((item) => (
@@ -1248,6 +1267,27 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                       </li>
                     ))}
                   </ul>
+                  {translationAudit[translationReviewLocale].incompleteProducts > 24 ? (
+                    <nav aria-label="Páginas de traducciones pendientes"
+                      className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                      <button type="button" disabled={busy || visibleTranslationReviewPage === 0}
+                        onClick={() => setTranslationReviewPage(Math.max(0, visibleTranslationReviewPage - 1))}
+                        className="min-h-11 rounded-full border border-[#123d73] px-4 text-sm font-bold text-[#123d73] disabled:opacity-40">
+                        ← 24 anteriores
+                      </button>
+                      <span className="text-sm font-semibold text-[#123d73]">
+                        Página {visibleTranslationReviewPage + 1} de {Math.ceil(
+                          translationAudit[translationReviewLocale].incompleteProducts / 24)}
+                      </span>
+                      <button type="button"
+                        disabled={busy || (visibleTranslationReviewPage + 1) * 24 >=
+                          translationAudit[translationReviewLocale].incompleteProducts}
+                        onClick={() => setTranslationReviewPage(visibleTranslationReviewPage + 1)}
+                        className="min-h-11 rounded-full border border-[#123d73] px-4 text-sm font-bold text-[#123d73] disabled:opacity-40">
+                        24 siguientes →
+                      </button>
+                    </nav>
+                  ) : null}
                 </div>
               ) : null}
               <p className="mt-3 text-xs text-[#62594f]">
