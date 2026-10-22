@@ -155,7 +155,7 @@ jobs:
         run: |
           npm --prefix apps/ia test
           node --test scripts/test-native-restaurant-chat.mjs scripts/check-order-channels.mjs
-          node --experimental-strip-types --test scripts/test-chat-payload.mjs
+          node --experimental-strip-types --test scripts/test-chat-payload.mjs scripts/test-rincon-ai-config-readiness.mjs
 
       - name: Verify private analytics reporting and failure handling
         run: node --experimental-strip-types --test scripts/test-analytics-reports.mjs
