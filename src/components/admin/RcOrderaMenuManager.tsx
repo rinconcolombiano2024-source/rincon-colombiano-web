@@ -5,6 +5,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import {
   addMenuProduct,
+  duplicateMenuProductDraft,
   addMenuCategory,
   removeEmptyMenuCategory,
   removeMenuProduct,
@@ -701,6 +702,33 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
+  function duplicateProduct(product: RcMenuProduct): void {
+    if (!draft || !original || !connected || busy) { return; }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    if (verificationUncertain) {
+      setErrorMessage("Hay un guardado sin verificar. Recarga RC ORDERA antes de duplicar productos.");
+      return;
+    }
+    try {
+      const newId = `prod-web-${crypto.randomUUID()}`;
+      const candidate = duplicateMenuProductDraft(draft, activeCategory, product.id, newId);
+      if (!isSafeMenuRevision(original, candidate)) {
+        throw new Error("Límite de tres productos nuevos por guardado. Publica los pendientes antes de duplicar.");
+      }
+      // No write takes place: the copy is a NEW, unavailable product and
+      // cannot be ordered until the owner explicitly reviews and publishes.
+      setDraft(candidate);
+      setProductId(newId);
+      setServerSnapshotEpoch((epoch) => epoch + 1);
+      setReviewedDraftFingerprint(null);
+      setPendingRemoval(null);
+      setMessage("Copia creada sólo en el borrador y marcada agotada. Cambia su nombre, fotografía, precio y traducciones; revisa y confirma antes de publicar.");
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo duplicar el plato.");
+    }
+  }
+
   function deleteProduct(product: RcMenuProduct): void {
     if (!draft || !original || busy || !connected) {
       return;
@@ -1270,7 +1298,14 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 onUpload={(file) => uploadImage(file, selected.id)}
                 onUnappliedChange={reportUnappliedChanges}
               />
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex flex-wrap justify-end gap-3">
+                <button type="button" onClick={() => duplicateProduct(selected)}
+                  disabled={busy || hasUnappliedInputs || verificationUncertain ||
+                    (selected.station !== "kitchen" && selected.station !== "bar")}
+                  aria-label={`Duplicar como producto nuevo no disponible: ${selected.name}`}
+                  className="min-h-11 rounded-full border-2 border-[#123d73] bg-white px-5 text-sm font-black text-[#123d73] hover:bg-[#edf1f7] disabled:cursor-not-allowed disabled:opacity-40">
+                  Duplicar plato · borrador agotado
+                </button>
                 <button type="button" disabled={busy} onClick={() => deleteProduct(selected)}
                   className="min-h-11 rounded-full border border-red-300 px-5 text-sm font-bold text-red-800 hover:bg-red-50 disabled:opacity-50">
                   Retirar «{selected.name}» del menú
