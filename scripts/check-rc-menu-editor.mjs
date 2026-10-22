@@ -3,6 +3,7 @@ import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/inte
 import {
   addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
+  canonicalMenuSnapshot, areMenuSnapshotsEqual, menuDraftFingerprint,
   getProductTranslation, getMenuLocalePreview, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   summarizeMenuChanges, undoMenuProductChange, restoreUnpublishedMenuDraft,
@@ -189,6 +190,46 @@ assert.equal(isSafeMenuRevision(menu, removedNewEmptyCategory), true, "create th
 assert.equal(isSafeMenuRevision(menu, { ...menu, "Entradas y sopas": [], "Nueva categoría 2": [] }), false,
   "unsafe extra categories cannot be smuggled in");
 
+const reorderedMenu = {
+  BEBIDAS: menu.BEBIDAS.map(({ station, available, price, name, id, ...rest }) => ({
+    ...rest, station, available, price, name, id,
+  })),
+  "PLATOS PRINCIPALES": menu["PLATOS PRINCIPALES"].map(
+    ({ modifiers, translations, station, available, price, description, name, id, imageUrl }) => ({
+      imageUrl, id, translations: {
+        en: translations.en,
+        pl: { description: translations.pl.description, name: translations.pl.name },
+      },
+      name, station, description, price, modifiers, available,
+    }),
+  ),
+};
+assert.notEqual(JSON.stringify(menu), JSON.stringify(reorderedMenu),
+  "fixture must reproduce PostgreSQL JSONB-style key reordering");
+assert.equal(areMenuSnapshotsEqual(menu, reorderedMenu), true,
+  "key order across categories, products and translation fields is not a real editor change");
+assert.equal(canonicalMenuSnapshot(menu), canonicalMenuSnapshot(reorderedMenu),
+  "the canonical snapshot should ignore only object-key ordering");
+assert.equal(menuDraftFingerprint(menu, 15), menuDraftFingerprint(reorderedMenu, 15),
+  "owner review fingerprint must be stable through JSONB key reorder");
+assert.notEqual(menuDraftFingerprint(menu, 15), menuDraftFingerprint(reorderedMenu, 16),
+  "a server revision advance requires a NEW owner review even with identical content");
+assert.equal(isConfirmedMenuSave(menu, reorderedMenu, 14, 15), true,
+  "readback confirms persisted data across harmless JSONB ordering changes");
+assert.equal(areMenuSnapshotsEqual(menu, changed), false,
+  "an actual price/photo/availability change must still count as dirty");
+assert.notEqual(menuDraftFingerprint(menu, 14), menuDraftFingerprint(changed, 14),
+  "a price change invalidates the previously reviewed fingerprint");
+assert.equal(areMenuSnapshotsEqual(menu, { ...menu, BEBIDAS: [
+  { ...menu.BEBIDAS[0], station: "kitchen" },
+] }), false, "changing protected kitchen stations must still be detected");
+const productsReverse = normalizeMenu({ MAIN: [
+  { id: "p1", name: "Plato uno", price: 10, available: true, station: "kitchen" },
+  { id: "p2", name: "Plato dos", price: 20, available: true, station: "kitchen" },
+] });
+assert.ok(productsReverse);
+assert.equal(areMenuSnapshotsEqual(productsReverse, { MAIN: [...productsReverse.MAIN].reverse() }), false,
+  "product ARRAY ordering remains significant");
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 13), true,
   "read-back with advanced revision confirms actual persisted menu");
 assert.equal(classifyMenuSaveOutcome(changed, 12, changed, 13), "confirmed",
@@ -526,7 +567,10 @@ for (const guard of [
   "referrerPolicy=\"no-referrer\"",
   "Revisa los cambios antes de guardar",
   "Confirmar y guardar en RC ORDERA",
-  "reviewedDraftFingerprint === draftFingerprint",
+  "reviewedDraftFingerprint === currentDraftFingerprint",
+  "menuDraftFingerprint(draft, revision)",
+  "areMenuSnapshotsEqual(current.menu, original)",
+  "areMenuSnapshotsEqual(original, draft)",
   "setVerificationUncertain(true)",
   "if (verificationUncertain)",
   "undoMenuProductChange(original, draft, categoryName, id)",
