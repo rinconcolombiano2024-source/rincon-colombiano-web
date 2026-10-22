@@ -9,6 +9,20 @@ export type AnalyticsResult =
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/analytics.readonly";
 
+/** The CEO may inspect setup without using credentials or calling Google. */
+export function getAnalyticsReadiness(env: Environment = process.env): {
+  trackingConfigured: boolean;
+  reportingConfigured: boolean;
+} {
+  const tracking = env['NEXT_PUBLIC_GA_MEASUREMENT_ID'] ?? "";
+  return {
+    trackingConfigured: /^G-[A-Z0-9]+$/.test(tracking),
+    reportingConfigured: /^\d+$/.test(env['GA_PROPERTY_ID'] ?? "") &&
+      Boolean(env['GA_CLIENT_EMAIL']?.endsWith(".iam.gserviceaccount.com")) &&
+      Boolean(env['GA_PRIVATE_KEY']),
+  };
+}
+
 export function analyticsPeriod(value: unknown): 7 | 30 | 90 {
   return value === "7" ? 7 : value === "90" ? 90 : 30;
 }
@@ -79,7 +93,7 @@ export function createAnalyticsReporter({ env = process.env, fetchImpl = fetch, 
     const property = env['GA_PROPERTY_ID'];
     const email = env['GA_CLIENT_EMAIL'];
     const privateKey = env['GA_PRIVATE_KEY']?.replace(/\\n/g, "\n");
-    if (!property || !/^\d+$/.test(property) || !email?.endsWith(".iam.gserviceaccount.com") || !privateKey) {
+    if (!getAnalyticsReadiness(env).reportingConfigured || !property || !email || !privateKey) {
       return { status: "not-configured" };
     }
     try {
