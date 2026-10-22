@@ -204,14 +204,16 @@ test("each imported product offers a real pickup order CTA in three languages", 
   assert.match(page, /aria-label=\{\x60\$\{copy\.orderFromMenu\}: \$\{product\.name\}\x60\}/,
     "buttons remain accessible and identify the actual dish in every language");
   for (const expected of [
-    "Zamów na wynos", "Wybierz produkt w RC ORDERA i zapłać w restauracji.",
-    "Pedir para recoger", "Elige el producto en RC ORDERA y paga en el restaurante.",
-    "Order for pickup", "Choose the item in RC ORDERA and pay at the restaurant.",
+    "Zamów na wynos", "Wybierz danie i zapłać przy odbiorze w restauracji.",
+    "Pedir para recoger", "Elige tu comida y paga al recoger en el restaurante.",
+    "Order for pickup", "Choose your meal and pay when you pick it up.",
   ]) {
     assert.ok(page.includes(expected), `missing customer-facing localized text: ${expected}`);
   }
   assert.match(page, /buildRcOrderaOrderUrl\([\s\S]*?"czapelska"/,
     "all product CTAs must open the stable real restaurant checkout");
+  assert.doesNotMatch(page, /orderFromMenuDetail:\s*"[^"\n]*RC ORDERA/,
+    "customer-facing text must never expose an internal order-platform name");
   assert.doesNotMatch(page, /product\.id.*searchParams|searchParams.*product\.id/,
     "never fake deep selection of a dish without RC ORDERA platform support");
 });
