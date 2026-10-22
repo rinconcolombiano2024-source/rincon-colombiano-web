@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import {
@@ -13,6 +13,7 @@ import {
   detectProductImageMime,
   getProductTranslation,
   getMenuLocalePreview,
+  auditMenuTranslations,
   hasUnappliedProductChanges,
   hasUnappliedNewProductFields,
   isSafeMenuRevision,
@@ -448,6 +449,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [category, setCategory] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [productSearch, setProductSearch] = useState("");
+  const [translationReviewLocale, setTranslationReviewLocale] = useState<"pl" | "en" | null>(null);
   const [productId, setProductId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -985,6 +987,8 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const currentDraftFingerprint = draft && revision !== null ? menuDraftFingerprint(draft, revision) : null;
   const readyToPublish = Boolean(currentDraftFingerprint && reviewedDraftFingerprint === currentDraftFingerprint);
   const matchingProducts = draft ? searchMenuProducts(draft, productSearch) : [];
+  // Read-only, memoized audit. No additional calls or writes to RC ORDERA.
+  const translationAudit = useMemo(() => draft ? auditMenuTranslations(draft) : null, [draft]);
   const publishedSelected = selected && original?.[activeCategory]?.find((item) => item.id === selected.id);
   const priceFormat = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" });
 
@@ -1175,6 +1179,83 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               </div>
             ) : null}
           </section>
+          {translationAudit ? (
+            <section aria-labelledby="ordera-translation-audit-title"
+              className="mt-6 rounded-2xl border-2 border-[#123d73] bg-white p-4 sm:p-6">
+              <h3 id="ordera-translation-audit-title" className="text-lg font-black text-[#123d73]">
+                Revisión de traducciones del menú
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#62594f]">
+                Revisa qué productos necesitan textos en polaco o inglés antes de publicar.
+                El español es el texto original del producto. Los resultados proceden
+                únicamente de tu borrador autorizado y no se traducen automáticamente.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {(["pl", "en"] as const).map((locale) => {
+                  const info = translationAudit[locale];
+                  const complete = translationAudit.products - info.incompleteProducts;
+                  return (
+                    <div key={locale} className="rounded-xl border border-[#d9dfe9] bg-[#f5f9ff] p-4">
+                      <p className="text-sm font-black">{locale === "pl" ? "Polaco (PL)" : "Inglés (EN)"}</p>
+                      <p className="mt-1 text-sm">
+                        <strong>{complete}/{translationAudit.products}</strong> productos con traducciones completas.
+                      </p>
+                      <p className="mt-1 text-xs text-[#62594f]">
+                        {info.missingTitles} sin nombre · {info.missingDescriptions} sin descripción.
+                      </p>
+                      <button type="button"
+                        aria-pressed={translationReviewLocale === locale}
+                        disabled={busy || info.incompleteProducts === 0}
+                        onClick={() => setTranslationReviewLocale((current) => current === locale ? null : locale)}
+                        className="mt-3 min-h-11 w-full rounded-xl border-2 border-[#123d73] bg-white px-4 py-2 text-sm font-black text-[#123d73] hover:bg-[#f7c600]/20 disabled:opacity-40">
+                        {translationReviewLocale === locale ? "Ocultar pendientes" :
+                          `Revisar ${info.incompleteProducts} pendientes`}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {translationReviewLocale ? (
+                <div className="mt-4" role="region" aria-label="Productos pendientes de traducción">
+                  <p className="text-sm font-bold text-[#123d73]">
+                    {translationAudit[translationReviewLocale].incompleteProducts} productos pendientes
+                    {translationAudit[translationReviewLocale].incompleteProducts > 24
+                      ? " · se muestran los primeros 24" : ""}
+                  </p>
+                  <ul className="mt-3 grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">
+                    {translationAudit[translationReviewLocale].issues.map((item) => (
+                      <li key={item.productId}>
+                        <button type="button" disabled={busy || hasUnappliedInputs}
+                          onClick={() => {
+                            if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+                            setCategory(item.category);
+                            setProductId(item.productId);
+                            setProductSearch("");
+                            setPendingRemoval(null);
+                            setTranslationReviewLocale(null);
+                            setErrorMessage("");
+                            // Use the already-authorized, local draft. No remote write.
+                          }}
+                          className="min-h-14 w-full rounded-xl border border-[#d9dfe9] bg-white p-3 text-left text-sm hover:border-[#123d73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] disabled:opacity-40">
+                          <strong className="block break-words text-[#123d73]">{item.productName}</strong>
+                          <span className="block text-xs text-[#62594f]">{item.category}</span>
+                          <span className="mt-1 block text-xs font-semibold text-amber-800">
+                            {item.missingTitle ? "Sin nombre traducido" : ""}
+                            {item.missingTitle && item.missingDescription ? " · " : ""}
+                            {item.missingDescription ? "Sin descripción traducida" : ""}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <p className="mt-3 text-xs text-[#62594f]">
+                Las traducciones sólo se publican con el mismo proceso de revisión
+                y confirmación que protege los precios y el menú de RC ORDERA.
+              </p>
+            </section>
+          ) : null}
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-bold" htmlFor="ordera-category">Categoría</label>
