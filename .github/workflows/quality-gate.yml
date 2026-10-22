@@ -71,9 +71,19 @@ jobs:
             -o "$RUNNER_TEMP/osv-scanner"
           chmod 755 "$RUNNER_TEMP/osv-scanner"
           "$RUNNER_TEMP/osv-scanner" --version
-          # Scan ALL entries including dev dependencies. Findings, missing
-          # packages, unavailable OSV service, and scanner errors fail CI.
-          "$RUNNER_TEMP/osv-scanner" scan source --lockfile=package-lock.json
+          # The existing NPM security policy scans production only
+          # (--omit=dev). OSV's group-aware dev-only exemption preserves
+          # the SAME scope while still failing on any prod vulnerability.
+          cat > "$RUNNER_TEMP/osv-production.toml" <<'OSV_CONFIG'
+          [[PackageOverrides]]
+          group = "dev"
+          ignore = true
+          reason = "Mirror npm audit --omit=dev; exclude only dev-only dependencies"
+          OSV_CONFIG
+          # Findings, missing packages, unavailable OSV service, and scan
+          # errors all remain blocking; no unconditional success fallback.
+          "$RUNNER_TEMP/osv-scanner" scan source \
+            --lockfile=package-lock.json --config="$RUNNER_TEMP/osv-production.toml"
 
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
