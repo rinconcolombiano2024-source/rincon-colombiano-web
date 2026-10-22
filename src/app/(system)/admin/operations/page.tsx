@@ -9,6 +9,8 @@ import { getRcOrderaIntegrationReadiness } from "@/integrations/rc-ordera/config
 import { mapWithConcurrencyLimit } from "@/lib/admin/bounded-map";
 import { checkOfficialDomainRevision } from "@/lib/admin/official-domain";
 import { publicReleaseFingerprint } from "@/lib/release/fingerprint";
+import { nativeRestaurantChat } from "@/lib/rincon-ai/native";
+import { inspectRinconAiConfiguration } from "@/lib/rincon-ai/config-readiness";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -87,6 +89,16 @@ export default async function CeoOperationsPage() {
   // Only authenticated administrators may see environment variable NAMES.
   // Values and credentials are never rendered or serialized.
   const rcConfiguration = getRcOrderaIntegrationReadiness();
+  let nativeProviderConfigured = false;
+  if (process.env["RINCON_IA_MODE"] === "native") {
+    try {
+      nativeProviderConfigured = nativeRestaurantChat().configured();
+    } catch {
+      // A broken model configuration must appear as unavailable, not ready.
+      nativeProviderConfigured = false;
+    }
+  }
+  const rinconAi = inspectRinconAiConfiguration(process.env, nativeProviderConfigured);
   const signals = await collectLaunchSignals();
   const gates = evaluateLaunchReadiness(signals);
   const readyCount = gates.filter((gate) => gate.state === "ready").length;
@@ -160,6 +172,33 @@ export default async function CeoOperationsPage() {
                 ) : null}
               </article>
             ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="ai-configuration-title" className="mt-9 rounded-[2rem] border border-[#e4dccf] bg-white p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="ai-configuration-title" className="font-serif text-2xl font-bold">
+              Rincón AI · conversación real
+            </h2>
+            <span role="status" className={`rounded-full border px-4 py-2 text-sm font-black ${rinconAi.configured
+              ? tones.attention : tones.blocked}`}>
+              {rinconAi.configured ? "Configurado · sin prueba de respuesta" : "Proveedor no disponible"}
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-7 text-[#62594f]">{rinconAi.note}</p>
+          <p className="mt-3 text-xs leading-6 text-[#62594f]">
+            Comprobación sólo de configuración del servidor. No hace preguntas al modelo,
+            no gasta crédito y no certifica chat humano en producción. Ningún token
+            ni contraseña se muestra a la web pública ni a este panel.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a href="/api/rincon-ai/status" target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center rounded-full border border-[#123d73] px-5 text-sm font-bold text-[#123d73]">
+              Consultar estado público IA ↗
+            </a>
+            <Link href="/admin" className="inline-flex min-h-11 items-center rounded-full bg-[#f7c600] px-5 text-sm font-black text-[#12100e]">
+              Volver al panel CEO
+            </Link>
           </div>
         </section>
 
