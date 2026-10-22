@@ -536,15 +536,23 @@ export function restoreUnpublishedMenuDraft(
   if (!isObject(archive)) {
     throw new Error("El archivo no contiene un borrador de menú válido.");
   }
-  if (archive["status"] !== "UNPUBLISHED_DRAFT" ||
-    archive["restaurantId"] !== restaurantId ||
-    archive["menuRevision"] !== currentRevision ||
+  // Verify named fields as unknown; typed field names satisfy strict
+  // TypeScript index-signature access and ESLint without trusting user JSON.
+  const fields = archive as {
+    readonly status?: unknown;
+    readonly restaurantId?: unknown;
+    readonly menuRevision?: unknown;
+    readonly menu?: unknown;
+  };
+  if (fields.status !== "UNPUBLISHED_DRAFT" ||
+    fields.restaurantId !== restaurantId ||
+    fields.menuRevision !== currentRevision ||
     !Number.isSafeInteger(currentRevision) || currentRevision < 0) {
     throw new Error(
       "Este archivo no es un borrador de esta sede y revisión. Descarga un respaldo actual y revisa los cambios manualmente.",
     );
   }
-  const restored = normalizeMenu(archive["menu"]);
+  const restored = normalizeMenu(fields.menu);
   if (!restored || !isSafeMenuRevision(current, restored)) {
     throw new Error(
       "El borrador cambió productos, estaciones, identificadores o categorías protegidos. No se importó nada.",
