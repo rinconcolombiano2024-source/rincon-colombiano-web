@@ -70,18 +70,26 @@ async function loadSnapshot(client: SupabaseClient, ownerId: string): Promise<Sn
   return { menu, revision };
 }
 
-function downloadBackup(menu: RcEditableMenu, revision: number, restaurantId: string): void {
+function downloadBackup(
+  menu: RcEditableMenu,
+  revision: number,
+  restaurantId: string,
+  unpublishedDraft = false,
+): void {
   const backup = JSON.stringify({
     restaurantId,
     menuRevision: revision,
     exportedAt: new Date().toISOString(),
+    status: unpublishedDraft ? "UNPUBLISHED_DRAFT" : "LAST_READ_SERVER_SNAPSHOT",
     menu,
   }, null, 2);
   const blob = new Blob([backup], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `rc-ordera-menu-backup-revision-${revision}.json`;
+  link.download = unpublishedDraft
+    ? `rc-ordera-UNPUBLISHED-draft-from-revision-${revision}.json`
+    : `rc-ordera-menu-backup-revision-${revision}.json`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 500);
 }
@@ -895,8 +903,18 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
             <button type="button" disabled={!original || revision === null}
               onClick={() => original && revision !== null && downloadBackup(original, revision, config.restaurantId)}
               className="min-h-11 rounded-full bg-white px-4 text-sm font-black text-[#123d73]">
-              Descargar copia de seguridad JSON
+              Descargar copia del servidor
             </button>
+            <button type="button" disabled={!dirty || hasUnappliedInputs || revision === null || busy}
+              onClick={() => draft && revision !== null && downloadBackup(draft, revision, config.restaurantId, true)}
+              className="min-h-11 rounded-full border-2 border-[#123d73] bg-white px-4 text-sm font-black text-[#123d73] disabled:cursor-not-allowed disabled:opacity-40">
+              Descargar borrador sin publicar
+            </button>
+            {hasUnappliedInputs ? (
+              <p className="w-full text-xs font-bold text-amber-900" role="status">
+                Aplica los campos escritos al borrador antes de descargarlo: el archivo JSON no puede incluir modificaciones todavía sin aplicar.
+              </p>
+            ) : null}
           </div>
           <form onSubmit={createCategory} className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[#e4dccf] bg-white p-4">
             <div className="min-w-[min(100%,16rem)] flex-1">
