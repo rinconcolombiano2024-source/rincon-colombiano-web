@@ -685,6 +685,39 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
+  function toggleAvailability(categoryName: string, id: string): void {
+    if (!original || !draft || busy || !connected) { return; }
+    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    if (verificationUncertain) {
+      setErrorMessage("Recarga el menú desde RC ORDERA antes de editar: hay una publicación sin verificar.");
+      return;
+    }
+    try {
+      const current = draft[categoryName]?.find((item) => item.id === id);
+      if (!current) { throw new Error("El producto ya no existe en esta categoría."); }
+      // A stock toggle ONLY edits the owner-reviewed local draft; no RPC,
+      // order mutation, payment, station or price change is made here.
+      const next = updateProduct(draft, categoryName, id, { available: !current.available });
+      if (!isSafeMenuRevision(original, next)) {
+        throw new Error("RC ORDERA rechazó la estructura del borrador. Recarga antes de continuar.");
+      }
+      setDraft(next);
+      setCategory(categoryName);
+      setProductId(id);
+      // Force a fresh ProductCard. Otherwise its controlled checkbox could
+      // retain the OLD availability and accidentally undo the quick change.
+      setServerSnapshotEpoch((epoch) => epoch + 1);
+      setReviewedDraftFingerprint(null);
+      setPendingRemoval(null);
+      setErrorMessage("");
+      setMessage(
+        `«${current.name}» marcado como ${current.available ? "agotado" : "disponible"} sólo en el borrador. Revisa y confirma para publicar.`,
+      );
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo cambiar la disponibilidad.");
+    }
+  }
+
   function patchProduct(id: string, data: RcProductUpdate): boolean {
     if (!draft || busy) {
       return false;
@@ -1017,7 +1050,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                 </p>
                 <ul className="mt-2 grid max-h-64 gap-2 overflow-y-auto sm:grid-cols-2">
                   {matchingProducts.map(({ category: foundCategory, product }) => (
-                    <li key={product.id}>
+                    <li key={product.id} className="grid gap-2">
                       <button type="button" disabled={busy}
                         onClick={() => {
                           if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
@@ -1034,6 +1067,15 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
                           {priceFormat.format(product.price)}
                           {!product.available ? <span className="block text-xs text-red-800">Agotado</span> : null}
                         </span>
+                      </button>
+                      <button type="button"
+                        disabled={busy || hasUnappliedInputs || verificationUncertain}
+                        onClick={() => toggleAvailability(foundCategory, product.id)}
+                        aria-label={`${product.available ? "Marcar agotado" : "Marcar disponible"}: ${product.name}`}
+                        className={`min-h-11 rounded-xl border-2 px-4 py-2 text-sm font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73] disabled:cursor-not-allowed disabled:opacity-40 ${product.available
+                          ? "border-amber-400 bg-amber-50 text-amber-950 hover:bg-amber-100"
+                          : "border-emerald-500 bg-emerald-50 text-emerald-950 hover:bg-emerald-100"}`}>
+                        {product.available ? "Marcar agotado · borrador" : "Marcar disponible · borrador"}
                       </button>
                     </li>
                   ))}
