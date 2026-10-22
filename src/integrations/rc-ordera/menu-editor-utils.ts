@@ -352,6 +352,70 @@ export function searchMenuProducts(
   return matches;
 }
 
+/**
+ * Read-only completeness audit of the REAL OWNER DRAFT, not a guessed
+ * translation service. The source catalog name/description are Spanish
+ * originals. PL and EN require translated names; descriptions are required
+ * only where the original product has a meaningful description.
+ * Capped issue lists keep the CEO editor responsive even for large menus.
+ */
+export interface RcMenuTranslationIssue {
+  readonly category: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly missingTitle: boolean;
+  readonly missingDescription: boolean;
+}
+
+export interface RcMenuLocaleAudit {
+  readonly missingTitles: number;
+  readonly missingDescriptions: number;
+  readonly incompleteProducts: number;
+  readonly issues: readonly RcMenuTranslationIssue[];
+}
+
+export interface RcMenuTranslationAudit {
+  readonly products: number;
+  readonly pl: RcMenuLocaleAudit;
+  readonly en: RcMenuLocaleAudit;
+}
+
+export function auditMenuTranslations(menu: RcEditableMenu, maxItems = 24): RcMenuTranslationAudit {
+  const limit = Number.isSafeInteger(maxItems) ? Math.min(Math.max(maxItems, 0), 50) : 24;
+  const source: Record<"pl" | "en", {
+    missingTitles: number;
+    missingDescriptions: number;
+    incompleteProducts: number;
+    issues: RcMenuTranslationIssue[];
+  }> = {
+    pl: { missingTitles: 0, missingDescriptions: 0, incompleteProducts: 0, issues: [] },
+    en: { missingTitles: 0, missingDescriptions: 0, incompleteProducts: 0, issues: [] },
+  };
+  let products = 0;
+  for (const [category, group] of Object.entries(menu)) {
+    for (const product of group) {
+      products++;
+      for (const locale of ["pl", "en"] as const) {
+        const preview = getMenuLocalePreview(product, locale);
+        const missingTitle = !preview.translated;
+        const missingDescription = preview.descriptionMissing;
+        if (!missingTitle && !missingDescription) { continue; }
+        const counters = source[locale];
+        counters.incompleteProducts++;
+        if (missingTitle) { counters.missingTitles++; }
+        if (missingDescription) { counters.missingDescriptions++; }
+        if (counters.issues.length < limit) {
+          counters.issues.push({
+            category, productId: product.id, productName: product.name,
+            missingTitle, missingDescription,
+          });
+        }
+      }
+    }
+  }
+  return { products, pl: source.pl, en: source.en };
+}
+
 /** Category edits are local drafts and never alter live RC ORDERA without the owner RPC. */
 export function addMenuCategory(menu: RcEditableMenu, rawName: string): RcEditableMenu {
   const name = rawName.trim().replace(/\s+/gu, " ");
