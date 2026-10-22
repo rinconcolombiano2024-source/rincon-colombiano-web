@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { withMenuCategoryAnchors } from "../src/integrations/rc-ordera/menu-category-anchors.ts";
+import { orderImportedMenuCategories } from "../src/integrations/rc-ordera/customer-menu-order.ts";
 import { localizeRcOrderaCategoryName, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 
 test("preserve current first category bookmarks and unique suffix collisions", () => {
@@ -120,4 +121,47 @@ test("the public page imports RC ORDERA directly rather than maintaining a paral
   const admin = readFileSync("src/app/(system)/admin/menu/page.tsx", "utf8");
   assert.match(admin, /Ver menú importado en nuestra web/);
   assert.match(admin, /Comparar con menú original RC ORDERA/);
+});
+
+test("show customer-friendly RC ORDERA category order, without touching product IDs or source", () => {
+  const source = [
+    { name: "BEBIDAS", products: ["drink-1"] },
+    { name: "COMBOS", products: ["combo-1"] },
+    { name: "NUEVA CATEGORÍA", products: ["custom-1"] },
+    { name: "Porciones", products: ["side-1"] },
+    { name: "PLATOS PRINCIPALES", products: ["dish-1"] },
+    { name: "ENTRADAS", products: ["starter-1"] },
+    { name: "POSTRES NUEVOS", products: ["dessert-1"] },
+  ];
+  // Anchors are computed before presentation sorting so bookmarked URLs and
+  // collision suffixes remain independent of how tabs are displayed.
+  const originalAnchors = withMenuCategoryAnchors(source);
+  const sorted = orderImportedMenuCategories(originalAnchors);
+  assert.deepEqual(sorted.map((c) => c.name), [
+    "ENTRADAS", "PLATOS PRINCIPALES", "BEBIDAS",
+    "COMBOS", "Porciones", "NUEVA CATEGORÍA", "POSTRES NUEVOS",
+  ]);
+  assert.deepEqual(sorted.map((c) => c.products), [
+    ["starter-1"], ["dish-1"], ["drink-1"], ["combo-1"],
+    ["side-1"], ["custom-1"], ["dessert-1"],
+  ], "source product arrays and operational IDs must never be rearranged");
+  assert.deepEqual(originalAnchors.map((c) => c.name), source.map((c) => c.name),
+    "the sorting helper must not mutate the Supabase catalog");
+  assert.equal(sorted.find((c) => c.name === "ENTRADAS").anchorId, "category-entradas",
+    "old menu bookmarks are preserved");
+
+  const repeated = orderImportedMenuCategories([
+    { name: "postres nuevos", id: "first" },
+    { name: "ENTRADAS", id: "starter" },
+    { name: "POSTRES NUEVOS", id: "second" },
+  ]);
+  assert.deepEqual(repeated.map((c) => c.id), ["starter", "first", "second"],
+    "new unknown categories keep their original relative positions");
+});
+
+test("all PL/ES/EN menus sort original keys before translating labels", () => {
+  const page = readFileSync("src/app/[locale]/menu/page.tsx", "utf8");
+  assert.match(page, /orderImportedMenuCategories\(withMenuCategoryAnchors\(catalog\.categories\)\)/);
+  assert.match(page, /localizeRcOrderaCategoryName\(category\.name, locale\)/);
+  assert.match(page, /filter\(\(product\) => product\.available\)/);
 });

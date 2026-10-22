@@ -38,6 +38,7 @@ import {
 } from "@/integrations/rc-ordera/public-catalog";
 import { localizeRcOrderaCategoryName, localizeRcOrderaProduct } from "@/integrations/rc-ordera/localize-catalog";
 import { withMenuCategoryAnchors } from "@/integrations/rc-ordera/menu-category-anchors";
+import { orderImportedMenuCategories } from "@/integrations/rc-ordera/customer-menu-order";
 
 
 /* ============================================================
@@ -639,11 +640,11 @@ export default async function MenuPage({
     );
 
   // First derive permanent public anchors from the ORIGINAL restaurant keys.
-  // Then show localized tab labels without changing those SEO bookmarks,
-  // product IDs, category ownership or anything stored in RC ORDERA.
+  // Next show familiar customer sections in Entradas → Platos → Bebidas order,
+  // then localize the labels; nothing about operational RC ORDERA changes.
   const categories =
     catalog
-      ? withMenuCategoryAnchors(catalog.categories)
+      ? orderImportedMenuCategories(withMenuCategoryAnchors(catalog.categories))
           .map((category) => ({
             ...category,
             name: localizeRcOrderaCategoryName(category.name, locale),
