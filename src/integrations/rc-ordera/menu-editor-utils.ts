@@ -488,6 +488,36 @@ export function undoMenuProductChange(
   return candidate;
 }
 
+/**
+ * Treat RPC receipts as provisional. A timeout or transport error can occur
+ * AFTER PostgreSQL committed an owner-menu transaction. Only a subsequent
+ * owner-scoped readback with a newer revision and matching full JSONB data
+ * can prove a save succeeded. Do not retry an uncertain write blindly.
+ */
+export type RcMenuSaveOutcome = "confirmed" | "concurrent_change" | "unverified";
+
+export function classifyMenuSaveOutcome(
+  requested: RcEditableMenu,
+  previousRevision: number,
+  persistedMenu: RcEditableMenu | null,
+  persistedRevision: number | null,
+): RcMenuSaveOutcome {
+  if (!persistedMenu || persistedRevision === null ||
+    !Number.isSafeInteger(persistedRevision) ||
+    !Number.isSafeInteger(previousRevision)) {
+    return "unverified";
+  }
+  if (isConfirmedMenuSave(requested, persistedMenu, previousRevision, persistedRevision)) {
+    return "confirmed";
+  }
+  if (persistedRevision > previousRevision) {
+    // Another owner changed the menu, or the server stored different data.
+    // Neither case may be treated as a successful publication of this draft.
+    return "concurrent_change";
+  }
+  return "unverified";
+}
+
 export function updateProduct(
   menu: RcEditableMenu,
   category: string,

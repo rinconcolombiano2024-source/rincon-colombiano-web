@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
   addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
-  detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave,
+  detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
   getProductTranslation, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   summarizeMenuChanges, undoMenuProductChange,
@@ -121,6 +121,18 @@ assert.equal(isSafeMenuRevision(menu, { ...menu, "Entradas y sopas": [], "Nueva 
 
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 13), true,
   "read-back with advanced revision confirms actual persisted menu");
+assert.equal(classifyMenuSaveOutcome(changed, 12, changed, 13), "confirmed",
+  "verified readback proves the data was saved even when the RPC response is ambiguous");
+assert.equal(classifyMenuSaveOutcome(changed, 12, null, null), "unverified",
+  "a failed server read cannot justify retrying or declaring success");
+assert.equal(classifyMenuSaveOutcome(changed, 12, changed, 12), "unverified",
+  "stale readback does not establish a successful save");
+assert.equal(classifyMenuSaveOutcome(changed, 12, menu, 13), "concurrent_change",
+  "revision advance with different content indicates conflict or transformed write");
+assert.equal(classifyMenuSaveOutcome(changed, 12, changed, 11), "unverified",
+  "lower revision is never accepted");
+assert.equal(classifyMenuSaveOutcome(changed, 12, changed, Number.NaN), "unverified",
+  "invalid revisions must never pass a save guard");
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 12), false,
   "a stale read cannot claim the menu was saved");
 assert.equal(isConfirmedMenuSave(changed, JSON.parse(JSON.stringify(changed)), 12, 11), false,
@@ -398,7 +410,14 @@ for (const guard of [
   "publishedSelected.price !== selected.price",
   "setDraft(updateProduct(draft, activeCategory, id, data))",
   "removeEmptyMenuCategory(draft, activeCategory)",
-  "isConfirmedMenuSave(draft, current.menu, revision, current.revision)",
+  "classifyMenuSaveOutcome(",
+  "setVerificationUncertain(true)",
+  "rpcError = \"NETWORK_UNCERTAIN\"",
+  "setVerificationUncertain(false)",
+  "Descargar borrador sin publicar",
+  "UNPUBLISHED_DRAFT",
+  "hasUnappliedInputs || revision === null || busy",
+  "Descargar copia del servidor",
   "applied-but-unpublished menu edits",
   "Sí, desconectar y descartar",
 ]) {
