@@ -5,7 +5,7 @@ import {
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
   getProductTranslation, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
-  summarizeMenuChanges, undoMenuProductChange,
+  summarizeMenuChanges, undoMenuProductChange, restoreUnpublishedMenuDraft,
   menuProductCount,
 } from "../src/integrations/rc-ordera/menu-editor-utils.ts";
 
@@ -55,6 +55,43 @@ assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60, "must not mutate original"
 assert.deepEqual(changed["PLATOS PRINCIPALES"][0].translations,
   original["PLATOS PRINCIPALES"][0].translations);
 assert.equal(isSafeMenuRevision(menu, changed), true);
+const validDraftArchive = {
+  restaurantId: "restaurant-owner-123",
+  menuRevision: 9,
+  status: "UNPUBLISHED_DRAFT",
+  exportedAt: "2026-10-22T02:00:00Z",
+  menu: changed,
+};
+const recovered = restoreUnpublishedMenuDraft(validDraftArchive, menu, 9, "restaurant-owner-123");
+assert.equal(recovered["PLATOS PRINCIPALES"][0].price, 62.5,
+  "draft-only recovery retains changed price without server writes");
+assert.equal(menu["PLATOS PRINCIPALES"][0].price, 60,
+  "recovery never mutates server snapshot");
+assert.deepEqual(recovered["PLATOS PRINCIPALES"][0].modifiers, ["extra-arepa"],
+  "recovery preserves original modifiers and station metadata");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, status: "LAST_READ_SERVER_SNAPSHOT" }, menu, 9, "restaurant-owner-123"),
+  /borrador de esta sede/i, "server backups cannot be imported as unpublished drafts");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, restaurantId: "another-owner" }, menu, 9, "restaurant-owner-123"),
+  /esta sede/i, "cross-restaurant drafts are forbidden");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, menuRevision: 8 }, menu, 9, "restaurant-owner-123"),
+  /esta sede/i, "revision mismatch requires an explicit reconciliation");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, menu: { ...menu, "PLATOS PRINCIPALES": [{
+    ...menu["PLATOS PRINCIPALES"][0], station: "bar",
+  }] } }, menu, 9, "restaurant-owner-123"),
+  /protegidos/i, "imported draft cannot overwrite station data");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, menu: { ...menu, BEBIDAS: [] } }, menu, 9, "restaurant-owner-123"),
+  /protegidos/i, "injected removals not matching the safe revision guard fail");
+assert.throws(() => restoreUnpublishedMenuDraft(
+  { ...validDraftArchive, menu: JSON.parse('{"__proto__":[]}') },
+  menu, 9, "restaurant-owner-123"),
+  /protegidos/i, "prototype polluting draft keys are rejected");
+assert.throws(() => restoreUnpublishedMenuDraft(null, menu, 9, "restaurant-owner-123"),
+  /borrador de menú válido/i, "null archive fails closed");
 const changedSummary = summarizeMenuChanges(menu, changed);
 assert.equal(changedSummary.length, 1, "one changed product is one review row");
 assert.equal(changedSummary[0].kind, "product_updated");
@@ -415,6 +452,12 @@ for (const guard of [
   "rpcError = \"NETWORK_UNCERTAIN\"",
   "setVerificationUncertain(false)",
   "Descargar borrador sin publicar",
+  "Recuperar borrador JSON",
+  "restoreUnpublishedMenuDraft(parsed, current.menu, current.revision, config.restaurantId)",
+  "current.revision !== revision",
+  "newCategoryName.trim().length > 0",
+  "setNewCategoryName(\"\")",
+  "if (unappliedChanges || newProductFormDirty)",
   "UNPUBLISHED_DRAFT",
   "hasUnappliedInputs || revision === null || busy",
   "Descargar copia del servidor",
