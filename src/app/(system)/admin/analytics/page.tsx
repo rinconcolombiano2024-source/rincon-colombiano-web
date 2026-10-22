@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AnalyticsExport } from "@/components/admin/AnalyticsExport";
 import { AnalyticsTrend } from "@/components/admin/AnalyticsTrend";
 import { requireAdminIdentity } from "@/lib/admin/auth";
-import { analyticsPeriod, getAnalyticsReport } from "@/lib/analytics/reports";
+import { analyticsPeriod, getAnalyticsReadiness, getAnalyticsReport } from "@/lib/analytics/reports";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -11,6 +11,7 @@ const number = new Intl.NumberFormat("es-ES");
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
   await requireAdminIdentity();
+  const readiness = getAnalyticsReadiness();
   const days = analyticsPeriod((await searchParams).days);
   const report = await getAnalyticsReport(String(days));
   return (
@@ -28,8 +29,22 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         {report.status !== "ready" ? (
           <section className="rounded-2xl border border-[#123d73]/20 bg-white p-6">
             <h2 className="text-xl font-bold">{report.status === "not-configured" ? "Conecta las estadísticas de tu web" : "No se han podido consultar las estadísticas"}</h2>
-            <p className="mt-3 leading-7">{report.status === "not-configured" ? "Hace falta conectar la propiedad de Google Analytics con acceso de lectura. Hasta entonces no mostramos cifras de visitas." : "Vuelve a intentarlo en unos minutos. Si continúa, revisa los permisos de lectura y la conexión de Google Analytics."}</p>
-            <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-[#123d73] px-5 font-bold text-white">Abrir Google Analytics</a>
+            <p className="mt-3 leading-7">{report.status === "not-configured" ? "El contador de visitantes todavía no está conectado. No inventamos cifras: las visitas anteriores a la activación no se pueden reconstruir." : "Vuelve a intentarlo en unos minutos. Si continúa, revisa los permisos de lectura y la conexión de Google Analytics."}</p>
+            {report.status === "not-configured" ? (
+              <div className="mt-5 space-y-3 text-sm leading-6">
+                <p className="font-bold text-[#123d73]">Estado de la conexión (sin mostrar credenciales)</p>
+                <p>Medición de visitas GA4: <strong>{readiness.trackingConfigured ? "Configurada" : "Pendiente"}</strong></p>
+                <p>Lectura de informes en CEO: <strong>{readiness.reportingConfigured ? "Configurada · falta verificar acceso" : "Pendiente"}</strong></p>
+                <p>Para empezar, crea una propiedad y flujo web GA4 para rinconcolombiano.pl. Añade su ID G-... en la variable de Vercel <code className="font-bold">NEXT_PUBLIC_GA_MEASUREMENT_ID</code> y publica una nueva versión: la web sólo cargará el medidor después del consentimiento de cookies.</p>
+                <p>Para ver los datos aquí, concede acceso de lectura de la propiedad a una cuenta de servicio de Google y configura en Vercel <code className="font-bold">GA_PROPERTY_ID</code>, <code className="font-bold">GA_CLIENT_EMAIL</code> y <code className="font-bold">GA_PRIVATE_KEY</code>. Nunca pegues las claves en la web pública ni en GitHub.</p>
+                <p>Esta página muestra visitantes medidos, sesiones, páginas vistas y clics hacia pedidos. El seguimiento depende del consentimiento y de los bloqueadores.</p>
+              </div>
+            ) : null}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl bg-[#123d73] px-5 font-bold text-white">Abrir Google Analytics ↗</a>
+              <a href="https://vercel.com/jhon-mendez-s-projects/rincon-colombiano-web/analytics" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl border border-[#123d73] px-5 font-bold text-[#123d73]">Ver Analytics de Vercel ↗</a>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-[#62594f]">Vercel Web Analytics es un servicio independiente: debes activarlo en Vercel. Activarlo no conecta automáticamente las cifras de Google Analytics en este panel.</p>
           </section>
         ) : (
           <>

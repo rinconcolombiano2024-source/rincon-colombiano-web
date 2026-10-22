@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { analyticsPeriod, createAnalyticsReporter } from '../src/lib/analytics/reports.ts';
+import { analyticsPeriod, createAnalyticsReporter, getAnalyticsReadiness } from '../src/lib/analytics/reports.ts';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const env = { GA_PROPERTY_ID: '12345', GA_CLIENT_EMAIL: 'reports@test.iam.gserviceaccount.com', GA_PRIVATE_KEY: privateKey.export({ type: 'pkcs8', format: 'pem' }) };
@@ -81,4 +81,35 @@ test('report reads follow admin authorization and desktop shortcuts are wired', 
   assert.match(page,/force-dynamic/);
   const desktop = readFileSync('desktop/RinconColombianoAdmin/Program.cs','utf8');
   assert.match(desktop,/\("Estadísticas", "\/admin\/analytics"\)/);
+});
+
+test('CEO configuration status tells the truth without exporting credentials', () => {
+  assert.deepEqual(getAnalyticsReadiness({}), {
+    trackingConfigured: false, reportingConfigured: false,
+  }, 'no GA variables does NOT mean zero recorded users');
+  assert.deepEqual(getAnalyticsReadiness(env), {
+    trackingConfigured: false, reportingConfigured: true,
+  }, 'service-account reports and client-side tracking are separate');
+  assert.deepEqual(getAnalyticsReadiness({ ...env, NEXT_PUBLIC_GA_MEASUREMENT_ID: 'G-ABC123XYZ' }), {
+    trackingConfigured: true, reportingConfigured: true,
+  });
+  assert.deepEqual(getAnalyticsReadiness({ ...env, NEXT_PUBLIC_GA_MEASUREMENT_ID: 'https://attacker.com' }), {
+    trackingConfigured: false, reportingConfigured: true,
+  }, 'reject malformed client measurement IDs');
+  assert.deepEqual(getAnalyticsReadiness({ ...env, GA_PRIVATE_KEY: undefined }), {
+    trackingConfigured: false, reportingConfigured: false,
+  }, 'missing private key must never be shown as reporting ready');
+
+  const admin = readFileSync('src/app/(system)/admin/page.tsx','utf8');
+  const page = readFileSync('src/app/(system)/admin/analytics/page.tsx','utf8');
+  assert.match(admin, /getAnalyticsReadiness\(\)/);
+  assert.match(admin, /Conectar medición/);
+  assert.match(admin, /module\.key === "analytics" && !analyticsConfigured/);
+  assert.match(page, /await requireAdminIdentity\(\)/);
+  assert.match(page, /readiness\.trackingConfigured/);
+  assert.match(page, /readiness\.reportingConfigured/);
+  assert.match(page, /No inventamos cifras/);
+  assert.match(page, /Activarlo no conecta automáticamente/);
+  assert.doesNotMatch(page, /GA_PRIVATE_KEY\s*:/,
+    'never display or hardcode secret values in CEO web page');
 });

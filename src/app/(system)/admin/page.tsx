@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminDesktopInstall from "@/components/admin/AdminDesktopInstall";
+import { getAnalyticsReadiness } from "@/lib/analytics/reports";
 
 import {
   requireAdminIdentity,
@@ -28,6 +29,7 @@ export const revalidate =
 
 type AdminModuleStatus =
   | "active"
+  | "needs-configuration"
   | "planned";
 
 
@@ -348,7 +350,7 @@ const ADMIN_MODULES = [
     key: "analytics",
     eyebrow: "DATOS",
     title: "Visitas y clics para pedir",
-    description: "Consulta visitantes, páginas más vistas y procedencia del tráfico en periodos de 7, 30 y 90 días.",
+    description: "Consulta visitantes, páginas más vistas y procedencia del tráfico en periodos de 7, 30 y 90 días. Las cifras sólo aparecen cuando está conectada la medición.",
     status: "active",
     href: "/admin/analytics",
   },
@@ -456,7 +458,9 @@ function AdminModuleCard({
           {
             isActive
               ? "Activo"
-              : "Planificado"
+              : module.status === "needs-configuration"
+                ? "Conectar medición"
+                : "Planificado"
           }
         </span>
       </div>
@@ -542,7 +546,10 @@ export default async function AdminDashboardPage() {
    */
   const admin =
     await requireAdminIdentity();
-
+  const analyticsReadiness = getAnalyticsReadiness();
+  const analyticsConfigured =
+    analyticsReadiness.trackingConfigured &&
+    analyticsReadiness.reportingConfigured;
 
   return (
     <main
@@ -1048,7 +1055,9 @@ export default async function AdminDashboardPage() {
                       module.key
                     }
                     module={
-                      module
+                      module.key === "analytics" && !analyticsConfigured
+                        ? { ...module, status: "needs-configuration" }
+                        : module
                     }
                   />
                 ),
