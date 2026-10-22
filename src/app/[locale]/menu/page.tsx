@@ -174,7 +174,7 @@ const menuPageContent:
       "Zamów na wynos ↗",
 
     orderFromMenuDetail:
-      "Wybierz produkt w RC ORDERA i zapłać w restauracji.",
+      "Wybierz danie i zapłać przy odbiorze w restauracji.",
 
     liveLabel:
       "Aktualne menu restauracji",
@@ -296,7 +296,7 @@ const menuPageContent:
       "Pedir para recoger ↗",
 
     orderFromMenuDetail:
-      "Elige el producto en RC ORDERA y paga en el restaurante.",
+      "Elige tu comida y paga al recoger en el restaurante.",
 
     liveLabel:
       "Menú actual del restaurante",
@@ -418,7 +418,7 @@ const menuPageContent:
       "Order for pickup ↗",
 
     orderFromMenuDetail:
-      "Choose the item in RC ORDERA and pay at the restaurant.",
+      "Choose your meal and pay when you pick it up.",
 
     liveLabel:
       "Today's restaurant menu",
