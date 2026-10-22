@@ -41,7 +41,22 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Reject high severity production dependency advisories
-        run: npm audit --omit=dev --audit-level=high
+        # npm registry's audit/quick endpoint can intermittently return 400
+        # "Invalid package tree" on an otherwise successful locked npm ci.
+        # Retry only as a transport resilience measure. Every unsuccessful
+        # audit (including a real vulnerability) remains a failing gate.
+        run: |
+          for attempt in 1 2 3; do
+            if npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=25000; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Production dependency security audit did not pass after three attempts."
+              exit 1
+            fi
+            echo "::warning::Audit attempt $attempt failed; retrying without bypassing security."
+            sleep $((attempt * 5))
+          done
 
       - name: Validate media slot schema and security
         run: node scripts/check-brand-slots.mjs
