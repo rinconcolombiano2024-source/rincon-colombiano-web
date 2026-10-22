@@ -644,11 +644,14 @@ export function hasUnappliedNewProductFields(fields: {
   readonly description: string;
   readonly priceText: string;
   readonly station: string;
+  readonly translations?: RcProductTranslationUpdates;
 }): boolean {
   return fields.name.trim().length > 0 ||
     fields.description.trim().length > 0 ||
     fields.priceText.trim().length > 0 ||
-    fields.station !== "kitchen";
+    fields.station !== "kitchen" ||
+    Object.values(fields.translations ?? {}).some((entry) =>
+      Boolean(entry?.name.trim() || entry?.description.trim()));
 }
 
 export interface RcNewProductFields {
@@ -657,6 +660,7 @@ export interface RcNewProductFields {
   readonly description: string;
   readonly price: number;
   readonly station: "kitchen" | "bar";
+  readonly translations?: RcProductTranslationUpdates;
 }
 
 const NEW_PRODUCT_ID = /^prod-web-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -672,19 +676,40 @@ export function addMenuProduct(
     Object.values(menu).some((products) => products.some((item) => item.id === fields.id))) {
     throw new Error("Categoría llena, producto duplicado o ID inválido.");
   }
+  if (fields.translations !== undefined && !safeNewTranslations(fields.translations)) {
+    throw new Error("Las traducciones del producto nuevo no son válidas.");
+  }
   const name = fields.name.trim();
+  const description = fields.description.trim();
+  const titleAndDescription = (locale: RcTranslationLocale): RcProductTranslation => {
+    const translated = fields.translations?.[locale];
+    if (!translated) {
+      // Spanish inherits the original name and description by default.
+      // PL and EN stay empty unless the owner actually entered a translation.
+      return locale === "es"
+        ? { name, description }
+        : { name: "", description: "" };
+    }
+    if (locale === "es" && !translated.name.trim() && !translated.description.trim()) {
+      return { name, description };
+    }
+    return {
+      name: (locale === "es" ? translated.name.trim() || name : translated.name.trim()),
+      description: translated.description.trim(),
+    };
+  };
   const nextProduct: RcMenuProduct = {
     id: fields.id,
     name,
-    description: fields.description.trim(),
+    description,
     price: fields.price,
     available: true,
     imageUrl: "",
     station: fields.station,
     translations: {
-      es: { name, description: fields.description.trim() },
-      pl: { name: "", description: "" },
-      en: { name: "", description: "" },
+      es: titleAndDescription("es"),
+      pl: titleAndDescription("pl"),
+      en: titleAndDescription("en"),
     },
   };
   if (!isValidProduct(nextProduct) ||
