@@ -76,10 +76,19 @@ export default async function AdminMenuPage() {
               Origen: {catalog.source === "rpc" ? "RPC oficial" : "catálogo de respaldo"}
             </p>
           ) : null}
-          <p className="mt-3 text-xs text-[#756b61]">La caché pública puede tardar hasta cinco minutos en reflejar cambios.</p>
+          <p className="mt-3 text-xs text-[#756b61]">
+            La web consulta directamente el catálogo público de RC ORDERA y lo muestra en español,
+            polaco e inglés. No copies ni mantengas dos menús independientes.
+            Los productos agotados no se muestran y la caché pública puede tardar
+            hasta cinco minutos en reflejar cambios guardados en RC ORDERA.
+          </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <a href={buildRcOrderaOrderUrl("czapelska")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-[#f7c600] px-5 text-sm font-black text-[#12100e]">
-              Ver menú como cliente ↗
+            <Link href="/pl/menu" target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center rounded-full bg-[#f7c600] px-5 text-sm font-black text-[#12100e]">
+              Ver menú importado en nuestra web ↗
+            </Link>
+            <a href={buildRcOrderaOrderUrl("czapelska")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-[#123d73] px-5 text-sm font-black text-[#123d73]">
+              Comparar con menú original RC ORDERA ↗
             </a>
             <a href={getRcOrderaPublicAppUrl()} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-[#123d73] px-5 text-sm font-black text-[#123d73]">
               Abrir RC ORDERA ↗

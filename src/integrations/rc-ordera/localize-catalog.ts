@@ -5,6 +5,24 @@ import type {
 } from "@/integrations/rc-ordera/public-catalog";
 
 /**
+ * Translate only KNOWN category names for the public web. The RC ORDERA
+ * category keys remain unchanged in Supabase and in all owner write paths.
+ * Unknown categories added by the CEO are shown verbatim, never invented.
+ */
+const CATEGORY_TRANSLATIONS: Readonly<Record<string, Readonly<Record<AppLocale, string>>>> = {
+  "BEBIDAS": { pl: "Napoje", es: "Bebidas", en: "Drinks" },
+  "COMBOS": { pl: "Zestawy", es: "Combos", en: "Combos" },
+  "ENTRADAS": { pl: "Przystawki", es: "Entradas", en: "Starters" },
+  "PLATOS PRINCIPALES": { pl: "Dania główne", es: "Platos principales", en: "Main courses" },
+  "PORCIONES": { pl: "Porcje", es: "Porciones", en: "Side portions" },
+};
+
+export function localizeRcOrderaCategoryName(name: string, locale: AppLocale): string {
+  const sourceKey = name.trim().replace(/\s+/g, " ").toLocaleUpperCase("es");
+  return CATEGORY_TRANSLATIONS[sourceKey]?.[locale] ?? name;
+}
+
+/**
  * Locale-specific public read view of the RC ORDERA catalog. This does not
  * mutate the source/menu or call Supabase; it only uses authorized text that
  * the public catalog actually contains. Colombian dish names remain intact,
@@ -56,6 +74,7 @@ export function localizeRcOrderaCategories(
 ): readonly RcOrderaPublicCategory[] {
   return categories.map((category) => ({
     ...category,
+    name: localizeRcOrderaCategoryName(category.name, locale),
     products: category.products.map((product) =>
       localizeRcOrderaProduct(product, locale)),
   }));
