@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { isSeoProductionEnvironment } from "@/config/seo";
+import { buildRcOrderaOrderUrl } from "@/integrations/rc-ordera/config";
 import { notFound } from "next/navigation";
 
 type Locale = "pl" | "es" | "en";
@@ -36,12 +37,12 @@ export default async function OrderChannels({ params }: { params: Promise<{ loca
           <p className="text-xs font-black uppercase tracking-[0.2em] text-[#f7c600]">RC ORDERA · {t.promoBadge}</p>
           <h2 className="mt-3 text-3xl font-black leading-tight text-[#f7c600] sm:text-4xl">{t.promoTitle}</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white sm:text-lg">{t.promoDesc}</p>
-          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" aria-label={`RC ORDERA — ${t.newTab}`} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-[#f7c600] px-6 py-3 font-black text-[#123d73] hover:bg-[#ffe064] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">RC ORDERA ↗</a>
+          <a href={buildRcOrderaOrderUrl("czapelska")} aria-label={`RC ORDERA — ${t.newTab}`} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-[#f7c600] px-6 py-3 font-black text-[#123d73] hover:bg-[#ffe064] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">RC ORDERA ↗</a>
         </aside>
         <section className="mt-10 rounded-3xl border-2 border-[#f7c600] bg-white p-6 sm:p-8">
           <h2 className="text-2xl font-bold">{t.direct}</h2>
           <p className="mt-3 text-slate-700">{t.directDesc}</p>
-          <a href="https://rincon-colombiano-pedidosapp.vercel.app/" aria-label={`${t.pickupCta} — ${t.newTab}`} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.pickupCta} ↗</a>
+          <a href={buildRcOrderaOrderUrl("czapelska")} aria-label={`${t.pickupCta} — ${t.newTab}`} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#123d73] px-6 py-3 font-bold text-white hover:bg-[#092a50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#123d73]">{t.pickupCta} ↗</a>
         </section>
         <section className="mt-10 rounded-3xl border-2 border-[#123d73] bg-white p-6 shadow-md sm:p-8">
           <h2 className="text-2xl font-bold">{t.pay}</h2>
