@@ -380,8 +380,15 @@ export interface RcMenuTranslationAudit {
   readonly en: RcMenuLocaleAudit;
 }
 
-export function auditMenuTranslations(menu: RcEditableMenu, maxItems = 24): RcMenuTranslationAudit {
+export function auditMenuTranslations(
+  menu: RcEditableMenu,
+  maxItems = 24,
+  offset = 0,
+): RcMenuTranslationAudit {
   const limit = Number.isSafeInteger(maxItems) ? Math.min(Math.max(maxItems, 0), 50) : 24;
+  // Offset applies only to the returned *issue page*, not the totals.
+  // Prevent negative/float/infinite inputs from bypassing the issue cap.
+  const skip = Number.isSafeInteger(offset) && offset >= 0 ? offset : 0;
   const source: Record<"pl" | "en", {
     missingTitles: number;
     missingDescriptions: number;
@@ -404,7 +411,7 @@ export function auditMenuTranslations(menu: RcEditableMenu, maxItems = 24): RcMe
         counters.incompleteProducts++;
         if (missingTitle) { counters.missingTitles++; }
         if (missingDescription) { counters.missingDescriptions++; }
-        if (counters.issues.length < limit) {
+        if (counters.incompleteProducts > skip && counters.issues.length < limit) {
           counters.issues.push({
             category, productId: product.id, productName: product.name,
             missingTitle, missingDescription,
