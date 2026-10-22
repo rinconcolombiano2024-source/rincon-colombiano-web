@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/integrations/rc-ordera/localize-catalog.ts";
 import {
-  addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
+  addMenuProduct, duplicateMenuProductDraft, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
   canonicalMenuSnapshot, areMenuSnapshotsEqual, menuDraftFingerprint,
   getProductTranslation, getMenuLocalePreview, hasUnappliedProductChanges, hasUnappliedNewProductFields,
@@ -361,6 +361,53 @@ assert.throws(() => addMenuProduct(menu, "BEBIDAS", {
   ...createFields(makeId("000000000025"), "Arepa"),
   translations: { pl: { name: "A".repeat(161), description: "" } },
 }), /traducciones/i, "unreasonably long translations cannot enter owner drafts");
+const duplicatedDish = duplicateMenuProductDraft(
+  menu, "PLATOS PRINCIPALES", "prod-bandeja", makeId("000000000044"));
+const duplicatedProduct = duplicatedDish["PLATOS PRINCIPALES"][1];
+assert.equal(duplicatedProduct.name, "Bandeja paisa (copia)",
+  "visible owner label makes the new draft visibly different from existing dish");
+assert.equal(duplicatedProduct.id, makeId("000000000044"),
+  "copy receives a new collision-resistant ID without reusing the original kitchen identity");
+assert.equal(duplicatedProduct.available, false,
+  "duplicates start sold out to prevent unintended customer purchases");
+assert.equal(duplicatedProduct.price, 60, "copies keep price in PLN for explicit owner review");
+assert.equal(duplicatedProduct.station, "kitchen", "copy retains the standard station only");
+assert.equal(duplicatedProduct.imageUrl, "", "copy never reuses source photos unintentionally");
+assert.equal(duplicatedProduct.description, "Traditional");
+assert.deepEqual(duplicatedProduct.translations, {
+  es: { name: "Bandeja paisa (copia)", description: "Traditional" },
+  pl: { name: "Bandeja (kopia)", description: "Tradycyjna" },
+  en: { name: "Bandeja (copy)", description: "" },
+}, "existing supported translations copied with distinct draft labels");
+assert.equal(duplicatedProduct.modifiers, undefined,
+  "operational modifiers and hidden integration metadata must NOT be copied");
+assert.equal(menu["PLATOS PRINCIPALES"][0].available, true,
+  "creating a new draft never alters the original dish");
+assert.deepEqual(menu["PLATOS PRINCIPALES"][0].modifiers, ["extra-arepa"],
+  "the existing kitchen modifiers remain untouched");
+assert.equal(isSafeMenuRevision(menu, duplicatedDish), true,
+  "the usual owner RPC revision validator accepts the staged copy");
+assert.throws(() => duplicateMenuProductDraft(
+  menu, "PLATOS PRINCIPALES", "prod-bandeja", "prod-bandeja"),
+  /ID inválido|duplicado/i, "reusing an ID must be blocked");
+assert.throws(() => duplicateMenuProductDraft(
+  menu, "PLATOS PRINCIPALES", "missing", makeId("000000000046")),
+  /origen/i, "unknown dishes cannot be cloned");
+const nonstandardStation = normalizeMenu({
+  BEBIDAS: [{ id: "special", name: "Especial", price: 5, available: true, station: "oven" }],
+});
+assert.ok(nonstandardStation);
+assert.throws(() => duplicateMenuProductDraft(
+  nonstandardStation, "BEBIDAS", "special", makeId("000000000047")),
+  /estación especial/i, "nonstandard station cannot be assigned to a copied dish");
+const longTitleSource = normalizeMenu({
+  ENTRADAS: [{ id: "long-title", name: "A".repeat(160), price: 8, available: true, station: "bar" }],
+});
+assert.ok(longTitleSource);
+const longNameCopy = duplicateMenuProductDraft(
+  longTitleSource, "ENTRADAS", "long-title", makeId("000000000048"));
+assert.equal(longNameCopy.ENTRADAS[1].name.length, 160,
+  "copy suffix respects strict 160-character names without truncating the suffix");
 assert.equal(firstAdded.BEBIDAS.length, 2);
 assert.deepEqual(Object.entries(undoMenuProductChange(menu, firstAdded, "BEBIDAS",
   makeId("000000000001"))), Object.entries(menu), "undo a new product without losing stored items");
@@ -550,6 +597,11 @@ for (const guard of [
   "createCategory(event",
   "searchMenuProducts(draft, productSearch)",
   "function toggleAvailability(categoryName: string, id: string)",
+  "function duplicateProduct(product: RcMenuProduct)",
+  "duplicateMenuProductDraft(draft, activeCategory, product.id, newId)",
+  "Duplicar plato · borrador agotado",
+  "selected.station !== \"kitchen\" && selected.station !== \"bar\"",
+  "setReviewedDraftFingerprint(null)",
   "updateProduct(draft, categoryName, id, { available: !current.available })",
   "if (!isSafeMenuRevision(original, next))",
   "setServerSnapshotEpoch((epoch) => epoch + 1)",
