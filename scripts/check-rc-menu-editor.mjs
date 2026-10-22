@@ -4,7 +4,8 @@ import {
   addMenuProduct, duplicateMenuProductDraft, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
   canonicalMenuSnapshot, areMenuSnapshotsEqual, menuDraftFingerprint,
-  getProductTranslation, getMenuLocalePreview, hasUnappliedProductChanges, hasUnappliedNewProductFields,
+  getProductTranslation, getMenuLocalePreview, auditMenuTranslations,
+  hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   summarizeMenuChanges, undoMenuProductChange, restoreUnpublishedMenuDraft,
   menuProductCount,
@@ -34,6 +35,40 @@ const original = {
 const menu = normalizeMenu(original);
 assert.ok(menu, "Original owner menu must parse");
 assert.equal(menuProductCount(menu), 2);
+const translationsAudit = auditMenuTranslations(menu);
+assert.equal(translationsAudit.products, 2, "only owner snapshot dishes count towards translation audit");
+assert.equal(translationsAudit.pl.incompleteProducts, 1);
+assert.equal(translationsAudit.pl.missingTitles, 1);
+assert.equal(translationsAudit.pl.missingDescriptions, 0);
+assert.deepEqual(translationsAudit.pl.issues, [{
+  category: "BEBIDAS", productId: "prod-masato", productName: "Masato",
+  missingTitle: true, missingDescription: false,
+}], "Polish missing title is actionable without inventing a description");
+assert.equal(translationsAudit.en.incompleteProducts, 2);
+assert.equal(translationsAudit.en.missingTitles, 1);
+assert.equal(translationsAudit.en.missingDescriptions, 1);
+assert.deepEqual(translationsAudit.en.issues.map((i) => i.productId),
+  ["prod-bandeja", "prod-masato"], "owner can jump to every missing English translation");
+assert.equal(auditMenuTranslations(menu, 0).pl.issues.length, 0,
+  "issue list cap can suppress a long list without losing total counts");
+assert.equal(auditMenuTranslations(menu, 1).en.issues.length, 1,
+  "large menus must never render unbounded translation issues");
+assert.equal(auditMenuTranslations(menu, 100).en.issues.length, 2);
+assert.deepEqual(original["PLATOS PRINCIPALES"][0].translations,
+  menu["PLATOS PRINCIPALES"][0].translations,
+  "translation audit is read-only and never updates source menu metadata");
+const completeLocales = updateProduct(
+  updateProduct(menu, "PLATOS PRINCIPALES", "prod-bandeja", {
+    translations: { en: { name: "Bandeja", description: "Traditional plate" } },
+  }), "BEBIDAS", "prod-masato", {
+    translations: {
+      pl: { name: "Masato", description: "" },
+      en: { name: "Masato", description: "" },
+    },
+  });
+assert.equal(auditMenuTranslations(completeLocales).pl.incompleteProducts, 0);
+assert.equal(auditMenuTranslations(completeLocales).en.incompleteProducts, 0,
+  "coverage becomes complete only after real owner-provided translations");
 const plPreview = getMenuLocalePreview(menu["PLATOS PRINCIPALES"][0], "pl");
 assert.deepEqual(plPreview, {
   name: "Bandeja", description: "Tradycyjna", translated: true, descriptionMissing: false,
@@ -611,6 +646,12 @@ for (const guard of [
   "Vista previa · borrador local",
   "Comprueba los textos en los tres idiomas",
   "getMenuLocalePreview(selected, locale)",
+  "auditMenuTranslations(draft)",
+  "Revisión de traducciones del menú",
+  "Productos pendientes de traducción",
+  "setProductId(item.productId)",
+  "setTranslationReviewLocale(null)",
+  "disabled={busy || hasUnappliedInputs}",
   "Sin nombre traducido: se muestra el original.",
   "Falta descripción traducida.",
   "Imagen del borrador:",
