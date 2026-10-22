@@ -12,7 +12,7 @@ import {
   hasUnappliedProductChanges,
   hasUnappliedNewProductFields,
   isSafeMenuRevision,
-  isConfirmedMenuSave,
+  classifyMenuSaveOutcome,
   menuProductCount,
   searchMenuProducts,
   summarizeMenuChanges,
@@ -725,32 +725,58 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     setBusy(true);
     setErrorMessage("");
     try {
-      // The owner-only RPC checks auth.uid(), role and menu_revision inside
-      // an atomic transaction, and refuses accidental empty-menu erasure.
-      const { error } = await client.rpc("save_current_restaurant_menu", {
-        p_menu: draft,
-        p_expected_revision: revision,
-      });
-      if (error) {
-        if (error.message.includes("MENU_REVISION_CONFLICT")) {
-          throw new Error("Otro dispositivo cambió el menú. Descarga un respaldo y pulsa «Recargar» antes de continuar.");
-        }
-        throw new Error("RC ORDERA rechazó los cambios. Revisa la sesión propietaria y vuelve a consultar el menú.");
-      }
-      // RPC returned success, but a timeout/stale response from the read-back
-      // must NOT enable another write until the owner reloads and reconciles.
+      // A network failure or timeout can arrive AFTER the database commits.
+      // Treat even an RPC error as provisional; never blindly repeat a write.
+      // The existing owner-only RPC still verifies auth.uid() and menu_revision.
       setVerificationUncertain(true);
-      const current = await loadSnapshot(client, config.restaurantId);
-      if (!isConfirmedMenuSave(draft, current.menu, revision, current.revision)) {
-        throw new Error("RC ORDERA aceptó la solicitud, pero no pudimos verificar el menú publicado. No vuelvas a guardar sin recargar y comparar los datos.");
+      let rpcError: string | null = null;
+      try {
+        const result = await client.rpc("save_current_restaurant_menu", {
+          p_menu: draft,
+          p_expected_revision: revision,
+        });
+        rpcError = result.error?.message ?? null;
+      } catch {
+        // Do not expose transport/server details to customers or repeat
+        // an uncertain request without a fresh owner-scoped readback.
+        rpcError = "NETWORK_UNCERTAIN";
       }
+
+      let current: Snapshot;
+      try {
+        current = await loadSnapshot(client, config.restaurantId);
+      } catch {
+        throw new Error(
+          "No se pudo verificar si RC ORDERA publicó el menú. No vuelvas a guardar: descarga el borrador y pulsa «Recargar desde RC ORDERA» cuando se restablezca la conexión.",
+        );
+      }
+
+      const outcome = classifyMenuSaveOutcome(
+        draft, revision, current.menu, current.revision,
+      );
+      if (outcome === "concurrent_change" ||
+        rpcError?.includes("MENU_REVISION_CONFLICT")) {
+        if (outcome !== "confirmed") {
+          throw new Error(
+            "El menú cambió en RC ORDERA desde otra sesión o el servidor guardó otros datos. Descarga el borrador y pulsa «Recargar desde RC ORDERA» antes de continuar.",
+          );
+        }
+      }
+      if (outcome !== "confirmed") {
+        throw new Error(
+          "RC ORDERA no confirmó este guardado. No intentes publicarlo otra vez sin recargar y comparar el menú; se mantiene bloqueado para evitar escrituras duplicadas.",
+        );
+      }
+
       setOriginal(current.menu);
       setDraft(current.menu);
       setRevision(current.revision);
       setReviewedDraftFingerprint(null);
       setVerificationUncertain(false);
       setServerSnapshotEpoch((value) => value + 1);
-      setMessage("Menú guardado en RC ORDERA. La web comercial puede tardar unos minutos en actualizar el catálogo público.");
+      setMessage(rpcError
+        ? "RC ORDERA informó de un problema de conexión, pero el menú y la nueva revisión se verificaron guardados correctamente."
+        : "Menú guardado y verificado en RC ORDERA. La web comercial puede tardar unos minutos en actualizar el catálogo público.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "No se pudo guardar el menú.");
     } finally {
