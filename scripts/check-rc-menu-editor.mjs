@@ -84,7 +84,7 @@ assert.throws(() => restoreUnpublishedMenuDraft(
   }] } }, menu, 9, "restaurant-owner-123"),
   /protegidos/i, "imported draft cannot overwrite station data");
 assert.throws(() => restoreUnpublishedMenuDraft(
-  { ...validDraftArchive, menu: { ...menu, BEBIDAS: [] } }, menu, 9, "restaurant-owner-123"),
+  { ...validDraftArchive, menu: { "PLATOS PRINCIPALES": [], BEBIDAS: [] } }, menu, 9, "restaurant-owner-123"),
   /protegidos/i, "injected removals not matching the safe revision guard fail");
 assert.throws(() => restoreUnpublishedMenuDraft(
   { ...validDraftArchive, menu: JSON.parse('{"__proto__":[]}') },
