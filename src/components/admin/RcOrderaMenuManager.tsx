@@ -7,6 +7,7 @@ import {
   addMenuCategory,
   removeEmptyMenuCategory,
   removeMenuProduct,
+  restoreUnpublishedMenuDraft,
   detectProductImageMime,
   getProductTranslation,
   hasUnappliedProductChanges,
@@ -397,13 +398,18 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
   const [serverSnapshotEpoch, setServerSnapshotEpoch] = useState(0);
   const [unappliedChanges, setUnappliedChanges] = useState(false);
   const [newProductFormDirty, setNewProductFormDirty] = useState(false);
-  const hasUnappliedInputs = unappliedChanges || newProductFormDirty;
+  // Category title keystrokes belong to a third unsaved form. Treat them
+  // as pending independently of the product and new-product inputs.
+  const hasUnappliedInputs = unappliedChanges || newProductFormDirty ||
+    newCategoryName.trim().length > 0;
   const reportUnappliedChanges = useCallback((hasChanges: boolean) => {
     setUnappliedChanges(hasChanges);
   }, []);
   const unappliedWarning = unappliedChanges
     ? "Primero pulsa «Aplicar al borrador» en el producto; hay datos editados sin aplicar."
-    : "Tienes campos escritos en «Crear producto». Pulsa «Agregar al borrador» o borra esos datos antes de continuar.";
+    : newProductFormDirty
+      ? "Tienes campos escritos en «Crear producto». Pulsa «Agregar al borrador» o borra esos datos antes de continuar."
+      : "Tienes escrito el nombre de una nueva categoría. Pulsa «Crear categoría» o borra esos datos antes de continuar.";
 
   async function authenticate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -425,6 +431,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setDraft(snapshot.menu);
       setRevision(snapshot.revision);
       setCategory(Object.keys(snapshot.menu)[0] ?? "");
+      setNewCategoryName("");
       setProductSearch("");
       setProductId("");
       setServerSnapshotEpoch((value) => value + 1);
@@ -469,6 +476,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setOriginal(null);
       setRevision(null);
       setCategory("");
+      setNewCategoryName("");
       setProductSearch("");
       setProductId("");
       setServerSnapshotEpoch((value) => value + 1);
@@ -498,6 +506,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
       setVerificationUncertain(false);
       setProductId("");
       setCategory(Object.keys(current.menu)[0] ?? "");
+      setNewCategoryName("");
       setProductSearch("");
       setServerSnapshotEpoch((value) => value + 1);
       setMessage("Menú actualizado con la versión más reciente de RC ORDERA.");
@@ -508,10 +517,59 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
     }
   }
 
+  async function importDraftFile(file: File | undefined): Promise<void> {
+    if (!file || !connected || !original || revision === null || busy) { return; }
+    if (hasUnappliedInputs ||
+      (draft && JSON.stringify(original) !== JSON.stringify(draft))) {
+      setErrorMessage("Primero guarda, descarta o aplica los cambios pendientes antes de recuperar otro borrador.");
+      return;
+    }
+    if (verificationUncertain) {
+      setErrorMessage("Hay un guardado no verificado. Recarga desde RC ORDERA antes de restaurar un borrador.");
+      return;
+    }
+    if (file.size < 1 || file.size > 5 * 1024 * 1024) {
+      setErrorMessage("El borrador debe ser un archivo JSON de máximo 5 MB.");
+      return;
+    }
+    setBusy(true);
+    setErrorMessage("");
+    try {
+      const raw = await file.text();
+      const parsed: unknown = JSON.parse(raw);
+      // Confirm the owner-scoped database snapshot has not advanced between
+      // downloading the draft and restoring it, before any local edit occurs.
+      const current = await loadSnapshot(client, config.restaurantId);
+      if (current.revision !== revision ||
+        JSON.stringify(current.menu) !== JSON.stringify(original)) {
+        throw new Error("RC ORDERA cambió desde la última consulta. Descarga el borrador y recarga el menú antes de recuperar.");
+      }
+      const restored = restoreUnpublishedMenuDraft(parsed, current.menu, current.revision, config.restaurantId);
+      setOriginal(current.menu);
+      setDraft(restored);
+      setRevision(current.revision);
+      setCategory(Object.keys(restored)[0] ?? "");
+      setProductId("");
+      setProductSearch("");
+      setNewCategoryName("");
+      setUnappliedChanges(false);
+      setNewProductFormDirty(false);
+      setServerSnapshotEpoch((epoch) => epoch + 1);
+      setReviewedDraftFingerprint(null);
+      setMessage("Borrador recuperado localmente. Revisa TODOS los cambios antes de confirmar y publicar en RC ORDERA.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "No se pudo recuperar el borrador. No se cambió RC ORDERA.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function createCategory(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !original || busy || !connected) { return; }
-    if (hasUnappliedInputs) { setErrorMessage(unappliedWarning); return; }
+    // This form itself owns newCategoryName; only OTHER unsaved forms block
+    // submitting it. The pending title is cleared on a successful addition.
+    if (unappliedChanges || newProductFormDirty) { setErrorMessage(unappliedWarning); return; }
     try {
       const next = addMenuCategory(draft, newCategoryName);
       if (!isSafeMenuRevision(original, next)) {
@@ -910,6 +968,17 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               className="min-h-11 rounded-full border-2 border-[#123d73] bg-white px-4 text-sm font-black text-[#123d73] disabled:cursor-not-allowed disabled:opacity-40">
               Descargar borrador sin publicar
             </button>
+            <label htmlFor="ordera-import-draft" className="min-h-11 rounded-full border-2 border-[#123d73] bg-white px-4 py-3 text-sm font-black text-[#123d73]">
+              Recuperar borrador JSON
+            </label>
+            <input id="ordera-import-draft" type="file" accept="application/json,.json"
+              disabled={!connected || busy || hasUnappliedInputs || dirty || verificationUncertain}
+              onChange={(event) => {
+                const selected = event.currentTarget.files?.[0];
+                event.currentTarget.value = "";
+                void importDraftFile(selected);
+              }}
+              className="max-w-full rounded-xl border px-3 py-2 text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-[#f7c600] file:px-3 file:py-2 file:font-bold disabled:opacity-40" />
             {hasUnappliedInputs ? (
               <p className="w-full text-xs font-bold text-amber-900" role="status">
                 Aplica los campos escritos al borrador antes de descargarlo: el archivo JSON no puede incluir modificaciones todavía sin aplicar.
@@ -1150,6 +1219,7 @@ export default function RcOrderaMenuManager({ config }: { readonly config: Edito
               onClick={() => {
                 setDraft(original);
                 setProductId("");
+                setNewCategoryName("");
                 setUnappliedChanges(false);
                 setNewProductFormDirty(false);
                 setReviewedDraftFingerprint(null);
