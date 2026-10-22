@@ -67,6 +67,42 @@ export function getProductTranslation(
   return { name: "", description: "" };
 }
 
+/**
+ * Local, read-only preview of each RC ORDERA product translation. This is
+ * independent from server writes and does not pretend to translate missing
+ * text. When the requested language has no title, visitors see the source
+ * label; the editor must make that fallback obvious before publication.
+ */
+export interface RcMenuLocalePreview {
+  readonly name: string;
+  readonly description: string;
+  readonly translated: boolean;
+  readonly descriptionMissing: boolean;
+}
+
+export function getMenuLocalePreview(
+  product: RcMenuProduct,
+  locale: RcTranslationLocale,
+): RcMenuLocalePreview {
+  const localized = getProductTranslation(product, locale);
+  const title = localized.name.trim();
+  if (!title) {
+    return {
+      name: product.name,
+      description: product.description ?? "",
+      translated: false,
+      descriptionMissing: Boolean((product.description ?? "").trim()),
+    };
+  }
+  return {
+    name: title,
+    description: localized.description,
+    translated: true,
+    descriptionMissing: Boolean((product.description ?? "").trim()) &&
+      !localized.description.trim(),
+  };
+}
+
 function mergeProductTranslations(
   original: unknown,
   changes: RcProductTranslationUpdates,
