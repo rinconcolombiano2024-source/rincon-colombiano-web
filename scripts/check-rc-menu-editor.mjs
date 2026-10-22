@@ -54,6 +54,47 @@ assert.equal(auditMenuTranslations(menu, 0).pl.issues.length, 0,
 assert.equal(auditMenuTranslations(menu, 1).en.issues.length, 1,
   "large menus must never render unbounded translation issues");
 assert.equal(auditMenuTranslations(menu, 100).en.issues.length, 2);
+const manyProducts = normalizeMenu({
+  BEBIDAS: Array.from({ length: 60 }, (_, index) => ({
+    id: `draft-beverage-${index}`,
+    name: `Bebida colombiana ${index + 1}`,
+    description: "Bebida tradicional",
+    price: 15,
+    available: true,
+    station: "bar",
+    translations: {
+      pl: { name: "", description: "" },
+      en: { name: "", description: "" },
+    },
+  })),
+});
+assert.ok(manyProducts);
+const first24 = auditMenuTranslations(manyProducts, 24, 0);
+const second24 = auditMenuTranslations(manyProducts, 24, 24);
+const third24 = auditMenuTranslations(manyProducts, 24, 48);
+for (const report of [first24, second24, third24]) {
+  assert.equal(report.products, 60, "pagination may never change total count");
+  assert.equal(report.pl.incompleteProducts, 60);
+  assert.equal(report.pl.missingTitles, 60);
+  assert.equal(report.pl.missingDescriptions, 60);
+}
+assert.equal(first24.pl.issues.length, 24);
+assert.equal(second24.pl.issues.length, 24);
+assert.equal(third24.pl.issues.length, 12);
+assert.equal(first24.pl.issues[0].productId, "draft-beverage-0");
+assert.equal(second24.pl.issues[0].productId, "draft-beverage-24");
+assert.equal(third24.en.issues.at(-1)?.productId, "draft-beverage-59");
+assert.equal(new Set([first24, second24, third24]
+  .flatMap((report) => report.pl.issues.map((issue) => issue.productId))).size, 60,
+  "CEO can reach ALL untranslated products without duplicates or omitted pages");
+assert.deepEqual(auditMenuTranslations(manyProducts, 24, -99).en.issues,
+  first24.en.issues, "invalid negative offsets fail closed to the first page");
+assert.deepEqual(auditMenuTranslations(manyProducts, 24, Number.POSITIVE_INFINITY).en.issues,
+  first24.en.issues, "non-finite offsets must not hide missing translations");
+assert.equal(auditMenuTranslations(manyProducts, 24, 9999).pl.issues.length, 0,
+  "out of range page returns no issues but never changes overall totals");
+assert.equal(manyProducts.BEBIDAS[0].translations.pl.name, "",
+  "read-only pagination never modifies a product or its live localization");
 assert.deepEqual(original["PLATOS PRINCIPALES"][0].translations,
   menu["PLATOS PRINCIPALES"][0].translations,
   "translation audit is read-only and never updates source menu metadata");
@@ -646,7 +687,12 @@ for (const guard of [
   "Vista previa · borrador local",
   "Comprueba los textos en los tres idiomas",
   "getMenuLocalePreview(selected, locale)",
-  "auditMenuTranslations(draft)",
+  "auditMenuTranslations(draft, 24, translationReviewPage * 24)",
+  "Páginas de traducciones pendientes",
+  "24 siguientes →",
+  "← 24 anteriores",
+  "setTranslationReviewPage(0)",
+  "incompleteProducts <= translationReviewPage * 24",
   "Revisión de traducciones del menú",
   "Productos pendientes de traducción",
   "setProductId(item.productId)",
