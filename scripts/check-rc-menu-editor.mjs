@@ -3,7 +3,7 @@ import { localizeRcOrderaCategories, localizeRcOrderaProduct } from "../src/inte
 import {
   addMenuProduct, addMenuCategory, removeEmptyMenuCategory, removeMenuProduct,
   detectProductImageMime, isSafeMenuRevision, isConfirmedMenuSave, classifyMenuSaveOutcome,
-  getProductTranslation, hasUnappliedProductChanges, hasUnappliedNewProductFields,
+  getProductTranslation, getMenuLocalePreview, hasUnappliedProductChanges, hasUnappliedNewProductFields,
   normalizeMenu, updateProduct, validProductImageUrl, searchMenuProducts,
   summarizeMenuChanges, undoMenuProductChange, restoreUnpublishedMenuDraft,
   menuProductCount,
@@ -33,6 +33,26 @@ const original = {
 const menu = normalizeMenu(original);
 assert.ok(menu, "Original owner menu must parse");
 assert.equal(menuProductCount(menu), 2);
+const plPreview = getMenuLocalePreview(menu["PLATOS PRINCIPALES"][0], "pl");
+assert.deepEqual(plPreview, {
+  name: "Bandeja", description: "Tradycyjna", translated: true, descriptionMissing: false,
+}, "Polish editor preview displays real stored translations only");
+const enPreview = getMenuLocalePreview(menu["PLATOS PRINCIPALES"][0], "en");
+assert.equal(enPreview.name, "Bandeja");
+assert.equal(enPreview.translated, true);
+assert.equal(enPreview.descriptionMissing, true,
+  "missing English description must be clearly visible before the owner publishes");
+const esPreview = getMenuLocalePreview(menu["PLATOS PRINCIPALES"][0], "es");
+assert.deepEqual(esPreview, {
+  name: "Bandeja paisa", description: "Traditional",
+  translated: false, descriptionMissing: true,
+}, "untranslated Spanish title falls back to existing product, never a fabricated translation");
+const withoutDescription = getMenuLocalePreview(menu.BEBIDAS[0], "es");
+assert.equal(withoutDescription.translated, false);
+assert.equal(withoutDescription.descriptionMissing, false,
+  "products without an original description must not be marked falsely incomplete");
+assert.equal(menu["PLATOS PRINCIPALES"][0].name, "Bandeja paisa",
+  "a read-only preview must not mutate the original RC ORDERA catalog");
 assert.deepEqual(searchMenuProducts(menu, "BEBIDAS").map((hit) => hit.product.id), ["prod-masato"],
   "search by category returns the real product, not an invented catalog copy");
 assert.deepEqual(searchMenuProducts(menu, "tradycyjna").map((hit) => hit.product.id), [],
@@ -455,6 +475,14 @@ for (const guard of [
   "Marcar agotado · borrador",
   "Marcar disponible · borrador",
   "Vista previa · borrador local",
+  "Comprueba los textos en los tres idiomas",
+  "getMenuLocalePreview(selected, locale)",
+  "Sin nombre traducido: se muestra el original.",
+  "Falta descripción traducida.",
+  "Imagen del borrador:",
+  "Fotografía pendiente de aplicar",
+  "validProductImageUrl(imageUrl.trim())",
+  "referrerPolicy=\"no-referrer\"",
   "Revisa los cambios antes de guardar",
   "Confirmar y guardar en RC ORDERA",
   "reviewedDraftFingerprint === draftFingerprint",
