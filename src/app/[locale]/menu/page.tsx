@@ -36,7 +36,7 @@ import {
   getRcOrderaPublicCatalog,
   type RcOrderaPublicCatalog,
 } from "@/integrations/rc-ordera/public-catalog";
-import { localizeRcOrderaCategories } from "@/integrations/rc-ordera/localize-catalog";
+import { localizeRcOrderaCategoryName, localizeRcOrderaProduct } from "@/integrations/rc-ordera/localize-catalog";
 import { withMenuCategoryAnchors } from "@/integrations/rc-ordera/menu-category-anchors";
 
 
@@ -638,39 +638,26 @@ export default async function MenuPage({
       locale,
     );
 
+  // First derive permanent public anchors from the ORIGINAL restaurant keys.
+  // Then show localized tab labels without changing those SEO bookmarks,
+  // product IDs, category ownership or anything stored in RC ORDERA.
   const categories =
     catalog
-      ? withMenuCategoryAnchors(
-          localizeRcOrderaCategories(catalog.categories, locale)
-          .map(
-            (
-              category,
-            ) => ({
-              ...category,
-
-              products:
-                category
-                  .products
-                  .filter(
-                    (
-                      product,
-                    ) =>
-                      product
-                        .available,
-                  ),
-            }),
-          )
-          .filter(
-            (
-              category,
-            ) =>
-              category
-                .products
-                .length >
-              0,
-          ),
-        )
+      ? withMenuCategoryAnchors(catalog.categories)
+          .map((category) => ({
+            ...category,
+            name: localizeRcOrderaCategoryName(category.name, locale),
+            products: category.products
+              .filter((product) => product.available)
+              .map((product) => localizeRcOrderaProduct(product, locale)),
+          }))
+          .filter((category) => category.products.length > 0)
       : [];
+
+  const visibleImportedProducts = categories.reduce(
+    (sum, category) => sum + category.products.length,
+    0,
+  );
 
   const hasLiveMenu =
     Boolean(
@@ -1156,6 +1143,16 @@ export default async function MenuPage({
                     {copy.liveDescription}
                   </p>
 
+
+                  {hasLiveMenu ? (
+                    <p role="status" className="mt-4 rounded-xl border border-[#d6e3d2] bg-[#f1f7ef] px-4 py-3 text-sm font-bold text-[#265b34]">
+                      {locale === "pl"
+                        ? `${visibleImportedProducts} dostępnych produktów pobranych z menu restauracji. Oferta aktualizuje się automatycznie; potwierdź dostępność przy zamówieniu.`
+                        : locale === "es"
+                          ? `${visibleImportedProducts} productos disponibles importados directamente del menú del restaurante. La carta se actualiza automáticamente; confirma la disponibilidad al pedir.`
+                          : `${visibleImportedProducts} available items imported directly from our restaurant menu. The selection updates automatically; confirm availability when ordering.`}
+                    </p>
+                  ) : null}
 
                   <MenuCategoryBrowser label={copy.liveTitle} categories={categories.map(category => ({ id: category.anchorId, name: category.name }))}>
                     {
