@@ -30,6 +30,11 @@ export function CookieConsent({ locale }: { locale: Locale }) {
         window.dispatchEvent(new CustomEvent("rc-consent-change", {
           detail: next === "accepted" ? "accepted" : "rejected",
         }));
+        // A tracker script mounted in another tab may still be running after
+        // unmount. Reload promptly when tracking consent is withdrawn.
+        if (event.oldValue === "accepted" && next !== "accepted") {
+          window.location.reload();
+        }
       }
     };
     window.addEventListener("storage", onStorage);
@@ -37,11 +42,22 @@ export function CookieConsent({ locale }: { locale: Locale }) {
   }, []);
   function save(next: Choice) {
     let persisted = false;
-    try { localStorage.setItem(KEY, next); persisted = true; } catch { /* Private browsing may block storage. */ }
+    let revokeTracking = false;
+    try {
+      revokeTracking = next === "rejected" && localStorage.getItem(KEY) === "accepted";
+      localStorage.setItem(KEY, next);
+      persisted = true;
+    } catch { /* Private browsing may block storage. */ }
     // Never activate optional cookies when consent cannot be persisted.
     const effectiveChoice: Choice = persisted ? next : "rejected";
     setChoice(persisted ? next : null);
     window.dispatchEvent(new CustomEvent("rc-consent-change", { detail: effectiveChoice }));
+    // Unmounting the Vercel/GA tracker alone cannot guarantee injected
+    // scripts or in-flight navigation hooks are removed on revocation.
+    // A reload also clears any already-running optional analytics SDK.
+    if (revokeTracking && persisted) {
+      window.location.reload();
+    }
   }
   return (
     <>
