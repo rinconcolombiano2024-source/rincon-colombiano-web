@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
 import { useEffect, useState } from "react";
 
 const CONSENT_KEY = "rc-web-cookie-consent-v1";
@@ -16,7 +17,7 @@ declare global {
   }
 }
 
-/** Optional GA4 analytics: no third-party script is loaded without opt-in. */
+/** Optional GA4 + Vercel Web Analytics: no tracking SDK is mounted without opt-in. */
 export function ConsentAnalytics() {
   const pathname = usePathname();
   const [allowed, setAllowed] = useState(false);
@@ -84,5 +85,9 @@ export function ConsentAnalytics() {
     return () => document.removeEventListener("click", onClick);
   }, [allowed]);
 
-  return null;
+  // Both the GA4 loader above and Vercel's first-party web analytics SDK
+  // are disabled until a visitor explicitly opts into optional tracking.
+  // Mounting the official Next.js integration also tracks client-side routes.
+  // Vercel Dashboard activation and a new production deployment are required.
+  return allowed ? <Analytics /> : null;
 }
