@@ -5,6 +5,30 @@ reports. It does not create a second visitor database or claim that outbound
 clicks are purchases. The existing Supabase admin guard runs before every read.
 Windows CEO includes Statistics and Reviews shortcuts to the same protected pages.
 
+## Two independent measurement systems
+
+### A. Vercel Web Analytics — fastest way to count visits
+
+The official `@vercel/analytics` Next.js SDK (pinned at 2.0.1) is mounted **only
+after the visitor accepts optional website tracking**. Only commercial pages
+in `/[locale]` (PL/ES/EN) render the SDK; administrative and authentication
+pages do not. Unmounting a tracker alone cannot guarantee its injected
+scripts are gone, so withdrawing consent reloads the site to clear the SDK.
+
+An **authorized project owner** must still open **Vercel → Rincón Colombiano
+Web → Analytics → Enable**, review any plan charges, then deploy a new
+production build. The Analytics dashboard is separate from the CEO GA4
+report. It does not retroactively count visits that occurred before
+activation. Vercel Analytics is cookie-free but this site deliberately
+holds tracking until optional consent; its totals may omit visitors who
+reject consent or block scripts.
+
+Do not interpret Vercel's `400 web_analytics_not_enabled` API response as
+a traffic count of zero. Enable the service before expecting reports.
+Official instructions: https://vercel.com/docs/analytics/quickstart
+
+### B. Google Analytics 4 — private CEO reports
+
 ## Deployment connection
 
 1. Configure `NEXT_PUBLIC_GA_MEASUREMENT_ID` for this website's GA4 stream and rebuild.
