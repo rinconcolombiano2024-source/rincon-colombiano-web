@@ -113,3 +113,26 @@ test('CEO configuration status tells the truth without exporting credentials', (
   assert.doesNotMatch(page, /GA_PRIVATE_KEY\s*:/,
     'never display or hardcode secret values in CEO web page');
 });
+
+test('official Vercel Next.js tracker is consent-gated and excludes private CEO pages', () => {
+  const packageJSON = JSON.parse(readFileSync('package.json', 'utf8'));
+  assert.equal(packageJSON.dependencies['@vercel/analytics'], '2.0.1');
+
+  const customerLayout = readFileSync('src/app/[locale]/layout.tsx', 'utf8');
+  const adminLayout = readFileSync('src/app/(system)/layout.tsx', 'utf8');
+  const analytics = readFileSync('src/components/commercial/ConsentAnalytics.tsx', 'utf8');
+  const consent = readFileSync('src/components/commercial/CookieConsent.tsx', 'utf8');
+  assert.match(customerLayout, /<ConsentAnalytics \/>/);
+  assert.doesNotMatch(adminLayout, /ConsentAnalytics|<Analytics/,
+    'admin logins, sensitive settings and CEO reports must not be visitor events');
+  assert.match(analytics, /import \{ Analytics \} from "@vercel\/analytics\/next"/);
+  assert.match(analytics, /return allowed \? <Analytics \/> : null/,
+    'Vercel tracker must never mount when consent was rejected or not yet chosen');
+  assert.match(analytics, /localStorage\.getItem\(CONSENT_KEY\) === "accepted"/);
+  assert.match(analytics, /window\.addEventListener\("rc-consent-change", update\)/);
+  assert.match(consent, /revokeTracking = next === "rejected" && localStorage\.getItem\(KEY\) === "accepted"/);
+  assert.match(consent, /if \(revokeTracking && persisted\) \{\s*window\.location\.reload\(\)/,
+    'revoking consent must remove an injected analytics SDK from the document');
+  assert.match(consent, /event\.oldValue === "accepted" && next !== "accepted"/,
+    'revocation in a second browser tab must also stop tracking in this tab');
+});
