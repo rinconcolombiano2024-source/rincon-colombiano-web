@@ -3,6 +3,7 @@ import type {
 } from "next";
 
 import Link from "next/link";
+import { ContactLanding, contactPageCopy } from "@/components/commercial/ContactLanding";
 
 import {
   notFound,
@@ -627,9 +628,8 @@ function isOrderRoute(
 
 
 /**
- * The existing homepage already contains the public contact surface and
- * genuine WhatsApp/email CTAs. Honor registered /pl/kontakt, /es/contacto
- * and /en/contact URLs without creating a misleading, nonfunctional form.
+ * Match the three localized contact URLs to a real, separate contact page.
+ * Its verified WhatsApp link and open location require no form or database write.
  */
 function isContactRoute(
   locale: AppLocale,
@@ -1103,6 +1103,14 @@ export async function generateMetadata({
 
   // Dedicated commercial pages must provide their own canonical, hreflang
   // and environment-aware robots metadata, not inherit the generic layout.
+  if (isContactRoute(rawLocale, slug)) {
+    const copy = contactPageCopy[rawLocale];
+    return buildRouteMetadata("contact", rawLocale, {
+      title: copy.title,
+      description: copy.intro,
+    });
+  }
+
   const dedicated = getDedicatedSection(rawLocale, slug);
   if (dedicated) {
     return buildRouteMetadata(dedicated.key, rawLocale, {
@@ -1250,7 +1258,7 @@ export default async function RestaurantPage({
     rawLocale;
 
   if (isContactRoute(locale, slug)) {
-    redirect(`${buildRoutePath("home", locale)}#contact`);
+    return <ContactLanding locale={locale} />;
   }
 
   const dedicated = getDedicatedSection(locale, slug);

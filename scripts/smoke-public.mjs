@@ -257,15 +257,20 @@ async function checkContactAndLegal(locale) {
       redirect: "manual",
       signal: AbortSignal.timeout(15000),
     });
-    const locationHeader = response.headers.get("location") ?? "";
-    const destination = new URL(locationHeader, origin);
-    console.log(`Contact route ${path}: HTTP ${response.status}, Location=${locationHeader}`);
+    const contactHtml = await response.text();
+    const contactHeadings = {
+      pl: "Kontakt z Rincón Colombiano",
+      es: "Contacto de Rincón Colombiano",
+      en: "Contact Rincón Colombiano",
+    };
+    console.log(`Contact route ${path}: HTTP ${response.status}`);
     report(
-      [302, 303, 307, 308].includes(response.status) &&
-      destination.origin === new URL(origin).origin &&
-      destination.pathname === `/${locale}` &&
-      destination.hash === "#contact",
-      `${path} lleva a contacto real y localizado, sin formulario vacío`
+      response.status === 200 &&
+      contactHtml.includes(contactHeadings[locale]) &&
+      contactHtml.includes("https://wa.me/message/OWMYNNNTJEIFF1") &&
+      contactHtml.includes("Czapelska 33") &&
+      !/<form\b/i.test(contactHtml),
+      `${path} sirve página de contacto localizada con WhatsApp real, sede abierta y sin formulario ficticio`
     );
 
     const { body: html, status } = await request(`/${locale}`);

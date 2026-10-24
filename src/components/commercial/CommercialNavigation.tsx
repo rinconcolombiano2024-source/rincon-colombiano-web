@@ -6,14 +6,14 @@ import { buildRoutePath } from "@/config/routes";
 import type { AppLocale } from "@/i18n/config";
 
 const labels = {
-  pl: ["Strona główna", "Menu", "Usługi", "Historia", "Społeczność", "Nagrody", "Restauracje"],
-  es: ["Inicio", "Menú", "Servicios", "Historias", "Comunidad", "Recompensas", "Restaurantes"],
-  en: ["Home", "Menu", "Services", "Our story", "Community", "Rewards", "Restaurants"],
+  pl: ["Strona główna", "Menu", "Usługi", "Historia", "Społeczność", "Nagrody", "Restauracje", "Kontakt"],
+  es: ["Inicio", "Menú", "Servicios", "Historias", "Comunidad", "Recompensas", "Restaurantes", "Contacto"],
+  en: ["Home", "Menu", "Services", "Our story", "Community", "Rewards", "Restaurants", "Contact"],
 } as const;
 
 const accountLabels = { pl: "Zaloguj się", es: "Iniciar sesión", en: "Sign in" } as const;
 
-const keys = ["home", "menu", "services", "about", "community", "loyalty", "locations"] as const;
+const keys = ["home", "menu", "services", "about", "community", "loyalty", "locations", "contact"] as const;
 
 /** Shared across public pages; never renders on private admin routes. */
 export function CommercialNavigation({ locale }: { readonly locale: AppLocale }) {
