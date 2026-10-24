@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
+import { normalizePublishedReviews } from "@/lib/community/published-reviews";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,11 +13,11 @@ export async function GET() {
   try {
     const result = await fetch(`${cfg.url}/rest/v1/customer_reviews?select=id,display_name,body,rating,created_at&status=eq.published&order=created_at.desc&limit=12`, {
       headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` },
-      cache: "no-store", signal: AbortSignal.timeout(3500),
+      cache: "no-store", redirect: "error", signal: AbortSignal.timeout(3500),
     });
     if (!result.ok) { return response({ available: false, reviews: [] }); }
     const reviews: unknown = await result.json();
-    return response({ available: true, reviews: Array.isArray(reviews) ? reviews : [] });
+    return response({ available: true, reviews: normalizePublishedReviews(reviews) });
   } catch { return response({ available: false, reviews: [] }); }
 }
 export async function POST(request: NextRequest) {
