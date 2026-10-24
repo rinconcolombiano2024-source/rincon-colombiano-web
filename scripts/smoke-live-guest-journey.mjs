@@ -77,6 +77,20 @@ for (const [locale, orderPath] of Object.entries(LOCALE_PATHS)) {
     `Menu ${locale} must retain official restaurant brand`);
   checks += 4;
 
+  // Customer authentication is accessible but must never become a
+  // searchable public landing page. Check the actual built HTML, not
+  // only source text or the preview-wide robots.txt policy.
+  const account = await get(`/${locale}/account`);
+  assert.equal(account.status, 200, `Customer account ${locale} must respond HTTP 200`);
+  assert.match(account.headers.get("content-type") ?? "", /text\/html/i);
+  const accountHtml = await account.text();
+  const robotsMeta = [...accountHtml.matchAll(/<meta\b[^>]*>/gi)]
+    .map((match) => match[0])
+    .find((tag) => /\bname=["']robots["']/i.test(tag));
+  assert.ok(robotsMeta && /\bnoindex\b/i.test(robotsMeta) && /\bnofollow\b/i.test(robotsMeta),
+    `Customer account ${locale} must declare noindex,nofollow in its own metadata`);
+  checks += 3;
+
   const order = await get(orderPath);
   assert.ok([302, 303, 307, 308].includes(order.status),
     `${orderPath} must redirect, not serve a fake checkout`);

@@ -18,6 +18,16 @@ test("robots excludes administrative and API routes", () => {
     assert.ok(robots.includes(`"${path}"`), `Missing private route ${path}`);
   }
 });
+test("localized customer account metadata is never indexable", () => {
+  const account = readFileSync(new URL("../src/app/[locale]/account/layout.tsx", import.meta.url), "utf8");
+  assert.match(account, /export async function generateMetadata\(/);
+  assert.match(account, /robots:\s*\{\s*index:\s*false,\s*follow:\s*false/);
+  assert.match(account, /googleBot:\s*\{\s*index:\s*false,\s*follow:\s*false/);
+  assert.match(account, /isSupportedLocale\(locale\)/);
+  for (const title of ["Konto klienta", "Cuenta de cliente", "Customer account"]) {
+    assert.ok(account.includes(title), `Missing localized account title: ${title}`);
+  }
+});
 test("nonproduction robots disallows crawling", () => {
   assert.match(robots, /if\s*\(\s*!isProduction\s*\)/);
   assert.match(robots, /disallow:\s*"\/"/);
