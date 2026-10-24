@@ -166,6 +166,9 @@ jobs:
       - name: Verify safe assistant links and analytics exports
         run: node --experimental-strip-types --test scripts/test-answer-links.mjs scripts/test-analytics-export.mjs
 
+      - name: Validate public customer reviews before rendering
+        run: node --experimental-strip-types --test scripts/test-published-reviews.mjs
+
       - name: Verify browser security configuration
         run: npm run test:security-config
 
