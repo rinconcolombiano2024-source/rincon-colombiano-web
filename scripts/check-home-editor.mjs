@@ -69,6 +69,26 @@ for (const route of [
 }
 console.log("PASS: server validates published commercial CMS documents and refreshes edited SEO routes");
 
+// New CMS drafts must be acknowledged only after PostgREST returns the
+// persisted row, not merely after an insert without a read-back result.
+const newDraftBranch = contentActions.split("CREATE NEW")[1]?.split("REVALIDATION")[0] ?? "";
+assert.match(newDraftBranch, /\.select\("id, content_key, locale, kind, revision"\)\s*\.maybeSingle\(\)/,
+  "New CMS drafts must return the inserted row using the existing editor SELECT policy");
+for (const field of [
+  "!inserted",
+  'typeof inserted.id !== "string"',
+  "inserted.content_key !== contentKey",
+  "inserted.locale !== rawLocale",
+  "inserted.kind !== rawKind",
+  "Number(inserted.revision) !== 1",
+]) {
+  assert.ok(newDraftBranch.includes(field), `New draft confirmation missing: ${field}`);
+}
+assert.ok(newDraftBranch.indexOf("!inserted") > newDraftBranch.indexOf(".maybeSingle()"),
+  "New CMS draft confirmation must run after the database insert read-back");
+console.log("PASS: new CMS draft saves require a confirmed persisted row");
+
+
 const seoAdminUi = await readFile("src/app/(system)/admin/seo/page.tsx", "utf8");
 assert.match(seoAdminUi, /Vista previa del borrador guardado/,
   "CEO needs a saved-draft search snippet preview before publishing");

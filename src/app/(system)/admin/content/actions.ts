@@ -592,6 +592,9 @@ export async function saveContentDraft(
 
 
     const {
+      data:
+        inserted,
+
       error:
         insertError,
     } =
@@ -610,11 +613,34 @@ export async function saveContentDraft(
             rawKind,
 
           document,
-        });
+        })
+        // Only acknowledge a new draft when the database returns the
+        // persisted row. The CMS SELECT policy already grants this to
+        // authenticated editors, and revision=1 is enforced by SQL.
+        .select("id, content_key, locale, kind, revision")
+        .maybeSingle();
 
 
     if (
       insertError
+    ) {
+      redirectContent({
+        error:
+          "save",
+      });
+    }
+
+    // Do not show "saved" for an insert with no visible persisted row.
+    // In particular, do not mistake an empty PostgREST response for
+    // successful CMS persistence.
+    if (
+      !inserted ||
+      typeof inserted.id !== "string" ||
+      inserted.id.length === 0 ||
+      inserted.content_key !== contentKey ||
+      inserted.locale !== rawLocale ||
+      inserted.kind !== rawKind ||
+      Number(inserted.revision) !== 1
     ) {
       redirectContent({
         error:
