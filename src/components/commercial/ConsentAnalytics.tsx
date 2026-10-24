@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { useEffect, useState } from "react";
+import { isPublicAnalyticsPath } from "@/lib/analytics/public-path";
 
 const CONSENT_KEY = "rc-web-cookie-consent-v1";
 // Declare the public variable explicitly so noPropertyAccessFromIndexSignature
@@ -21,6 +22,7 @@ declare global {
 export function ConsentAnalytics() {
   const pathname = usePathname();
   const [allowed, setAllowed] = useState(false);
+  const trackingAllowed = allowed && isPublicAnalyticsPath(pathname);
 
   useEffect(() => {
     const update = () => {
@@ -39,8 +41,8 @@ export function ConsentAnalytics() {
 
   useEffect(() => {
     if (!measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) { return; }
-    Object.assign(window, { [`ga-disable-${measurementId}`]: !allowed });
-    if (!allowed) {
+    Object.assign(window, { [`ga-disable-${measurementId}`]: !trackingAllowed });
+    if (!trackingAllowed) {
       window.gtag?.("consent", "update", { analytics_storage: "denied" });
       return;
     }
@@ -58,11 +60,11 @@ export function ConsentAnalytics() {
       window.gtag("config", measurementId, { send_page_view: false, anonymize_ip: true });
     }
     window.gtag("event", "page_view", { page_path: pathname, page_location: window.location.origin + pathname });
-  }, [allowed, pathname]);
+  }, [trackingAllowed, pathname]);
 
   // Measure outbound ordering intent, never payment completion or personal data.
   useEffect(() => {
-    if (!allowed || !measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) { return; }
+    if (!trackingAllowed || !measurementId || !/^G-[A-Z0-9]+$/.test(measurementId)) { return; }
     const onClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) { return; }
       const anchor = event.target.closest("a[href]");
@@ -83,11 +85,25 @@ export function ConsentAnalytics() {
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, [allowed]);
+  }, [trackingAllowed]);
 
   // Both the GA4 loader above and Vercel's first-party web analytics SDK
   // are disabled until a visitor explicitly opts into optional tracking.
   // Mounting the official Next.js integration also tracks client-side routes.
   // Vercel Dashboard activation and a new production deployment are required.
-  return allowed ? <Analytics /> : null;
+  // An SDK may remain loaded after a client-side route transition.
+  // Filter at send time and strip query parameters before reporting.
+  return trackingAllowed ? (
+    <Analytics beforeSend={(event) => {
+      try {
+        const url = new URL(event.url, window.location.origin);
+        if (url.origin !== window.location.origin || !isPublicAnalyticsPath(url.pathname)) {
+          return null;
+        }
+        return { ...event, url: url.origin + url.pathname };
+      } catch {
+        return null;
+      }
+    }} />
+  ) : null;
 }
