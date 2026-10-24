@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
+import { deduplicatePublicCatalogProducts } from "../src/integrations/rc-ordera/public-catalog-dedupe.ts";
 import {
   parsePublicMenuPrice,
   parsePublicDeliveryFee,
@@ -142,4 +143,38 @@ test("the real public menu shows only validated RC ORDERA product photos", () =>
   assert.match(menu, /unoptimized/, "Do not proxy arbitrary admin-supplied CDN images through Next.js");
   assert.match(menu, /sizes="\(max-width: 767px\) 100vw, 50vw"/,
     "Product photos have responsive size hints");
+});
+
+
+test("public catalog deduplicates repeated RC ORDERA product IDs without rewriting metadata", () => {
+  const first = Object.freeze({
+    id: "product-001", name: "Tamal", price: 48, available: true,
+    station: "hot-kitchen", translations: { pl: { name: "Tamal" } },
+  });
+  const distinct = Object.freeze({ id: "product-002", name: "Arepa", price: 15 });
+  const duplicate = Object.freeze({ id: "product-001", name: "Tamal duplicate", price: 0 });
+  const original = Object.freeze([
+    Object.freeze({ name: "Platos", products: Object.freeze([first, distinct]) }),
+    Object.freeze({ name: "Entradas", products: Object.freeze([duplicate]) }),
+  ]);
+  const result = deduplicatePublicCatalogProducts(original);
+  assert.deepEqual(result, [{ name: "Platos", products: [first, distinct] }]);
+  assert.equal(result[0].products[0], first, "Original ID, price and station metadata must survive");
+  assert.equal(original[1].products[0], duplicate, "Upstream catalog must not be mutated");
+  const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
+  assert.match(catalog, /deduplicatePublicCatalogProducts\(\s*normalizeMenu\(/,
+    "Public catalog must actually apply deduplication before counting products");
+});
+
+test("legacy products without IDs are not silently removed based on matching names", () => {
+  const first = { id: null, name: "Empanada", price: 12 };
+  const second = { id: null, name: "Empanada", price: 12 };
+  const product = { id: "product-003", name: "Buñuelo", price: 8 };
+  const products = [first, second, product, product];
+  const result = deduplicatePublicCatalogProducts([
+    { name: "Entradas", products },
+  ]);
+  assert.deepEqual(result, [{ name: "Entradas", products: [first, second, product] }]);
+  assert.notEqual(result[0].products, products,
+    "Filtering must return a fresh list");
 });
