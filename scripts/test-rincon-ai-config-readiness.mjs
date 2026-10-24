@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { inspectRinconAiConfiguration } from "../src/lib/rincon-ai/config-readiness.ts";
+import { isVerifiedRinconAiPublicStatus, parseRinconAiPublicStatusUrl } from "../src/lib/rincon-ai/public-status.ts";
 
 test("native IA reports a missing model instead of inventing real conversation", () => {
   const result = inspectRinconAiConfiguration({ RINCON_IA_MODE: "native" }, false);
@@ -62,4 +63,55 @@ test("CEO operations page is access controlled and distinguishes setup from succ
   assert.match(operations, /rinconAi\.configured/);
   assert.match(operations, /Configurado · sin prueba de respuesta/);
   assert.match(operations, /Ningún token/);
+});
+
+test("IA public status only calls safe HTTPS public DNS origins", () => {
+  assert.equal(
+    parseRinconAiPublicStatusUrl("https://ai.example.com/api/public-status")?.href,
+    "https://ai.example.com/api/public-status",
+  );
+  for (const unsafe of [
+    "http://ai.example.com/api/public-status",
+    "https://127.0.0.1/api/public-status",
+    "https://0x7f000001/api/public-status",
+    "https://[::1]/api/public-status",
+    "https://[::ffff:127.0.0.1]/api/public-status",
+    "https://192.168.1.5/api/public-status",
+    "https://ai.local/api/public-status",
+    "https://ai.internal/api/public-status",
+    "https://ai.localhost/api/public-status",
+    "https://localhost./api/public-status",
+    "https://internal/api/public-status",
+    "https://user:secret@ai.example.com/api/public-status",
+    "https://ai.example.com:8443/api/public-status",
+    "https://ai.example.com/api/public-status?token=secret",
+    "https://ai.example.com/api/public-status#x",
+    "https://ai.example.com/api/health",
+    "https://ai.example.com.evil.test/api/public-status",
+    "https://ai.example.com/api/public-status/extra",
+  ]) {
+    assert.equal(parseRinconAiPublicStatusUrl(unsafe), null, unsafe);
+  }
+});
+
+test("IA public status requires actual IA JSON contract, never just HTTP 200", () => {
+  const healthy = {
+    ok: true,
+    publicAccess: true,
+    requiresAuthenticationForGeneration: true,
+  };
+  assert.equal(isVerifiedRinconAiPublicStatus(healthy), true);
+  for (const invalid of [
+    null, [], "OK", {}, { ok: true }, { ...healthy, ok: false },
+    { ...healthy, publicAccess: false },
+    { ...healthy, requiresAuthenticationForGeneration: false },
+  ]) {
+    assert.equal(isVerifiedRinconAiPublicStatus(invalid), false);
+  }
+  const route = readFileSync("src/app/api/rincon-ai/status/route.ts", "utf8");
+  assert.match(route, /parseRinconAiPublicStatusUrl\(configuredUrl\)/);
+  assert.match(route, /contentType === "application\/json"/);
+  assert.match(route, /isVerifiedRinconAiPublicStatus\(payload\)/);
+  assert.match(route, /generationVerified: false/);
+  assert.doesNotMatch(route, /available: response\.ok/);
 });
