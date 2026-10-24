@@ -2080,10 +2080,10 @@ export const routes:
         "polityka-prywatnosci",
 
       es:
-        "privacidad",
+        "polityka-prywatnosci",
 
       en:
-        "privacy",
+        "polityka-prywatnosci",
     },
 
     labelKey:
@@ -2124,10 +2124,10 @@ export const routes:
         "polityka-cookies",
 
       es:
-        "cookies",
+        "polityka-cookies",
 
       en:
-        "cookies",
+        "polityka-cookies",
     },
 
     labelKey:
