@@ -1,4 +1,5 @@
 import { businessIdentity as company } from "@/config/business";
+import { buildRoutePath } from "@/config/routes";
 
 export function BusinessIdentity({ locale }: { locale: "pl" | "es" | "en" }) {
   const t = {
@@ -14,8 +15,8 @@ export function BusinessIdentity({ locale }: { locale: "pl" | "es" | "en" }) {
       {(["nip", "krs", "regon"] as const).map(key => <div key={key} className="flex gap-2"><dt className="font-bold">{key.toUpperCase()}</dt><dd>{company[key]}</dd></div>)}
     </dl>
     <nav className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-[#123d73]">
-      <a href={`/${locale}/polityka-prywatnosci`} className="underline underline-offset-4">{t.privacy}</a>
-      <a href={`/${locale}/polityka-cookies`} className="underline underline-offset-4">{t.cookies}</a>
+      <a href={buildRoutePath("privacy", locale)} className="underline underline-offset-4">{t.privacy}</a>
+      <a href={buildRoutePath("cookies", locale)} className="underline underline-offset-4">{t.cookies}</a>
     </nav>
   </div>;
 }
