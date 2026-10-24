@@ -23,6 +23,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">Visitas y oportunidades de pedido</h1>
           <p className="mt-3 max-w-3xl leading-7">Conoce cuántas personas visitan la web, qué páginas consultan y cuántas veces abren un canal de pedidos.</p>
         </header>
+        <nav aria-label="Abrir servicios de estadísticas" className="mt-5 flex flex-wrap gap-3">
+          <a href="https://vercel.com/jhon-mendez-s-projects/rincon-colombiano-web/analytics" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl bg-[#123d73] px-5 py-3 font-bold text-white">Ver visitas en Vercel ↗</a>
+          <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl border-2 border-[#123d73] bg-white px-5 py-3 font-bold text-[#123d73]">Abrir Google Analytics ↗</a>
+        </nav>
         <nav aria-label="Periodo de estadísticas" className="my-6 flex flex-wrap gap-3">
           {[7, 30, 90].map(period => <Link key={period} href={`/admin/analytics?days=${period}`} aria-current={days === period ? "page" : undefined} className={`rounded-xl border-2 border-[#123d73] px-5 py-3 font-bold ${days === period ? "bg-[#123d73] text-white" : "bg-white text-[#123d73]"}`}>Últimos {period} días</Link>)}
         </nav>
@@ -40,10 +44,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
                 <p>Esta página muestra visitantes medidos, sesiones, páginas vistas y clics hacia pedidos. El seguimiento depende del consentimiento y de los bloqueadores.</p>
               </div>
             ) : null}
-            <div className="mt-4 flex flex-wrap gap-3">
-              <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl bg-[#123d73] px-5 font-bold text-white">Abrir Google Analytics ↗</a>
-              <a href="https://vercel.com/jhon-mendez-s-projects/rincon-colombiano-web/analytics" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-xl border border-[#123d73] px-5 font-bold text-[#123d73]">Ver Analytics de Vercel ↗</a>
-            </div>
             <p className="mt-3 text-xs leading-5 text-[#62594f]">Vercel Web Analytics es un servicio independiente: debes activarlo en Vercel. Activarlo no conecta automáticamente las cifras de Google Analytics en este panel.</p>
           </section>
         ) : (
