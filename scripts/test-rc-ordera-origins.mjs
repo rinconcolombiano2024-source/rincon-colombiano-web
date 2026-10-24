@@ -124,6 +124,53 @@ test("customer redirects fall back to trusted order origin for unsafe settings",
   });
 });
 
+test("RC ORDERA rejects private HTTPS destinations for both API keys and customer links", () => {
+  withEnv({ ...config, NODE_ENV: "production", CZAPELSKA_LOCATION_ID: null }, () => {
+    for (const unsafe of [
+      "https://localhost", "https://localhost.",
+      "https://127.0.0.1", "https://0x7f000001",
+      "https://10.0.0.1", "https://172.31.255.255",
+      "https://192.168.1.1", "https://169.254.169.254",
+      "https://0.0.0.0", "https://[::1]", "https://[fd00::1]",
+      "https://printer", "https://service.internal",
+      "https://menu.local", "https://orders.test",
+      "https://store.invalid", "https://foo.localhost",
+    ]) {
+      assert.equal(withEnv({ RC_ORDERA_SUPABASE_URL: unsafe }, getRcOrderaServerConfig),
+        null, unsafe);
+      const readiness = withEnv(
+        { RC_ORDERA_SUPABASE_URL: unsafe }, getRcOrderaIntegrationReadiness);
+      assert.equal(readiness.configured, false, unsafe);
+      assert.ok(readiness.invalid.includes("RC_ORDERA_SUPABASE_URL"), unsafe);
+      withEnv({ RC_ORDERA_PUBLIC_APP_URL: unsafe }, () => {
+        assert.equal(getRcOrderaPublicAppUrl(), defaultApp, unsafe);
+        assert.equal(new URL(buildRcOrderaOrderUrl("czapelska")).origin,
+          defaultApp, "unsafe configuration cannot redirect restaurant customers");
+      });
+    }
+    const trusted = withEnv(
+      { RC_ORDERA_SUPABASE_URL: "https://project.supabase.co" },
+      getRcOrderaServerConfig,
+    );
+    assert.equal(trusted?.supabaseUrl, "https://project.supabase.co");
+    assert.equal(withEnv({ RC_ORDERA_PUBLIC_APP_URL: "https://orders.example.com/" },
+      getRcOrderaPublicAppUrl), "https://orders.example.com");
+  });
+});
+
+test("local development HTTP remains opt-in but private HTTPS never becomes valid", () => {
+  withEnv({ ...config, NODE_ENV: "development" }, () => {
+    assert.equal(withEnv({ RC_ORDERA_SUPABASE_URL: "http://localhost:54321" },
+      getRcOrderaServerConfig)?.supabaseUrl, "http://localhost:54321");
+    assert.equal(withEnv({ RC_ORDERA_PUBLIC_APP_URL: "http://127.0.0.1:3000" },
+      getRcOrderaPublicAppUrl), "http://127.0.0.1:3000");
+    assert.equal(withEnv({ RC_ORDERA_SUPABASE_URL: "https://localhost" },
+      getRcOrderaServerConfig), null);
+    assert.equal(withEnv({ RC_ORDERA_PUBLIC_APP_URL: "https://127.0.0.1" },
+      getRcOrderaPublicAppUrl), defaultApp);
+  });
+});
+
 test("Czapelska link preserves public restaurant ID and direct RC ORDERA client path", () => {
   withEnv({ ...config, NODE_ENV: "production" }, () => {
     const result = new URL(buildRcOrderaOrderUrl("czapelska"));
