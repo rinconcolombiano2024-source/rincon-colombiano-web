@@ -269,7 +269,7 @@ async function checkContactAndLegal(locale) {
       contactHtml.includes(contactHeadings[locale]) &&
       contactHtml.includes("https://wa.me/message/OWMYNNNTJEIFF1") &&
       contactHtml.includes("Czapelska 33") &&
-      !/<form\\b/i.test(contactHtml),
+      !/<form\b/i.test(contactHtml),
       `${path} sirve página de contacto localizada con WhatsApp real, sede abierta y sin formulario ficticio`
     );
 
