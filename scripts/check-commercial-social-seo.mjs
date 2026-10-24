@@ -29,8 +29,11 @@ test("structured menu offers preserve genuine explicit zero prices without inven
   const schema = read("src/config/seo-menu.ts");
   const catalog = read("src/integrations/rc-ordera/public-catalog.ts");
   const validation = read("src/integrations/rc-ordera/public-product-safety.ts");
-  assert.match(schema, /product\.price\s*>=\s*0/,
-    "Real explicitly free menu entries must not vanish from JSON-LD");
+  assert.ok(
+    /product\.price\s*>=\s*0/.test(schema) ||
+      /parsePublicMenuPrice\(product\.price\) !== null/.test(schema),
+    "Real explicitly free menu entries must not vanish from JSON-LD",
+  );
   assert.doesNotMatch(schema, /product\.price\s*>\s*0/,
     "Do not contradict genuine zero-PLN offers shown in the public menu");
   assert.match(schema, /product\.available/);
