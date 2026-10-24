@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync, verify } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { analyticsPeriod, createAnalyticsReporter, getAnalyticsReadiness } from '../src/lib/analytics/reports.ts';
+import { isPublicAnalyticsPath } from '../src/lib/analytics/public-path.ts';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const env = { GA_PROPERTY_ID: '12345', GA_CLIENT_EMAIL: 'reports@test.iam.gserviceaccount.com', GA_PRIVATE_KEY: privateKey.export({ type: 'pkcs8', format: 'pem' }) };
@@ -114,6 +115,21 @@ test('CEO configuration status tells the truth without exporting credentials', (
     'never display or hardcode secret values in CEO web page');
 });
 
+test('visitor analytics exclude customer account pages and localized aliases', () => {
+  for (const locale of ['pl', 'es', 'en']) {
+    for (const section of ['account', 'konto', 'mi-cuenta', 'admin', 'api']) {
+      assert.equal(isPublicAnalyticsPath('/' + locale + '/' + section), false);
+      assert.equal(isPublicAnalyticsPath('/' + locale + '/' + section + '/settings'), false);
+    }
+    assert.equal(isPublicAnalyticsPath('/' + locale), true);
+    assert.equal(isPublicAnalyticsPath('/' + locale + '/menu'), true);
+    assert.equal(isPublicAnalyticsPath('/' + locale + '/accounting'), true);
+  }
+  for (const unsafe of [null, '', '/', '//pl/menu', '/de/menu', '/pl/%61ccount', '/es/ACCOUNT/orders', '/pl/account%2Fsettings', '/pl/%ZZ']) {
+    assert.equal(isPublicAnalyticsPath(unsafe), false, String(unsafe));
+  }
+});
+
 test('official Vercel Next.js tracker is consent-gated and excludes private CEO pages', () => {
   const packageJSON = JSON.parse(readFileSync('package.json', 'utf8'));
   assert.equal(packageJSON.dependencies['@vercel/analytics'], '2.0.1');
@@ -126,8 +142,14 @@ test('official Vercel Next.js tracker is consent-gated and excludes private CEO 
   assert.doesNotMatch(adminLayout, /ConsentAnalytics|<Analytics/,
     'admin logins, sensitive settings and CEO reports must not be visitor events');
   assert.match(analytics, /import \{ Analytics \} from "@vercel\/analytics\/next"/);
-  assert.match(analytics, /return allowed \? <Analytics \/> : null/,
-    'Vercel tracker must never mount when consent was rejected or not yet chosen');
+  assert.match(analytics, /return trackingAllowed/,
+    'Vercel tracker must never mount on private routes or without opt-in');
+  assert.match(analytics, /<Analytics beforeSend=/,
+    'Filter events even when the SDK remains mounted across navigation');
+  assert.match(analytics, /isPublicAnalyticsPath\(url\.pathname\)/,
+    'Reject private event destinations at send time');
+  assert.match(analytics, /url: url\.origin \+ url\.pathname/,
+    'Never send query parameters to visitor analytics');
   assert.match(analytics, /localStorage\.getItem\(CONSENT_KEY\) === "accepted"/);
   assert.match(analytics, /window\.addEventListener\("rc-consent-change", update\)/);
   assert.match(consent, /revokeTracking = next === "rejected" && localStorage\.getItem\(KEY\) === "accepted"/);
