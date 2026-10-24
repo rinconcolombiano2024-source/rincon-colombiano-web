@@ -563,7 +563,7 @@ for (const privateOrUnsafePhoto of [
   "https://printer.internal/image.jpg",
   "https://cdn.example.com:8443/image.jpg",
   "https://203.0.113.5/photo.jpg",
-  "https://cdn.example.com/" + "x".repeat(1601),
+  `https://cdn.example.com/${"x".repeat(1601)}`,
 ]) {
   assert.equal(validProductImageUrl(privateOrUnsafePhoto), false,
     `The owner editor must not preview or publish an unsafe photo URL: ${privateOrUnsafePhoto}`);
