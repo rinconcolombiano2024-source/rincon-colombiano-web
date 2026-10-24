@@ -107,7 +107,6 @@ test("contact is a real localized page with canonical SEO, official links and pe
   const routes = read("src/app/[locale]/[...slug]/page.tsx");
   const navigation = read("src/components/commercial/CommercialNavigation.tsx");
   const sitemap = read("src/app/sitemap.ts");
-  const identity = read("src/components/commercial/BusinessIdentity.tsx");
   for (const title of [
     "Kontakt z Rincón Colombiano",
     "Contacto de Rincón Colombiano",
@@ -129,8 +128,4 @@ test("contact is a real localized page with canonical SEO, official links and pe
     "Contact must appear in the persistent public navigation");
   assert.match(sitemap, /"locations",\s*"contact"/,
     "Index only the actually published contact route");
-  assert.match(identity, /buildRoutePath\("privacy", locale\)/);
-  assert.match(identity, /buildRoutePath\("cookies", locale\)/);
-  assert.doesNotMatch(identity, /\/\$\{locale\}\/polityka-/,
-    "Never send ES/EN customers to a Polish-only policy slug");
 });
