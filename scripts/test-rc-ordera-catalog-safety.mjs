@@ -162,7 +162,7 @@ test("public catalog deduplicates repeated RC ORDERA product IDs without rewriti
   assert.equal(result[0].products[0], first, "Original ID, price and station metadata must survive");
   assert.equal(original[1].products[0], duplicate, "Upstream catalog must not be mutated");
   const catalog = readFileSync("src/integrations/rc-ordera/public-catalog.ts", "utf8");
-  assert.match(catalog, /deduplicatePublicCatalogProducts\\(\\s*normalizeMenu\\(/,
+  assert.match(catalog, /deduplicatePublicCatalogProducts\(\s*normalizeMenu\(/,
     "Public catalog must actually apply deduplication before counting products");
 });
 
@@ -170,10 +170,11 @@ test("legacy products without IDs are not silently removed based on matching nam
   const first = { id: null, name: "Empanada", price: 12 };
   const second = { id: null, name: "Empanada", price: 12 };
   const product = { id: "product-003", name: "Buñuelo", price: 8 };
+  const products = [first, second, product, product];
   const result = deduplicatePublicCatalogProducts([
-    { name: "Entradas", products: [first, second, product, product] },
+    { name: "Entradas", products },
   ]);
   assert.deepEqual(result, [{ name: "Entradas", products: [first, second, product] }]);
-  assert.notEqual(result[0].products, [first, second, product],
+  assert.notEqual(result[0].products, products,
     "Filtering must return a fresh list");
 });
