@@ -553,6 +553,11 @@ export async function loadPublishedCmsTextContent(
           method:
             "GET",
 
+          // Never follow an upstream redirect while sending the public
+          // Supabase API key in Authorization/apikey headers.
+          // A redirected CMS response is unavailable, not published content.
+          redirect: "error",
+
           headers: {
             apikey:
               config.key,
@@ -777,6 +782,8 @@ export async function getPublishedCmsTextBatch(
   try {
     const response = await fetch(url, {
       method: "GET",
+      // Fail closed on upstream redirects; do not forward the CMS API key.
+      redirect: "error",
       headers: {
         apikey: config.key,
         Authorization: `Bearer ${config.key}`,
