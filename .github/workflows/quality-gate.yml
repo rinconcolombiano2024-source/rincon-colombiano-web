@@ -166,6 +166,9 @@ jobs:
       - name: Verify safe assistant links and analytics exports
         run: node --experimental-strip-types --test scripts/test-answer-links.mjs scripts/test-analytics-export.mjs
 
+      - name: Verify consent-banner legal links match published PL ES EN pages
+        run: node --experimental-strip-types scripts/test-legal-links.mjs
+
       - name: Verify browser security configuration
         run: npm run test:security-config
 
