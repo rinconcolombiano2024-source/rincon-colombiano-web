@@ -166,8 +166,10 @@ test("customer account loading ends only after verified getUser resolution", () 
 test("public CMS reads never follow redirects with Supabase API headers", () => {
   const cms = readFileSync(new URL("../src/lib/cms/public-content.ts", import.meta.url), "utf8");
   for (const target of ["requestUrl", "url"]) {
-    const start = cms.indexOf(`await fetch(${target === "url" ? "url, {" : "requestUrl,"}`);
-    assert.ok(start >= 0, `Missing CMS fetch for ${target}`);
+    const pattern = target === "url" ? /await fetch\\(url,\\s*\\{/ : /await fetch\\(\\s*requestUrl,\\s*\\{/;
+    const match = pattern.exec(cms);
+    assert.ok(match, `Missing CMS fetch for ${target}`);
+    const start = match.index;
     const beforeHeaders = cms.slice(start, cms.indexOf("headers:", start));
     assert.match(beforeHeaders, /redirect:\\s*"error"/,
       `CMS fetch ${target} must reject redirects before sending API credentials`);
