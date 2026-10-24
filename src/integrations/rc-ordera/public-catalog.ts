@@ -47,6 +47,8 @@ import {
   type RcOrderaLocationKey,
   type RcOrderaServerConfig,
 } from "@/integrations/rc-ordera/config";
+import { deduplicatePublicCatalogProducts } from "@/integrations/rc-ordera/public-catalog-dedupe";
+
 import {
   parsePublicMenuPrice,
   parsePublicDeliveryFee,
@@ -1075,13 +1077,11 @@ function buildCatalog(
   row:
     JsonObject,
 ): RcOrderaPublicCatalog {
-  const categories =
-    normalizeMenu(
-      readValue(
-        row,
-        "menu",
-      ),
-    );
+  // One stable RC ORDERA product ID must not render multiple public offers.
+  // Never rewrite IDs or modify the original upstream menu payload.
+  const categories = deduplicatePublicCatalogProducts(
+    normalizeMenu(readValue(row, "menu")),
+  );
 
   return {
     location,
