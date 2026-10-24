@@ -25,6 +25,19 @@ for (const [path, destination] of [
 for (const locale of ["es", "pl", "en"]) {
   assert.equal((await request(`/${locale}/menu`)).status, 200);
 }
+// These are the published legal slugs in all three languages. The cookie
+// consent banner and route registry must not point to planned 404 aliases.
+for (const locale of ["pl", "es", "en"]) {
+  for (const slug of ["polityka-prywatnosci", "polityka-cookies"]) {
+    const path = `/${locale}/${slug}`;
+    const response = await request(path);
+    assert.equal(response.status, 200, `Legal page ${path} must exist`);
+    const html = await response.text();
+    assert.ok(html.includes(`/${locale}/${slug}`), `Legal page ${path} must retain its canonical path`);
+  }
+}
+console.log("PASS published privacy and cookie policies in PL ES EN");
+
 for (const [headers, locale] of [
   [{ "accept-language": "de;q=1,es;q=0" }, "pl"],
   [{ "accept-language": "es-CO,en;q=0.5" }, "es"],
