@@ -17,11 +17,24 @@ export function parsePublicHttpOrigin(
 
   try {
     const url = new URL(candidate);
+    // Public HTTPS origins must use a DNS hostname, not a private IP
+    // address or internal name. Server-side requests can carry API keys.
+    // URL.hostname canonicalizes hexadecimal/octal IPv4 before this check.
+    const hostname = url.hostname.toLowerCase().replace(/\.$/u, "");
     const isLoopback =
-      url.hostname === "localhost" ||
-      url.hostname === "127.0.0.1" ||
-      url.hostname === "[::1]";
-    const allowedProtocol = url.protocol === "https:" ||
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "[::1]";
+    const isPublicDnsHostname =
+      hostname.includes(".") &&
+      !/^\d{1,3}(?:\.\d{1,3}){3}$/u.test(hostname) &&
+      !hostname.startsWith("[") &&
+      ![".localhost", ".local", ".internal", ".test", ".invalid"].some(
+        (suffix) => hostname.endsWith(suffix),
+      ) &&
+      hostname !== "localhost";
+    const allowedProtocol =
+      (url.protocol === "https:" && isPublicDnsHostname) ||
       (allowLocalHttp && isLoopback && url.protocol === "http:");
 
     if (!allowedProtocol ||
