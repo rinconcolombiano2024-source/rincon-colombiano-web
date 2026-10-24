@@ -101,3 +101,31 @@ test("published brand image is reused across home, menu and restaurant social ca
   assert.match(seo, /alternateLocale:/);
   assert.match(seo, /canonical,/);
 });
+
+test("contact is a real localized page with canonical SEO, official links and persistent navigation", () => {
+  const contact = read("src/components/commercial/ContactLanding.tsx");
+  const routes = read("src/app/[locale]/[...slug]/page.tsx");
+  const navigation = read("src/components/commercial/CommercialNavigation.tsx");
+  const sitemap = read("src/app/sitemap.ts");
+  for (const title of [
+    "Kontakt z Rincón Colombiano",
+    "Contacto de Rincón Colombiano",
+    "Contact Rincón Colombiano",
+  ]) {
+    assert.ok(contact.includes(title), `Missing real contact page heading: ${title}`);
+  }
+  assert.match(contact, /OFFICIAL_SOCIAL_LINKS\\.whatsapp/,
+    "Contact must use the existing approved WhatsApp destination");
+  assert.match(contact, /getOpenRestaurants\\(\\)/,
+    "Do not present the coming-soon restaurant as already open");
+  assert.doesNotMatch(contact, /<form\\b/i,
+    "Never publish an unmonitored contact form");
+  assert.match(routes, /return <ContactLanding locale=\\{locale\\} \\/>/,
+    "Localized contact URLs must render a real page, not redirect home");
+  assert.match(routes, /buildRouteMetadata\\("contact", rawLocale/,
+    "Contact must expose canonical and hreflang metadata");
+  assert.match(navigation, /"loyalty", "locations", "contact"/,
+    "Contact must appear in the persistent public navigation");
+  assert.match(sitemap, /"locations",\\s*"contact"/,
+    "Index only the actually published contact route");
+});
