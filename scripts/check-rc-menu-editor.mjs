@@ -547,10 +547,27 @@ assert.equal(isSafeMenuRevision(menu, {
 }), false, "unsupported new product station blocked");
 assert.equal(normalizeMenu(JSON.parse('{"__proto__":[]}')), null, "prototype pollution blocked");
 
+assert.equal(validProductImageUrl(""), true, "Owners may intentionally remove a product photo");
 assert.equal(validProductImageUrl("https://example.com/image.jpg"), true);
+assert.equal(validProductImageUrl("https://cdn.example.com/menu/arepa.webp?size=640"), true);
 assert.equal(validProductImageUrl(["java", "script:alert(1)"].join("")), false);
 assert.equal(validProductImageUrl("http://example.com"), false);
 assert.equal(validProductImageUrl("https://u:p@example.com"), false);
+for (const privateOrUnsafePhoto of [
+  "https://localhost/image.jpg",
+  "https://127.0.0.1/photo.png",
+  "https://192.168.1.10/image.webp",
+  "https://169.254.169.254/latest",
+  "https://[::1]/photo.jpg",
+  "https://kitchen.local/menu.jpg",
+  "https://printer.internal/image.jpg",
+  "https://cdn.example.com:8443/image.jpg",
+  "https://203.0.113.5/photo.jpg",
+  "https://cdn.example.com/" + "x".repeat(1601),
+]) {
+  assert.equal(validProductImageUrl(privateOrUnsafePhoto), false,
+    `The owner editor must not preview or publish an unsafe photo URL: ${privateOrUnsafePhoto}`);
+}
 
 assert.equal(detectProductImageMime(new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0,
