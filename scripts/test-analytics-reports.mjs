@@ -118,12 +118,12 @@ test('CEO configuration status tells the truth without exporting credentials', (
 test('visitor analytics exclude customer account pages and localized aliases', () => {
   for (const locale of ['pl', 'es', 'en']) {
     for (const section of ['account', 'konto', 'mi-cuenta', 'admin', 'api']) {
-      assert.equal(isPublicAnalyticsPath('/' + locale + '/' + section), false);
-      assert.equal(isPublicAnalyticsPath('/' + locale + '/' + section + '/settings'), false);
+      assert.equal(isPublicAnalyticsPath(`/${locale}/${section}`), false);
+      assert.equal(isPublicAnalyticsPath(`/${locale}/${section}/settings`), false);
     }
-    assert.equal(isPublicAnalyticsPath('/' + locale), true);
-    assert.equal(isPublicAnalyticsPath('/' + locale + '/menu'), true);
-    assert.equal(isPublicAnalyticsPath('/' + locale + '/accounting'), true);
+    assert.equal(isPublicAnalyticsPath(`/${locale}`), true);
+    assert.equal(isPublicAnalyticsPath(`/${locale}/menu`), true);
+    assert.equal(isPublicAnalyticsPath(`/${locale}/accounting`), true);
   }
   for (const unsafe of [null, '', '/', '//pl/menu', '/de/menu', '/pl/%61ccount', '/es/ACCOUNT/orders', '/pl/account%2Fsettings', '/pl/%ZZ']) {
     assert.equal(isPublicAnalyticsPath(unsafe), false, String(unsafe));
