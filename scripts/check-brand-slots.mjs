@@ -59,9 +59,9 @@ console.log(`PASS: ${expected.length} commercial media slots agree in UI, SQL an
 // The public brand reader carries an apikey and bearer header. Supabase
 // redirects must fail closed rather than forwarding them to another origin.
 const brandReader = await readFile("src/lib/brand/public-brand.ts", "utf8");
-const brandFetch = brandReader.match(/await fetch\\(\\s*requestUrl,\\s*\\{([\\s\\S]*?)\\n\\s*\\},\\s*\\)/);
+const brandFetch = brandReader.match(/await fetch\(\s*requestUrl,\s*\{([\s\S]*?)\n\s*\},\s*\)/);
 assert.ok(brandFetch, "Public brand request must use a bounded fetch options object");
-assert.match(brandFetch[1], /\\bredirect\\s*:\\s*["']error["']/, "Public brand fetch must reject redirects");
-assert.match(brandFetch[1], /\\bAuthorization\\s*:/, "Public brand fetch must use the guarded auth header");
-assert.match(brandFetch[1], /\\bapikey\\s*:/, "Public brand fetch must guard the API key");
+assert.match(brandFetch[1], /\bredirect\s*:\s*["']error["']/, "Public brand fetch must reject redirects");
+assert.match(brandFetch[1], /\bAuthorization\s*:/, "Public brand fetch must use the guarded auth header");
+assert.match(brandFetch[1], /\bapikey\s*:/, "Public brand fetch must guard the API key");
 console.log("PASS: authenticated public brand reads reject upstream redirects");
