@@ -47,6 +47,7 @@ const PUBLISHED_STATIC_ROUTE_KEYS =
     "community",
     "loyalty",
     "locations",
+    "contact",
   ] as const satisfies
     readonly RouteKey[];
 
