@@ -162,3 +162,18 @@ test("customer account loading ends only after verified getUser resolution", () 
   assert.match(account, /getUser\(\)[\s\S]*?setCheckingSession\(false\)/);
   assert.match(account, /onAuthStateChange\(\(_event, session\) => \{\s*if \(active\) \{ setUserEmail\(session\?\.user\?\.email \?\? null\); \}/);
 });
+
+test("public CMS reads never follow redirects with Supabase API headers", () => {
+  const cms = readFileSync(new URL("../src/lib/cms/public-content.ts", import.meta.url), "utf8");
+  for (const target of ["requestUrl", "url"]) {
+    const pattern = target === "url" ? /await fetch\(url,\s*\{/ : /await fetch\(\s*requestUrl,\s*\{/;
+    const match = pattern.exec(cms);
+    assert.ok(match, `Missing CMS fetch for ${target}`);
+    const start = match.index;
+    const beforeHeaders = cms.slice(start, cms.indexOf("headers:", start));
+    assert.match(beforeHeaders, /redirect:\s*"error"/,
+      `CMS fetch ${target} must reject redirects before sending API credentials`);
+    assert.match(beforeHeaders, /method:\s*"GET"/,
+      `CMS fetch ${target} must remain read-only`);
+  }
+});
