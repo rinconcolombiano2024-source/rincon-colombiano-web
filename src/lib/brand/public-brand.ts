@@ -535,6 +535,11 @@ async function fetchPublishedBrandAsset(
           method:
             "GET",
 
+          // Never forward Supabase API credentials to a redirect target.
+          // An unexpected redirect is treated as an unavailable asset.
+          redirect:
+            "error",
+
           headers: {
             apikey:
               config.key,
