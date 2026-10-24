@@ -122,6 +122,23 @@ function readEnvironmentVariable(
    URL NORMALIZATION
    ============================================================ */
 
+/**
+ * RC ORDERA endpoints and customer redirects must not point to a private
+ * network or an internal-only hostname, even when they use HTTPS. URL()
+ * canonicalizes unusual IPv4 encodings before we check the hostname.
+ * Explicit HTTP loopback remains available for local development only.
+ */
+function isPublicHttpsHostname(value: string): boolean {
+  const hostname = value.toLowerCase().replace(/\.$/u, "");
+  return hostname.includes(".") &&
+    !/^\d{1,3}(?:\.\d{1,3}){3}$/u.test(hostname) &&
+    !hostname.startsWith("[") &&
+    hostname !== "localhost" &&
+    ![".localhost", ".local", ".internal", ".test", ".invalid"].some(
+      (suffix) => hostname.endsWith(suffix),
+    );
+}
+
 function normalizeHttpOrigin(
   value:
     string,
@@ -139,6 +156,7 @@ function normalizeHttpOrigin(
 
     if (
       (url.protocol !== "https:" && !localDevelopment) ||
+      (url.protocol === "https:" && !isPublicHttpsHostname(url.hostname)) ||
       url.username ||
       url.password ||
       url.search ||
@@ -172,6 +190,7 @@ function normalizePublicAppUrl(
 
     if (
       (url.protocol !== "https:" && !localDevelopment) ||
+      (url.protocol === "https:" && !isPublicHttpsHostname(url.hostname)) ||
       url.username ||
       url.password ||
       url.search ||
