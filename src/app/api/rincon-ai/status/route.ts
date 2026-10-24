@@ -1,4 +1,5 @@
 import { nativeRestaurantChat } from "@/lib/rincon-ai/native";
+import { isVerifiedRinconAiPublicStatus, parseRinconAiPublicStatusUrl } from "@/lib/rincon-ai/public-status";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -27,21 +28,8 @@ export async function GET(): Promise<NextResponse> {
     );
   }
 
-  let endpoint: URL;
-  try {
-    endpoint = new URL(configuredUrl);
-    if (
-      endpoint.protocol !== "https:" ||
-      endpoint.username ||
-      endpoint.password ||
-      endpoint.search ||
-      endpoint.hash ||
-      endpoint.pathname !== "/api/public-status" ||
-      ["localhost", "127.", "10.", "192.168.", "169.254.", "0.", "172.16.", "172.17.", "172.18.", "172.19.", "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.", "172.31.", "[::1]"].some((prefix) => endpoint.hostname.toLowerCase().startsWith(prefix))
-    ) {
-      throw new Error("Unsafe IA status endpoint");
-    }
-  } catch {
+  const endpoint = parseRinconAiPublicStatusUrl(configuredUrl);
+  if (!endpoint) {
     return NextResponse.json(
       { available: false, reason: "invalid_configuration" },
       { status: 503, headers: { "Cache-Control": "no-store" } },
@@ -57,10 +45,19 @@ export async function GET(): Promise<NextResponse> {
       headers: { Accept: "application/json" },
     });
 
+    // The IA repository's public endpoint reports public access, not whether
+    // a paid model can generate a response. Never trust HTTP 200 or HTML alone.
+    const contentType = response.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase();
+    let available = false;
+    if (response.ok && contentType === "application/json") {
+      const payload: unknown = await response.json();
+      available = isVerifiedRinconAiPublicStatus(payload);
+    }
+
     return NextResponse.json(
-      { available: response.ok },
+      { available, generationVerified: false },
       {
-        status: response.ok ? 200 : 503,
+        status: available ? 200 : 503,
         headers: { "Cache-Control": "no-store" },
       },
     );
