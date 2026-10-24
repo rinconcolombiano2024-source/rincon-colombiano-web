@@ -82,12 +82,12 @@ for (const [locale, orderPath] of Object.entries(LOCALE_PATHS)) {
   // only source text or the preview-wide robots.txt policy.
   const account = await get(`/${locale}/account`);
   assert.equal(account.status, 200, `Customer account ${locale} must respond HTTP 200`);
-  assert.match(account.headers.get("content-type") ?? "", /text\\/html/i);
+  assert.match(account.headers.get("content-type") ?? "", /text\/html/i);
   const accountHtml = await account.text();
-  const robotsMeta = [...accountHtml.matchAll(/<meta\\b[^>]*>/gi)]
+  const robotsMeta = [...accountHtml.matchAll(/<meta\b[^>]*>/gi)]
     .map((match) => match[0])
-    .find((tag) => /\\bname=["']robots["']/i.test(tag));
-  assert.ok(robotsMeta && /\\bnoindex\\b/i.test(robotsMeta) && /\\bnofollow\\b/i.test(robotsMeta),
+    .find((tag) => /\bname=["']robots["']/i.test(tag));
+  assert.ok(robotsMeta && /\bnoindex\b/i.test(robotsMeta) && /\bnofollow\b/i.test(robotsMeta),
     `Customer account ${locale} must declare noindex,nofollow in its own metadata`);
   checks += 3;
 
