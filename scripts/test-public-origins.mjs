@@ -63,3 +63,29 @@ test("site, SEO and Supabase all consume one tested origin validator", () => {
   assert.match(supabase, /process\.env\.NODE_ENV !== "production"/);
   assert.match(supabase, /url: safeUrl/);
 });
+
+test("public HTTPS endpoints never point to private IPs or internal DNS", () => {
+  for (const input of [
+    "https://localhost", "https://localhost.", "https://localhost:443",
+    "https://127.0.0.1", "https://0x7f000001",
+    "https://10.0.0.1", "https://172.16.0.1", "https://192.168.1.1",
+    "https://169.254.169.254", "https://203.0.113.1",
+    "https://[::1]", "https://[fd00::1]",
+    "https://db.internal", "https://myapp.local",
+    "https://service.test", "https://bad.invalid",
+    "https://foo.localhost", "https://printer",
+  ]) {
+    assert.equal(parsePublicHttpOrigin(input), null, input);
+    assert.equal(parsePublicHttpOrigin(input, true), null,
+      "Local development must not enable private HTTPS destinations");
+    assert.equal(safePublicHttpOrigin(input, "https://rinconcolombiano.pl"),
+      "https://rinconcolombiano.pl", input);
+  }
+  // The explicitly authorized local HTTP development path still works.
+  assert.equal(parsePublicHttpOrigin("http://localhost:3000", true),
+    "http://localhost:3000");
+  assert.equal(parsePublicHttpOrigin("http://[::1]:54321", true),
+    "http://[::1]:54321");
+  assert.equal(parsePublicHttpOrigin("https://project.supabase.co"),
+    "https://project.supabase.co");
+});
