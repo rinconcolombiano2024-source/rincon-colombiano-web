@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/config";
 import { buildCanonicalUrl, type JsonLdObject } from "@/config/seo";
 import type { RcOrderaPublicCatalog } from "@/integrations/rc-ordera/public-catalog";
 import { localizeRcOrderaCategories } from "@/integrations/rc-ordera/localize-catalog";
+import { parsePublicMenuPrice } from "@/integrations/rc-ordera/public-product-safety";
 
 /**
  * Real, read-only Menu schema built exclusively from the public RC ORDERA
@@ -26,9 +27,10 @@ export function buildVerifiedMenuJsonLd(
           product.available &&
           product.name.trim().length > 0 &&
           product.name.length <= 160 &&
-          Number.isFinite(product.price) &&
-          product.price >= 0 &&
-          product.price <= 9999)
+          // Keep search-engine offers consistent with the exact PLN/grosz
+          // rules used by the live RC ORDERA public catalog. Otherwise
+          // toFixed(2) could publish a rounded or invented offer.
+          parsePublicMenuPrice(product.price) !== null)
         .slice(0, 100)
         .map((product) => ({
           "@type": "MenuItem",

@@ -143,3 +143,27 @@ test("the real public menu shows only validated RC ORDERA product photos", () =>
   assert.match(menu, /sizes="\(max-width: 767px\) 100vw, 50vw"/,
     "Product photos have responsive size hints");
 });
+
+test("SEO Menu offers use the same exact PLN/grosz validation as visible RC ORDERA products", () => {
+  const seoMenu = readFileSync("src/config/seo-menu.ts", "utf8");
+  assert.ok(
+    seoMenu.includes('import { parsePublicMenuPrice } from "@/integrations/rc-ordera/public-product-safety";'),
+    "Structured data must reuse the canonical public price parser",
+  );
+  assert.ok(
+    seoMenu.includes("parsePublicMenuPrice(product.price) !== null"),
+    "Reject malformed fractional-grosz prices before toFixed can round them",
+  );
+  assert.ok(
+    seoMenu.includes("price: product.price.toFixed(2)"),
+    "A validated PLN amount is published without further conversion",
+  );
+  for (const invalid of [0.001, 0.005, 1.005, 10.999, NaN, Infinity, -1, 10000]) {
+    assert.equal(parsePublicMenuPrice(invalid), null,
+      "Invalid SEO offer must never be rounded to a public price");
+  }
+  for (const valid of [0, 0.01, 12.5, 9999]) {
+    assert.equal(parsePublicMenuPrice(valid), valid,
+      "Preserve valid and explicitly free offers from the owner");
+  }
+});
