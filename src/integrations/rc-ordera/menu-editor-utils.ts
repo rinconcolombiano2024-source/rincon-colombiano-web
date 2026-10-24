@@ -1,3 +1,5 @@
+import { parsePublicProductImageUrl } from "./public-product-safety.ts";
+
 /**
  * Pure, defensive menu transformations shared by the RC ORDERA owner editor.
  * Preserve every property not explicitly edited: modifiers, translations,
@@ -233,21 +235,11 @@ export function hasUnappliedProductChanges(
 }
 
 export function validProductImageUrl(value: string): boolean {
-  if (value === "") {
-    return true;
-  }
-  if (value.length > 1600) {
-    return false;
-  }
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" &&
-      Boolean(url.hostname) &&
-      !url.username &&
-      !url.password;
-  } catch {
-    return false;
-  }
+  // An empty photo is allowed. All non-empty owner-edited URLs must meet the
+  // same public-browser safety policy as the published RC ORDERA catalog.
+  // This prevents a preview from requesting local/private network resources
+  // and prevents accepting a photo that customers will never be shown.
+  return value === "" || parsePublicProductImageUrl(value) !== null;
 }
 
 interface ProductInput {
